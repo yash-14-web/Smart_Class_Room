@@ -16,7 +16,9 @@ def load_env():
 
 load_env()
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-smart-classroom-secret-key-change-in-production')
+SECRET_KEY = os.environ.get('SECRET_KEY')
+if not SECRET_KEY:
+    raise ValueError("The SECRET_KEY environment variable is not set! Please check your .env file.")
 
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
