@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Issue Certificate - {{ course.title }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+  <div>
+    <h4 class="fw-bold mb-0">Issue Certificates - {{ course.title }}</h4>
+    <p class="text-muted small mb-0">Review student results and issue completion or custom certificates.</p>
+  </div>
+  <a href="{% url 'course_detail' course.pk %}" class="btn btn-sm btn-outline-secondary">Back</a>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header"><h6 class="fw-bold mb-0">Student Performance Overview</h6></div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr><th>Student</th><th class="text-center">Total Marks</th><th class="text-center">Scored</th><th class="text-center">Average</th><th class="text-center">Pending</th><th class="text-center">Status</th><th class="text-center">Certificate</th><th class="text-center">Action</th></tr>
+        </thead>
+        <tbody>
+          {% for sp in student_performance %}
+          <tr>
+            <td><div class="fw-semibold">{{ sp.student.get_full_name|default:sp.student.username }}</div><div class="text-muted small">@{{ sp.student.username }}</div></td>
+            <td class="text-center">{{ sp.performance.total_marks }}</td>
+            <td class="text-center fw-bold">{{ sp.performance.total_scored }}</td>
+            <td class="text-center"><span class="fw-bold {% if sp.performance.avg_pct >= 40 %}text-success{% else %}text-danger{% endif %}">{{ sp.performance.avg_pct }}%</span></td>
+            <td class="text-center">{% if sp.performance.pending_count > 0 %}<span class="badge bg-warning text-dark">{{ sp.performance.pending_count }} pending</span>{% else %}<span class="badge bg-success">All graded</span>{% endif %}</td>
+            <td class="text-center">{% if sp.performance.overall_pass == 'Pass' %}<span class="badge bg-success fs-6 px-3">Pass</span>{% elif sp.performance.overall_pass == 'Fail' %}<span class="badge bg-danger fs-6 px-3">Fail</span>{% else %}<span class="badge bg-warning text-dark fs-6 px-3">Pending</span>{% endif %}</td>
+            <td class="text-center">{% if sp.has_cert %}<span class="badge bg-success">Issued</span>{% else %}<span class="text-muted small">Not issued</span>{% endif %}</td>
+            <td class="text-center">
+              {% if sp.performance.overall_pass == 'Pass' and not sp.has_cert %}
+              <form method="post" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="student_id" value="{{ sp.student.pk }}"/>
+                <input type="hidden" name="badge_type" value="completion"/>
+                <input type="hidden" name="title" value="Course Completion"/>
+                <button type="submit" class="btn btn-sm btn-warning">Issue</button>
+              </form>
+              {% elif sp.has_cert %}
+              <a href="{% url 'view_certificate' sp.cert.pk %}" target="_blank" class="btn btn-sm btn-outline-success">View</a>
+              {% else %}
+              <span class="text-muted small">{% if sp.performance.overall_pass == 'Fail' %}Score too low{% else %}Grade pending{% endif %}</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="8" class="text-center py-4 text-muted">No students enrolled yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h6 class="fw-bold mb-0">Issue Custom Certificate</h6></div>
+  <div class="card-body">
+    <form method="post" class="row g-3">
+      {% csrf_token %}
+      <div class="col-md-4"><label class="form-label fw-semibold">Student</label><select name="student_id" class="form-select" required><option value="">Select student</option>{% for sp in student_performance %}<option value="{{ sp.student.pk }}">{{ sp.student.get_full_name|default:sp.student.username }} ({{ sp.performance.avg_pct }}% - {{ sp.performance.overall_pass }})</option>{% endfor %}</select></div>
+      <div class="col-md-3"><label class="form-label fw-semibold">Badge Type</label><select name="badge_type" class="form-select"><option value="completion">Course Completion</option><option value="excellence">Excellence Award</option><option value="topper">Course Topper</option><option value="participation">Participation</option></select></div>
+      <div class="col-md-3"><label class="form-label fw-semibold">Custom Title</label><input type="text" name="title" class="form-control" placeholder="For example: Python Mastery"/></div>
+      <div class="col-md-2 d-flex align-items-end"><button type="submit" class="btn btn-warning w-100">Issue</button></div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Submit Assignment - SmartClass{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="fw-bold mb-0">Submit: {{ assignment.title }}</h5>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-info small">Due: <strong>{{ assignment.due_date|date:"M d, Y H:i" }}</strong> | Marks:
+          <strong>{{ assignment.total_marks }}</strong></div>
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Upload your file</label>
+            {{ form.file }}
+            <div class="form-text">Accepted: PDF, DOCX, ZIP, PY and other formats.</div>
+          </div>
+          
+          <div class="text-center my-3 text-muted"><strong>OR</strong></div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold">GitHub Link (Optional)</label>
+            {{ form.github_link }}
+            <div class="form-text">Paste a link to your repository instead of uploading a file.</div>
+          </div>
+          
+          {% if form.non_field_errors %}
+          <div class="alert alert-danger">{{ form.non_field_errors|join:", " }}</div>
+          {% endif %}
+
+          <div class="d-flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <a href="{% url 'assignment_detail' assignment.pk %}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

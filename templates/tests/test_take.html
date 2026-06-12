@@ -1,0 +1,468 @@
+{% extends 'base.html' %}
+{% block title %}Take Test - {{ test.title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+<style>
+  /* ── CodeMirror ── */
+  .CodeMirror {
+    height: auto; min-height: 250px; border-radius: 14px;
+    border: 1px solid rgba(16,32,51,.12);
+    font-family: var(--bs-font-monospace); font-size: 14px; padding: 10px;
+  }
+  .CodeMirror-focused {
+    border-color: rgba(20,90,242,.45);
+    box-shadow: 0 0 0 .2rem rgba(20,90,242,.12);
+  }
+
+  /* ── Exam-mode: hide sidebar, navbar, footer ── */
+  body.exam-active .app-navbar,
+  body.exam-active .sidebar-panel,
+  body.exam-active .site-footer,
+  body.exam-active #mobileSidebar { display: none !important; }
+  body.exam-active .col-xl-2,
+  body.exam-active .col-lg-3     { display: none !important; }
+  body.exam-active .content-column {
+    width: 100% !important; max-width: 100% !important; flex: 0 0 100% !important;
+  }
+
+  /* ── Overlays (shared) ── */
+  .ac-overlay {
+    position: fixed; inset: 0; z-index: 99999;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(4, 9, 20, 0.97);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  }
+  .ac-box {
+    background: linear-gradient(155deg, #0d1b3e 0%, #091222 100%);
+    border: 1px solid rgba(255,255,255,.11);
+    border-radius: 26px; padding: 2.6rem 2.8rem;
+    max-width: 500px; width: 92%; text-align: center;
+    box-shadow: 0 40px 90px rgba(0,0,0,.75), inset 0 1px 0 rgba(255,255,255,.06);
+    animation: acPop .38s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes acPop {
+    from { transform: scale(.82) translateY(18px); opacity:0; }
+    to   { transform: scale(1)   translateY(0);    opacity:1; }
+  }
+
+  /* ── Start overlay specific ── */
+  .ac-start-icon  { font-size: 2.8rem; margin-bottom: .7rem; display: block; }
+  .ac-start-title {
+    font-size: 1.55rem; font-weight: 800; color: #f1f5f9;
+    margin-bottom: .35rem; line-height: 1.25;
+  }
+  .ac-start-sub   { color: #94a3b8; font-size: .88rem; line-height: 1.6; margin-bottom: 1.4rem; }
+
+  .ac-rules-box {
+    background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
+    border-radius: 14px; padding: 1rem 1.2rem 1rem 1rem;
+    text-align: left; margin-bottom: 1.5rem;
+  }
+  .ac-rule {
+    display: grid; grid-template-columns: 14px 1fr;
+    gap: 0 .55rem; align-items: baseline;
+    color: #cbd5e1; font-size: .85rem; line-height: 1.55;
+    padding: .28rem 0;
+  }
+  .ac-rule-dot  { color: #ef4444; font-size: .55rem; padding-top: .35em; }
+  .ac-rule-text strong { color: #fbbf24; font-weight: 600; }
+
+  .ac-start-btn {
+    display: block; width: 100%; border: none; cursor: pointer;
+    background: linear-gradient(135deg, #145af2, #0ea5e9);
+    color: #fff; border-radius: 14px;
+    padding: .9rem 1.5rem; font-size: .97rem; font-weight: 700;
+    letter-spacing: .025em;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .ac-start-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(20,90,242,.5); }
+
+  /* ── Warning overlay specific ── */
+  .ac-warn-icon  { font-size: 2.8rem; margin-bottom: .6rem; display: block; }
+  .ac-warn-badge {
+    display: inline-flex; align-items: center;
+    background: rgba(239,68,68,.14); border: 1px solid rgba(239,68,68,.33);
+    border-radius: 999px; padding: .24rem .85rem;
+    font-size: .74rem; font-weight: 700; color: #fca5a5;
+    margin-bottom: .9rem;
+  }
+  .ac-pips { display: flex; gap: .4rem; justify-content: center; margin-bottom: 1.15rem; }
+  .ac-pip  { width: 34px; height: 6px; border-radius: 999px; background: rgba(255,255,255,.1); transition: background .3s; }
+  .ac-pip.used { background: #ef4444; }
+  .ac-warn-title { font-size: 1.4rem; font-weight: 800; color: #f1f5f9; margin-bottom: .4rem; }
+  .ac-warn-sub   { color: #94a3b8; font-size: .87rem; line-height: 1.6; margin-bottom: 1.4rem; }
+  .ac-warn-sub strong { color: #fbbf24; }
+  .ac-warn-sub em     { color: #ef4444; font-style: normal; font-weight: 700; }
+
+  .ac-return-btn {
+    display: block; width: 100%; border: none; cursor: pointer;
+    background: linear-gradient(135deg, #145af2, #0ea5e9);
+    color: #fff; border-radius: 14px;
+    padding: .9rem 1.5rem; font-size: .97rem; font-weight: 700;
+    letter-spacing: .025em;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .ac-return-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(20,90,242,.5); }
+  .ac-return-btn.danger { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+  .ac-return-btn.danger:hover { box-shadow: 0 10px 26px rgba(220,38,38,.5); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- START OVERLAY -->
+<div class="ac-overlay" id="startOverlay">
+  <div class="ac-box">
+    <span class="ac-start-icon">🔒</span>
+    <div class="ac-start-title">{{ test.title }}</div>
+    <div class="ac-start-sub">
+      This exam is secured in <strong style="color:#e2e8f0">fullscreen mode</strong>.<br>
+      Read the rules before you begin.
+    </div>
+    <div class="ac-rules-box">
+      <div class="ac-rule">
+        <span class="ac-rule-dot">●</span>
+        <span class="ac-rule-text">Browser will be locked to <strong>fullscreen</strong> for the entire exam.</span>
+      </div>
+      <div class="ac-rule">
+        <span class="ac-rule-dot">●</span>
+        <span class="ac-rule-text">Switching to another tab or minimising the window is a <strong>violation</strong>.</span>
+      </div>
+      <div class="ac-rule">
+        <span class="ac-rule-dot">●</span>
+        <span class="ac-rule-text">Exiting fullscreen (Esc, F11, or ✕ button) is also a <strong>violation</strong>.</span>
+      </div>
+      <div class="ac-rule">
+        <span class="ac-rule-dot">●</span>
+        <span class="ac-rule-text">You get <strong>2 warnings</strong>. The 3rd violation <strong>auto-submits</strong> your exam immediately.</span>
+      </div>
+      <div class="ac-rule">
+        <span class="ac-rule-dot">●</span>
+        <span class="ac-rule-text">Time limit: <strong>{{ test.time_limit }} minutes</strong>.</span>
+      </div>
+    </div>
+    <button class="ac-start-btn" id="startExamBtn">🚀&nbsp;&nbsp;Enter Fullscreen &amp; Start Exam</button>
+  </div>
+</div>
+
+<!-- WARNING OVERLAY -->
+<div class="ac-overlay" id="warnOverlay" style="display:none">
+  <div class="ac-box">
+    <span class="ac-warn-icon" id="warnIcon">⚠️</span>
+    <div class="ac-warn-badge" id="warnBadge">Warning 1 of 2</div>
+    <div class="ac-pips">
+      <div class="ac-pip" id="pip1"></div>
+      <div class="ac-pip" id="pip2"></div>
+    </div>
+    <div class="ac-warn-title" id="warnTitle">Violation Detected!</div>
+    <div class="ac-warn-sub" id="warnMsg"></div>
+    <button class="ac-return-btn" id="warnBtn">↩&nbsp; Return to Exam</button>
+  </div>
+</div>
+
+<!-- EXAM CONTENT -->
+<div id="examContent" style="display:none">
+  <div class="card mb-4">
+    <div class="card-header bg-white">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+          <h4 class="mb-1">{{ test.title }}</h4>
+          <p class="text-muted mb-0">Complete all sections below. Sample runs do not reveal hidden grading cases.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="badge bg-info text-dark">{{ test.time_limit }} min total</span>
+          <span class="badge bg-warning text-dark" id="timeLeftBadge">{{ remaining_minutes }} min left</span>
+          {% if test.end_date %}<span class="badge bg-secondary">Due {{ test.end_date|date:'M d, Y H:i' }}</span>{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body">
+      {% if test.notebook_file %}
+        <div class="alert alert-light border d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <div>
+            <div class="fw-semibold">Starter notebook / brief attached</div>
+            <div class="small text-muted">Download before writing your solution.</div>
+          </div>
+          <a href="{{ test.notebook_file.url }}" class="btn btn-outline-primary btn-sm" download>Download File</a>
+        </div>
+      {% endif %}
+
+      <form method="post" id="testTakeForm">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="autoActionInput" value="submit">
+
+        <div class="vstack gap-4">
+          {% for row in form_rows %}
+            <div class="border rounded-4 p-4">
+              <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                <div>
+                  <div class="h5 mb-1">Q{{ forloop.counter }}. {{ row.question.question_text }}</div>
+                  <div class="d-flex flex-wrap gap-2">
+                    <span class="badge {% if row.question.is_coding %}bg-warning text-dark{% else %}bg-primary{% endif %}">
+                      {% if row.question.is_coding %}Coding{% else %}Quiz{% endif %}
+                    </span>
+                    <span class="badge bg-light text-dark">{{ row.question.marks }} marks</span>
+                    {% if row.question.is_coding %}
+                      <span class="badge bg-light text-dark">{{ row.question.sample_case_count }} sample</span>
+                      <span class="badge bg-light text-dark">{{ row.question.hidden_case_count }} hidden</span>
+                    {% endif %}
+                  </div>
+                </div>
+                {% if row.question.is_coding and row.question.expected_function_name %}
+                  <code>{{ row.question.expected_function_name }}(...)</code>
+                {% endif %}
+              </div>
+
+              {% if row.question.code_cell %}
+                <div class="mb-3 text-muted small">{{ row.question.code_cell|linebreaksbr }}</div>
+              {% endif %}
+
+              <div class="mb-3">
+                {{ row.field.label_tag }}
+                {{ row.field }}
+                {% if row.field.help_text %}<div class="form-text">{{ row.field.help_text }}</div>{% endif %}
+                {% if row.field.errors %}<div class="text-danger small mt-2">{{ row.field.errors }}</div>{% endif %}
+              </div>
+
+              {% if row.feedback %}
+                <div class="mt-3 rounded-4 border bg-light p-3">
+                  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                    <div class="fw-semibold">Sample Run Result</div>
+                    <span class="badge bg-dark">{{ row.feedback.passed_cases }}/{{ row.feedback.total_cases }} passed</span>
+                  </div>
+                  {% if row.feedback.error %}
+                    <div class="alert alert-danger py-2 mb-3">{{ row.feedback.error }}</div>
+                  {% endif %}
+                  {% if row.feedback.stdout %}
+                    <div class="mb-3">
+                      <div class="small text-muted mb-1">Console Output</div>
+                      <pre class="bg-white border rounded-3 p-2 small mb-0">{{ row.feedback.stdout }}</pre>
+                    </div>
+                  {% endif %}
+                  {% if row.feedback.results %}
+                    <div class="table-responsive">
+                      <table class="table table-sm align-middle mb-0">
+                        <thead><tr><th>Case</th><th>Input</th><th>Expected</th><th>Actual</th><th>Result</th></tr></thead>
+                        <tbody>
+                          {% for result in row.feedback.results %}
+                            <tr>
+                              <td>Sample {{ forloop.counter }}</td>
+                              <td><code>{{ result.input_preview }}</code></td>
+                              <td><code>{{ result.expected_preview }}</code></td>
+                              <td><code>{{ result.actual_preview }}</code></td>
+                              <td>
+                                <span class="badge {% if result.passed %}bg-success{% else %}bg-danger{% endif %}">
+                                  {% if result.passed %}Passed{% else %}Failed{% endif %}
+                                </span>
+                              </td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  {% endif %}
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mt-4">
+          {% if test.coding_questions_count %}
+            <button type="submit"
+                    onclick="document.getElementById('autoActionInput').value='run'"
+                    class="btn btn-outline-primary">Run Sample Tests</button>
+          {% endif %}
+          <button type="submit"
+                  onclick="document.getElementById('autoActionInput').value='submit'"
+                  class="btn btn-primary">Submit Final Test</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var MAX_WARNINGS   = 2;
+  var REMAINING_SECS = {{ remaining_seconds }};
+
+  var violations  = 0;
+  var examStarted = false;
+  var submitting  = false;
+  var cooldown    = false;
+  var cmEditors   = [];
+
+  var $startOverlay = document.getElementById('startOverlay');
+  var $warnOverlay  = document.getElementById('warnOverlay');
+  var $examContent  = document.getElementById('examContent');
+  var $warnIcon     = document.getElementById('warnIcon');
+  var $warnBadge    = document.getElementById('warnBadge');
+  var $warnTitle    = document.getElementById('warnTitle');
+  var $warnMsg      = document.getElementById('warnMsg');
+  var $warnBtn      = document.getElementById('warnBtn');
+  var $pip1         = document.getElementById('pip1');
+  var $pip2         = document.getElementById('pip2');
+  var $form         = document.getElementById('testTakeForm');
+  var $action       = document.getElementById('autoActionInput');
+  var $timeBadge    = document.getElementById('timeLeftBadge');
+
+  /* ── Fullscreen ── */
+  function enterFs() {
+    var el = document.documentElement;
+    if (el.requestFullscreen)          el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if (el.mozRequestFullScreen)    el.mozRequestFullScreen();
+  }
+  function inFs() {
+    return !!(document.fullscreenElement ||
+              document.webkitFullscreenElement ||
+              document.mozFullScreenElement);
+  }
+
+  /* ── CodeMirror ── */
+  function initCM() {
+    document.querySelectorAll('.code-editor').forEach(function (ta) {
+      var cm = CodeMirror.fromTextArea(ta, {
+        mode: 'python', lineNumbers: true,
+        indentUnit: 4, matchBrackets: true, viewportMargin: Infinity
+      });
+      cmEditors.push(cm);
+    });
+  }
+
+  /* ── Countdown ── */
+  var secs = REMAINING_SECS;
+  function startTimer() {
+    function tick() {
+      if (submitting) return;
+      var m = Math.floor(secs / 60), s = secs % 60;
+      if ($timeBadge) {
+        $timeBadge.textContent = m + ':' + String(s).padStart(2,'0') + ' left';
+        $timeBadge.className = secs <= 60
+          ? 'badge bg-danger text-white' : 'badge bg-warning text-dark';
+      }
+      if (secs <= 0) { doSubmit(); return; }
+      secs--;
+    }
+    tick();
+    setInterval(tick, 1000);
+  }
+
+  /* ── Start ── */
+  document.getElementById('startExamBtn').addEventListener('click', function () {
+    enterFs();
+    document.body.classList.add('exam-active');
+    $startOverlay.style.display = 'none';
+    $examContent.style.display  = 'block';
+    examStarted = true;
+    initCM();
+    startTimer();
+    setTimeout(function () { cooldown = false; }, 1000);
+  });
+
+  /* ── Submit ── */
+  function doSubmit() {
+    if (submitting) return;
+    submitting = true;
+    cmEditors.forEach(function (cm) { cm.save(); });
+    $action.value = 'submit';
+    $form.submit();
+  }
+
+  /* ── Warning overlay ── */
+  function showWarning(n) {
+    $pip1.className = 'ac-pip used';
+    $pip2.className = (n >= 2) ? 'ac-pip used' : 'ac-pip';
+
+    if (n === 1) {
+      $warnIcon.textContent  = '⚠️';
+      $warnBadge.textContent = 'Warning  1 of 2';
+      $warnTitle.textContent = 'Violation Detected!';
+      $warnMsg.innerHTML     =
+        'You switched tabs or exited fullscreen. This is your <strong>1st warning (1/2)</strong>. ' +
+        'One more violation will <em>auto-submit your exam</em> immediately.';
+      $warnBtn.textContent = '↩  Return to Exam';
+      $warnBtn.className   = 'ac-return-btn';
+    } else {
+      $warnIcon.textContent  = '🚨';
+      $warnBadge.textContent = 'FINAL Warning — 2 of 2';
+      $warnTitle.textContent = 'Last Chance!';
+      $warnMsg.innerHTML     =
+        'This is your <strong>final warning (2/2)</strong>. ' +
+        'The very next violation will <em>immediately submit your exam</em> with whatever answers you have written.';
+      $warnBtn.textContent = '↩  Return to Exam — Last Chance';
+      $warnBtn.className   = 'ac-return-btn danger';
+    }
+    $warnOverlay.style.display = 'flex';
+  }
+
+  $warnBtn.addEventListener('click', function () {
+    $warnOverlay.style.display = 'none';
+    enterFs();
+    /* Cooldown reset: fullscreenchange resets it if fullscreen succeeds.
+       Fallback timeout resets it if browser blocks fullscreen. */
+    setTimeout(function () { cooldown = false; }, 700);
+  });
+
+  /* ── Violation handler ── */
+  function handleViolation() {
+    if (!examStarted || submitting || cooldown) return;
+    cooldown = true;
+    violations++;
+    if (violations > MAX_WARNINGS) {
+      doSubmit();
+    } else {
+      showWarning(violations);
+    }
+  }
+
+  /* ── Event: tab switch ── */
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) handleViolation();
+  });
+
+  /* ── Event: fullscreen exit (Esc / F11 / browser ✕ button) ── */
+  ['fullscreenchange','webkitfullscreenchange','mozfullscreenchange'].forEach(function (ev) {
+    document.addEventListener(ev, function () {
+      if (inFs()) { cooldown = false; }   /* re-entered fullscreen */
+      else         { handleViolation(); } /* exited fullscreen */
+    });
+  });
+
+  /* ── Event: window blur (alt-tab, half-screen click-away, minimise) ── */
+  /* NOTE: no !inFs() check — any window focus loss counts */
+  window.addEventListener('blur', function () {
+    setTimeout(function () {
+      if (!document.hasFocus()) handleViolation();
+    }, 200);
+  });
+
+  /* ── Block keyboard shortcuts ── */
+  document.addEventListener('keydown', function (e) {
+    if (!examStarted || submitting) return;
+    if ((e.ctrlKey  && ['t','w','n'].includes(e.key.toLowerCase())) ||
+        (e.ctrlKey  && e.key === 'Tab') ||
+        (e.altKey   && e.key === 'F4') ||
+        e.key === 'F5' || e.key === 'F11') {
+      e.preventDefault(); e.stopPropagation();
+    }
+  }, true);
+
+  /* ── Disable right-click ── */
+  document.addEventListener('contextmenu', function (e) {
+    if (examStarted && !submitting) e.preventDefault();
+  });
+
+})();
+</script>
+{% endblock %}

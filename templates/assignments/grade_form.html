@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Grade Submission - SmartClass{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header"><h5 class="fw-bold mb-0">Grade Submission</h5></div>
+      <div class="card-body">
+        <div class="mb-4 p-3 rounded-4" style="background: var(--sc-surface); border: 1px solid var(--sc-border);">
+          <div class="fw-semibold" style="color: var(--sc-ink);">{{ submission.student.get_full_name|default:submission.student.username }}</div>
+          <div class="small" style="color: var(--sc-muted);">{{ submission.assignment.title }}</div>
+          {% if submission.file %}
+          <a href="{{ submission.file.url }}" class="btn btn-sm btn-outline-primary mt-2" download>Download Submission</a>
+          {% endif %}
+          {% if submission.github_link %}
+          <a href="{{ submission.github_link }}" class="btn btn-sm btn-outline-secondary mt-2" target="_blank"><i class="bi bi-github me-1"></i>View on GitHub</a>
+          {% endif %}
+        </div>
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3"><label class="form-label fw-semibold">Grade (out of {{ submission.assignment.total_marks }})</label>{{ form.grade }}</div>
+          <div class="mb-4"><label class="form-label fw-semibold">Feedback</label>{{ form.feedback }}</div>
+          <div class="d-flex flex-wrap gap-2"><button type="submit" class="btn btn-success">Save Grade</button><a href="{% url 'assignment_detail' submission.assignment.pk %}" class="btn btn-outline-secondary">Cancel</a></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

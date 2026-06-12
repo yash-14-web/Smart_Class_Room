@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}My Report - SmartClass{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+  <div>
+    <h4 class="fw-bold mb-0">My Report</h4>
+    <p class="text-muted small mb-0">View assignment, quiz, test, and project performance in one report summary.</p>
+  </div>
+  <a href="{% url 'leaderboard' %}" class="btn btn-outline-primary btn-sm">Leaderboard</a>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-lg-3"><div class="stat-card bg-primary py-3 text-white h-100"><div class="small opacity-75">Assignment Score</div><div class="fs-2 fw-bold">{{ grand_assignment_score }}</div><div class="small opacity-75 mt-2">Source: Assignment App</div></div></div>
+  <div class="col-sm-6 col-lg-3"><div class="stat-card bg-success py-3 text-white h-100"><div class="small opacity-75">Quiz Score</div><div class="fs-2 fw-bold">{{ grand_quiz_score }}</div><div class="small opacity-75 mt-2">Source: Quiz App</div></div></div>
+  <div class="col-sm-6 col-lg-3"><div class="stat-card bg-info py-3 text-white h-100"><div class="small opacity-75">Project Score</div><div class="fs-2 fw-bold">{{ grand_project_score }}</div><div class="small opacity-75 mt-2">Source: Project App</div></div></div>
+  <div class="col-sm-6 col-lg-3"><div class="stat-card bg-warning py-3 text-dark h-100"><div class="small opacity-75">Overall Score</div><div class="fs-2 fw-bold">{% if overall_average %}{{ overall_average }}%{% else %}-{% endif %}</div><div class="mt-2"><span class="badge {% if overall_status == 'Pass' %}bg-success{% elif overall_status == 'Fail' %}bg-danger{% else %}bg-secondary{% endif %}">{{ overall_status }}</span></div></div></div>
+</div>
+
+{% if report_items %}
+<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+  {% for item in report_items %}
+  <div class="col">
+    <div class="card h-100 {% if item.status == 'Pass' %}border-success{% else %}border-danger{% endif %}">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+          <div><h6 class="mb-1">{{ item.item_name }}</h6><p class="mb-1 text-muted small">{{ item.subject }} - {{ item.source }}</p><span class="badge bg-secondary">{{ item.category }}</span></div>
+          <span class="badge {% if item.status == 'Pass' %}bg-success{% else %}bg-danger{% endif %} fs-6">{{ item.status }}</span>
+        </div>
+        <div class="row text-center text-muted mt-4">
+          <div class="col-4 border-end"><div class="small">Total</div><div class="fw-semibold">{{ item.total_marks }}</div></div>
+          <div class="col-4 border-end"><div class="small">Score</div><div class="fw-semibold">{{ item.score }}</div></div>
+          <div class="col-4"><div class="small">Avg</div><div class="fw-semibold">{{ item.percentage }}%</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">No report data available yet.</div>
+{% endif %}
+{% endblock %}

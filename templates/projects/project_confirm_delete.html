@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Delete Project Submission - SmartClass{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card border-danger">
+      <div class="card-header bg-danger text-white"><h5 class="fw-bold mb-0">Delete Project Submission</h5></div>
+      <div class="card-body text-center py-5 px-4">
+        <i class="bi bi-folder-x text-danger" style="font-size:3rem"></i>
+        <p class="fs-5 mt-3 mb-2">Delete <strong>{{ submission.title }}</strong>?</p>
+        <p class="text-muted mb-1">Subject: {{ submission.course.title|default:'Unlinked' }}</p>
+        <p class="text-muted mb-4">This project submission will be permanently removed and cannot be restored.</p>
+        <form method="post" class="d-flex justify-content-center gap-2 flex-wrap">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Yes, Delete Submission</button>
+          <a href="{% url 'project_detail' submission.pk %}" class="btn btn-outline-secondary">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

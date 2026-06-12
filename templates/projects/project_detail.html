@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% block title %}Project Detail - {{ submission.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .project-detail-page .hero-card {
+    background: linear-gradient(135deg, #0f2f72 0%, #145af2 54%, #1aa3a3 100%);
+    color: #fff;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 20px 42px rgba(15, 47, 114, .20);
+    margin-bottom: 1.5rem;
+  }
+  .project-detail-page .hero-title {
+    font-size: clamp(1.7rem, 3vw, 2.35rem);
+    font-weight: 800;
+    margin-bottom: .45rem;
+  }
+  .project-detail-page .hero-copy {
+    color: rgba(255,255,255,.84);
+    margin-bottom: 1rem;
+  }
+  .project-detail-page .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+  }
+  .project-detail-page .hero-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    border-radius: 999px;
+    padding: .45rem .75rem;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.16);
+    font-size: .8rem;
+    font-weight: 700;
+  }
+  .project-detail-page .section-card {
+    background: var(--sc-surface-strong);
+    border: 1px solid var(--sc-border);
+    border-radius: 22px;
+    box-shadow: var(--sc-shadow-soft);
+    overflow: hidden;
+  }
+  .project-detail-page .section-head {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--sc-border);
+  }
+  .project-detail-page .section-body {
+    padding: 18px;
+  }
+  .project-detail-page .info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .project-detail-page .info-card {
+    border: 1px solid var(--sc-border);
+    border-radius: 18px;
+    padding: 14px;
+    background: var(--sc-surface);
+  }
+  .project-detail-page .side-card {
+    border: 1px solid var(--sc-border);
+    border-radius: 18px;
+    padding: 18px;
+    background: var(--sc-surface);
+    height: 100%;
+  }
+  @media (max-width: 767.98px) {
+    .project-detail-page .info-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="project-detail-page">
+  <div class="hero-card d-flex flex-column flex-lg-row justify-content-between gap-3">
+    <div>
+      <div class="hero-title">{{ submission.title }}</div>
+      <p class="hero-copy">Submitted by {{ submission.student.get_full_name|default:submission.student.username }}</p>
+      <div class="hero-meta">
+        <div class="hero-pill"><i class="bi bi-book"></i>{{ submission.course.title|default:'Subject Project' }}</div>
+        <div class="hero-pill"><i class="bi bi-calendar-event"></i>{{ submission.submitted_at|date:'M d, Y H:i' }}</div>
+        <div class="hero-pill"><i class="bi bi-star"></i>{% if submission.score is not None %}{{ submission.score }} / {{ submission.total_marks }}{% else %}Pending review{% endif %}</div>
+      </div>
+    </div>
+    <div class="d-flex flex-wrap gap-2 align-self-start">
+      {% if submission.student == user %}
+      <form method="post" action="{% url 'project_delete' submission.pk %}" class="m-0">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-light btn-sm" onclick="return confirm('Delete this submission?');">Delete</button>
+      </form>
+      {% endif %}
+      <a href="{% url 'project_list' %}" class="btn btn-light btn-sm">Back</a>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="section-card mb-4">
+        <div class="section-head"><div class="fw-bold">Project Overview</div></div>
+        <div class="section-body">
+          <p class="text-muted mb-4">{{ submission.description }}</p>
+          <div class="info-grid">
+            <div class="info-card">
+              <div class="text-muted small">Technologies Used</div>
+              <div class="fw-semibold">{{ submission.technologies_used }}</div>
+            </div>
+            <div class="info-card">
+              <div class="text-muted small">GitHub Link</div>
+              <div style="word-break: break-all; overflow-wrap: break-word;"><a href="{{ submission.github_link }}" target="_blank">{{ submission.github_link }}</a></div>
+            </div>
+            <div class="info-card">
+              <div class="text-muted small">Course</div>
+              <div class="fw-semibold">{{ submission.course.title|default:'Unlinked' }}</div>
+            </div>
+            <div class="info-card">
+              <div class="text-muted small">Status</div>
+              {% if submission.score is not None %}<span class="badge bg-success">Graded</span>{% else %}<span class="badge bg-warning text-dark">Pending</span>{% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% if submission.zip_file %}
+      <div class="section-card">
+        <div class="section-head"><div class="fw-bold">Download Package</div></div>
+        <div class="section-body">
+          <a href="{{ submission.zip_file.url }}" download class="btn btn-outline-primary">Download ZIP</a>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+      <div class="side-card">
+        <h6 class="fw-bold mb-3">Grading</h6>
+        {% if submission.score is not None %}
+          <p class="mb-2"><strong>Letter Grade:</strong> {{ submission.grade_letter }}</p>
+          <p class="mb-2"><strong>Total Marks:</strong> {{ submission.total_marks }}</p>
+          <p class="mb-3"><strong>Score:</strong> {{ submission.score }} / {{ submission.total_marks }}</p>
+        {% else %}
+          <p class="text-muted">This submission is waiting for teacher grading.</p>
+        {% endif %}
+        {% if submission.feedback %}
+          <div class="mt-3">
+            <div class="text-muted mb-1">Feedback</div>
+            <div class="small">{{ submission.feedback }}</div>
+          </div>
+        {% endif %}
+        {% if submission.graded_by %}
+          <div class="mt-3 text-muted small">
+            Graded by {{ submission.graded_by.get_full_name|default:submission.graded_by.username }} on {{ submission.graded_at|date:'M d, Y H:i' }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if grade_form %}
+  <div class="section-card mt-4">
+    <div class="section-head"><div class="fw-bold">Grade this Submission</div></div>
+    <div class="section-body">
+      <form method="post" class="row g-3">
+        {% csrf_token %}
+        <div class="col-md-4">
+          <label class="form-label" for="id_score">Obtained Marks</label>
+          {{ grade_form.score }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="id_total_marks">Total Marks</label>
+          {{ grade_form.total_marks }}
+        </div>
+        <div class="col-md-12">
+          <label class="form-label" for="id_feedback">Feedback</label>
+          {{ grade_form.feedback }}
+        </div>
+        <div class="col-12">
+          <button type="submit" class="btn btn-primary">Save Grade</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

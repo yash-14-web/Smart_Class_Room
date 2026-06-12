@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}{{ recorded_class.title }} - SmartClass{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2"><h5 class="mb-0">{{ recorded_class.title }}</h5><div class="d-flex gap-2">{% if user.is_teacher %}<a href="{% url 'recorded_class_edit' recorded_class.pk %}" class="btn btn-outline-secondary btn-sm">Edit</a><a href="{% url 'recorded_class_delete' recorded_class.pk %}" class="btn btn-outline-danger btn-sm">Delete</a>{% endif %}<a href="{% url 'recorded_class_list' %}" class="btn btn-outline-secondary btn-sm">Back</a></div></div>
+      <div class="card-body">
+        <p class="text-muted">{{ recorded_class.description|default:'No description provided.' }}</p>
+        <dl class="row mb-0">
+          <dt class="col-sm-4 text-muted">Topic</dt><dd class="col-sm-8">{{ recorded_class.subject }}</dd>
+          <dt class="col-sm-4 text-muted">Uploaded by</dt><dd class="col-sm-8">{{ recorded_class.uploaded_by.get_full_name|default:recorded_class.uploaded_by.username }}</dd>
+          <dt class="col-sm-4 text-muted">Upload date</dt><dd class="col-sm-8">{{ recorded_class.uploaded_at|date:'d M Y, H:i' }}</dd>
+          <dt class="col-sm-4 text-muted">Video source</dt><dd class="col-sm-8">{% if recorded_class.video_file %}File upload{% else %}External URL{% endif %}</dd>
+        </dl>
+      </div>
+    </div>
+
+    {% if recorded_class.video_url %}
+    <div class="ratio ratio-16x9 rounded-4 overflow-hidden shadow-sm"><iframe src="{{ recorded_class.video_url }}" title="Recorded class video" allowfullscreen class="border-0"></iframe></div>
+    {% endif %}
+  </div>
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header"><h6 class="fw-bold mb-0">Access</h6></div>
+      <div class="card-body d-grid gap-2">
+        {% if recorded_class.video_file %}<a href="{{ recorded_class.video_file.url }}" class="btn btn-primary" download>Download Video</a>{% endif %}
+        {% if recorded_class.video_url %}<a href="{{ recorded_class.video_url }}" target="_blank" class="btn btn-outline-primary">Open Video URL</a>{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+# Virtual Environment
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Django local database & media uploads
+db.sqlite3
+media/
+
+# Test files and reports
+test_report.html
+.idea/
+.vscode/
+*.log

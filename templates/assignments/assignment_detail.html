@@ -1,0 +1,288 @@
+{% extends 'base.html' %}
+{% block title %}{{ assignment.title }} - SmartClass{% endblock %}
+
+{% block extra_css %}
+<style>
+  .assignment-detail-page .hero-card {
+    background: linear-gradient(135deg, #0f2f72 0%, #145af2 54%, #1aa3a3 100%);
+    color: #fff;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 20px 42px rgba(15, 47, 114, .20);
+    margin-bottom: 1.5rem;
+  }
+
+  .assignment-detail-page .hero-title {
+    font-size: clamp(1.7rem, 3vw, 2.35rem);
+    font-weight: 800;
+    margin-bottom: .55rem;
+  }
+
+  .assignment-detail-page .hero-copy {
+    color: rgba(255, 255, 255, .84);
+    max-width: 760px;
+    margin-bottom: 1rem;
+  }
+
+  .assignment-detail-page .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+  }
+
+  .assignment-detail-page .hero-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    border-radius: 999px;
+    padding: .45rem .75rem;
+    background: rgba(255, 255, 255, .12);
+    border: 1px solid rgba(255, 255, 255, .16);
+    font-size: .8rem;
+    font-weight: 700;
+  }
+
+  .assignment-detail-page .section-card {
+    background: var(--sc-surface-strong);
+    border: 1px solid var(--sc-border);
+    border-radius: 22px;
+    box-shadow: var(--sc-shadow-soft);
+    overflow: hidden;
+    height: 100%;
+  }
+
+  .assignment-detail-page .section-head {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--sc-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .assignment-detail-page .section-body {
+    padding: 18px;
+  }
+
+  .assignment-detail-page .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .assignment-detail-page .stat-card {
+    border: 1px solid var(--sc-border);
+    border-radius: 18px;
+    padding: 16px;
+    background: var(--sc-surface);
+    text-align: center;
+  }
+
+  .assignment-detail-page .stat-label {
+    color: var(--sc-muted);
+    font-size: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 700;
+    margin-bottom: .45rem;
+  }
+
+  .assignment-detail-page .stat-value {
+    color: var(--sc-ink);
+    font-size: 1.6rem;
+    font-weight: 800;
+  }
+
+  .assignment-detail-page .submission-card,
+  .assignment-detail-page .submission-row {
+    border: 1px solid var(--sc-border);
+    border-radius: 18px;
+    background: var(--sc-surface);
+  }
+
+  .assignment-detail-page .submission-card {
+    padding: 18px;
+  }
+
+  .assignment-detail-page .submission-list {
+    display: grid;
+    gap: 12px;
+  }
+
+  .assignment-detail-page .submission-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  @media (max-width: 767.98px) {
+    .assignment-detail-page .stat-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .assignment-detail-page .submission-row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="assignment-detail-page">
+  <div class="hero-card d-flex flex-column flex-lg-row justify-content-between gap-3">
+    <div>
+      <div class="hero-title">{{ assignment.title }}</div>
+      <p class="hero-copy">{{ assignment.description }}</p>
+      <div class="hero-meta">
+        <div class="hero-pill"><i class="bi bi-journal-text"></i>{{ assignment.get_label_display }}</div>
+        <div class="hero-pill"><i class="bi bi-calendar-event"></i>{{ assignment.due_date|date:"M d, Y H:i" }}</div>
+        <div class="hero-pill"><i class="bi bi-star"></i>{{ assignment.total_marks }} marks</div>
+        <div class="hero-pill"><i class="bi bi-people"></i>{{ assignment.submission_count }} submission{{ assignment.submission_count|pluralize }}</div>
+      </div>
+    </div>
+    <div class="d-flex flex-wrap gap-2 align-self-start">
+      <a href="{% url 'course_detail' assignment.course.pk %}" class="btn btn-light btn-sm"><i
+          class="bi bi-arrow-left me-1"></i>Back</a>
+      {% if user.is_teacher %}
+        <a href="{% url 'assignment_edit' assignment.pk %}" class="btn btn-primary btn-sm"><i class="bi bi-pencil me-1"></i>Edit Assignment</a>
+      {% endif %}
+      {% if assignment.attachment %}<a href="{{ assignment.attachment.url }}" class="btn btn-outline-light btn-sm"
+        download>Download File</a>{% endif %}
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-12">
+      <div class="section-card">
+        <div class="section-body">
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-label">Deadline</div>
+              <div class="stat-value">{% if is_overdue %}Closed{% else %}Open{% endif %}</div>
+              <small class="text-muted">{{ assignment.due_date|date:"M d, Y" }}</small>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Total Marks</div>
+              <div class="stat-value">{{ assignment.total_marks }}</div>
+              <small class="text-muted">Assessment score limit</small>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Submissions</div>
+              <div class="stat-value">{{ assignment.submission_count }}</div>
+              <small class="text-muted">Students submitted so far</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% if user.is_student %}
+    <div class="col-12">
+      <div class="section-card">
+        <div class="section-head">
+          <div>
+            <div class="fw-bold">Your Submission</div>
+            <small class="text-muted">Track your upload and grading status.</small>
+          </div>
+        </div>
+        <div class="section-body">
+          {% if submission %}
+          <div class="submission-card">
+            <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
+              <div>
+                <div class="fw-bold">Submitted on {{ submission.submitted_at|date:"M d, Y H:i" }}</div>
+                <small class="text-muted">Your file is safely stored and ready for review.</small>
+              </div>
+              <span class="badge {% if submission.grade is not None %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                {% if submission.grade is not None %}Graded{% else %}Awaiting Grade{% endif %}
+              </span>
+            </div>
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              {% if submission.file %}
+              <a href="{{ submission.file.url }}" class="btn btn-outline-primary btn-sm" download>View Submission</a>
+              {% endif %}
+              {% if submission.github_link %}
+              <a href="{{ submission.github_link }}" target="_blank" class="btn btn-outline-info btn-sm"><i class="bi bi-github me-1"></i>GitHub Repo</a>
+              {% endif %}
+              <a href="{% url 'delete_submission' submission.pk %}" class="btn btn-outline-danger btn-sm">Delete
+                Submission</a>
+            </div>
+            {% if submission.grade is not None %}
+            <div class="submission-card bg-light border-0">
+              <div class="fw-bold mb-1">Grade: {{ submission.grade }} / {{ assignment.total_marks }}</div>
+              <small class="text-muted">{% widthratio submission.grade assignment.total_marks 100 %}% scored</small>
+              {% if submission.feedback %}<div class="mt-2"><strong>Feedback:</strong> {{ submission.feedback }}</div>{% endif %}
+            </div>
+            {% else %}
+            <div class="text-muted">Your teacher has not graded this submission yet.</div>
+            {% endif %}
+          </div>
+          {% elif is_overdue %}
+          <div class="alert alert-danger mb-0">Submission closed. The deadline was {{ assignment.due_date|date:"M d, Y H:i" }}.</div>
+          {% else %}
+          <div
+            class="submission-card d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+              <div class="fw-bold mb-1">Ready to submit?</div>
+              <small class="text-muted">Upload before the deadline to keep your progress on track.</small>
+            </div>
+            <a href="{% url 'assignment_submit' assignment.pk %}" class="btn btn-primary">Submit Assignment</a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if user.is_teacher %}
+    <div class="col-12">
+      <div class="section-card">
+        <div class="section-head">
+          <div>
+            <div class="fw-bold">Student Submissions</div>
+            <small class="text-muted">Review, grade, and export assignment work.</small>
+          </div>
+          <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'assignment_edit' assignment.pk %}" class="btn btn-outline-primary btn-sm">Edit Assignment</a>
+            <a href="{% url 'export_marks_csv' assignment.course.pk %}" class="btn btn-outline-success btn-sm">CSV</a>
+            <a href="{% url 'export_marks_excel' assignment.course.pk %}"
+              class="btn btn-outline-primary btn-sm">Excel</a>
+            <a href="{% url 'assignment_delete' assignment.pk %}" class="btn btn-outline-danger btn-sm">Delete
+              Assignment</a>
+          </div>
+        </div>
+        <div class="section-body">
+          {% if submissions %}
+          <div class="submission-list">
+            {% for sub in submissions %}
+            <div class="submission-row">
+              <div>
+                <div class="fw-bold">{{ sub.student.get_full_name|default:sub.student.username }}</div>
+                <small class="text-muted">Submitted {{ sub.submitted_at|date:"M d, Y H:i" }}</small>
+              </div>
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                {% if sub.grade is not None %}<span class="badge bg-success">{{ sub.grade }} / {{ assignment.total_marks }}</span>{% else %}<span class="badge bg-warning text-dark">Pending</span>{% endif %}
+                {% if sub.file %}
+                <a href="{{ sub.file.url }}" class="btn btn-outline-primary btn-sm" download>Download</a>
+                {% endif %}
+                {% if sub.github_link %}
+                <a href="{{ sub.github_link }}" target="_blank" class="btn btn-outline-info btn-sm" title="View GitHub Link"><i class="bi bi-github"></i></a>
+                {% endif %}
+                <a href="{% url 'grade_submission' sub.pk %}" class="btn btn-outline-success btn-sm">Grade</a>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-4 text-muted">No submissions yet.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

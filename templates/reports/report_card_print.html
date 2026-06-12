@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Report Card – {{ student.get_full_name|default:student.username }}</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 18mm 18mm 14mm 18mm;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      color: #1a1a1a;
+      background: var(--sc-surface-strong);
+    }
+
+    /* ── Top heading ── */
+    .school-name {
+      text-align: center;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .report-title {
+      text-align: center;
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 24px;
+    }
+
+    /* ── Student info row ── */
+    .info-section {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 11px;
+    }
+    .info-left, .info-right { width: 48%; }
+    .info-line {
+      margin-bottom: 6px;
+      font-size: 11px;
+    }
+    .info-line span { font-weight: normal; }
+
+    /* Status colors */
+    .status-pass    { color: #16a34a; font-weight: 700; }
+    .status-fail    { color: #dc2626; font-weight: 700; }
+    .status-pending { color: #d97706; font-weight: 700; }
+
+    /* ── Divider ── */
+    .divider {
+      border: none;
+      border-top: 1px solid #ccc;
+      margin: 14px 0;
+    }
+
+    /* ── Subject section ── */
+    .subject-section { margin-bottom: 20px; }
+    .subject-name {
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    /* ── Table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10.5px;
+      margin-bottom: 8px;
+    }
+    table th {
+      border: 1px solid #555;
+      padding: 5px 7px;
+      font-weight: 700;
+      background: var(--sc-surface-strong);
+      text-align: left;
+      vertical-align: top;
+    }
+    table td {
+      border: 1px solid #999;
+      padding: 5px 7px;
+      vertical-align: middle;
+    }
+    table tr:nth-child(even) td { background: #fafafa; }
+
+    .col-name  { width: 28%; }
+    .col-label { width: 30%; }
+    .col-score { width: 11%; text-align: center; }
+    .col-total { width: 11%; text-align: center; }
+    .col-status{ width: 20%; }
+
+    /* ── Teacher line ── */
+    .teacher-line {
+      font-size: 11px;
+      margin-top: 6px;
+      margin-bottom: 14px;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 20px;
+      border-top: 1px solid #ccc;
+      padding-top: 8px;
+      text-align: center;
+      font-size: 9px;
+      color: #888;
+    }
+
+    /* Page break between courses if long */
+    .page-break { page-break-before: always; }
+  </style>
+</head>
+<body>
+
+<!-- Heading -->
+<div class="school-name">Smart Class Academy</div>
+<div class="report-title">Report Card</div>
+
+<hr class="divider"/>
+
+<!-- Student info -->
+<div class="info-section">
+  <div class="info-left">
+    <div class="info-line">
+      <strong>Student Name:</strong>
+      {{ student.get_full_name|default:student.username }}
+    </div>
+    <div class="info-line">
+      <strong>Rank:</strong>
+      {% if rank %}#{{ rank }}{% else %}N/A{% endif %}
+    </div>
+  </div>
+  <div class="info-right" style="text-align:right">
+    <div class="info-line">
+      <strong>Date of Joining:</strong>
+      {{ student.date_joined|date:"d/m/Y" }}
+    </div>
+    <div class="info-line">
+      <strong>Status:</strong>
+      {% if grand_pass == 'Pass' %}
+        <span class="status-pass">PASS</span>
+      {% elif grand_pass == 'Fail' %}
+        <span class="status-fail">FAIL</span>
+      {% else %}
+        <span class="status-pending">Pending</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<hr class="divider"/>
+
+<!-- Per-course tables -->
+{% for item in courses_data %}
+<div class="subject-section">
+
+  <div class="subject-name">
+    Subject name: {{ item.course.title }}
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th class="col-name">Name Of<br/>Assignment</th>
+        <th class="col-label">Label (Assignment/test/quiz/project)</th>
+        <th class="col-score" style="text-align:center">score</th>
+        <th class="col-total" style="text-align:center">total<br/>score</th>
+        <th class="col-status">Status<br/>{pass/fail/Pending}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in item.rows %}
+      <tr>
+        <td>{{ row.assignment.title }}</td>
+        <td>{{ row.label }}</td>
+        <td style="text-align:center">
+          {% if row.score is not None %}{{ row.score }}{% else %}-{% endif %}
+        </td>
+        <td style="text-align:center">{{ row.total_marks }}</td>
+        <td>
+          {% if row.pass_fail == 'Pass' %}
+            <span class="status-pass">Pass</span>
+          {% elif row.pass_fail == 'Fail' %}
+            <span class="status-fail">Fail</span>
+          {% else %}
+            <span class="status-pending">Pending</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="teacher-line">
+    <strong>Course Teacher:</strong>
+    {{ item.course.teacher.get_full_name|default:item.course.teacher.username }}
+  </div>
+
+</div>
+{% endfor %}
+
+<!-- Footer -->
+<div class="footer">
+  Smart Class Academy &nbsp;|&nbsp;
+  This is a computer-generated report card &nbsp;|&nbsp;
+  Generated: {% now "d/m/Y" %} &nbsp;|&nbsp;
+  ID: RC-{{ student.pk|stringformat:"06d" }}
+</div>
+
+</body>
+</html>

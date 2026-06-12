@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Add Questions - {{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+  <h4 class="fw-bold mb-0">{{ quiz.title }}</h4>
+  <div class="d-flex gap-2 flex-wrap">
+    <span class="badge bg-primary">{{ quiz.question_count }} questions</span>
+    <span class="badge bg-success">{{ quiz.total_marks }} total marks</span>
+    <a href="{% url 'quiz_list' quiz.course.pk %}" class="btn btn-sm btn-outline-secondary">Done</a>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header"><h6 class="fw-bold mb-0">Add New Question</h6></div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3"><label class="form-label fw-semibold">Question Text</label><textarea name="question_text" class="form-control" rows="4" required placeholder="Enter the question"></textarea></div>
+          <div class="mb-3"><label class="form-label fw-semibold">Marks</label><input type="number" name="marks" class="form-control" value="1" min="1"/></div>
+          <label class="form-label fw-semibold">Answer Choices</label>
+          <p class="text-muted small mb-2">Select the radio button next to the correct answer.</p>
+          {% for i in "0123" %}
+          <div class="input-group mb-2">
+            <div class="input-group-text"><input type="radio" name="correct_choice" value="{{ i }}" {% if forloop.first %}required{% endif %}/></div>
+            <input type="text" name="choice_text" class="form-control" placeholder="Choice {{ forloop.counter }}" required/>
+          </div>
+          {% endfor %}
+          <button type="submit" class="btn btn-primary w-100 mt-2">Add Question</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header"><h6 class="fw-bold mb-0">Questions Added</h6></div>
+      <div class="card-body p-0">
+        {% if questions %}
+        <div class="accordion" id="qAccordion">
+          {% for question in questions %}
+          <div class="accordion-item border-0 border-bottom">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed py-3" type="button" data-bs-toggle="collapse" data-bs-target="#q{{ question.pk }}">
+                <span class="badge bg-primary me-2">Q{{ question.order }}</span>
+                {{ question.text|truncatechars:60 }}
+                <span class="badge bg-light text-dark ms-auto me-3">{{ question.marks }} mark{{ question.marks|pluralize }}</span>
+              </button>
+            </h2>
+            <div id="q{{ question.pk }}" class="accordion-collapse collapse">
+              <div class="accordion-body pt-0">
+                {% for choice in question.choices.all %}
+                <div class="d-flex align-items-center gap-2 py-1">{% if choice.is_correct %}<i class="bi bi-check-circle-fill text-success"></i>{% else %}<i class="bi bi-x-circle text-muted"></i>{% endif %}<span {% if choice.is_correct %}class="text-success fw-semibold"{% endif %}>{{ choice.text }}</span></div>
+                {% endfor %}
+                <a href="{% url 'delete_question' question.pk %}" class="btn btn-sm btn-outline-danger mt-2" onclick="return confirm('Delete this question?')">Delete</a>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-muted">No questions yet. Add your first one.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

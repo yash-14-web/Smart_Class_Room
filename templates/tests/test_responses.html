@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Test Responses - {{ test.title }}{% endblock %}
+{% block content %}
+<div class="card mb-4">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <h5 class="mb-0">Responses for {{ test.title }}</h5>
+      <small class="text-muted">Review quiz marks, coding marks, total score, and missed students.</small>
+    </div>
+    <a href="{% url 'test_detail' test.pk %}" class="btn btn-outline-secondary btn-sm">Back</a>
+  </div>
+  <div class="card-body">
+    {% if responses %}
+      <div class="table-responsive mb-4">
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Quiz</th>
+              <th>Coding</th>
+              <th>Total</th>
+              <th>Submitted</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for response in responses %}
+              <tr>
+                <td>{{ response.student.get_full_name|default:response.student.username }}</td>
+                <td>{{ response.quiz_score }}</td>
+                <td>{{ response.coding_score }}</td>
+                <td class="fw-semibold">{{ response.score }}</td>
+                <td>{{ response.submitted_at|date:'M d, Y H:i' }}</td>
+                <td class="text-end"><a href="{% url 'test_response_detail' test.pk response.pk %}" class="btn btn-sm btn-outline-primary">View</a></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="text-muted">No responses have been submitted yet.</p>
+    {% endif %}
+
+    <div class="border rounded-4 p-3 bg-light">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+        <h6 class="mb-0">Students Who Have Not Submitted Yet</h6>
+        <span class="badge bg-secondary">{{ missed_students|length }} pending</span>
+      </div>
+      {% if missed_students %}
+        <div class="d-flex flex-wrap gap-2">
+          {% for enrollment in missed_students %}
+            <span class="badge text-bg-light border">{{ enrollment.student.get_full_name|default:enrollment.student.username }}</span>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-muted small">Everyone enrolled in this course has submitted.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

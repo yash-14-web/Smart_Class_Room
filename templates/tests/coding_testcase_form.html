@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Coding Test Cases - {{ question.test.title }}{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header bg-white">
+        <h5 class="mb-0">Add Test Case</h5>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <div class="fw-semibold">{{ question.question_text }}</div>
+          <div class="small text-muted">Function required: <code>{{ question.expected_function_name }}</code></div>
+        </div>
+        <form method="post">
+          {% csrf_token %}
+          <div class="row g-3">
+            {% for field in form %}
+              <div class="col-12 mb-3">
+                {% if field.field.widget.input_type == 'checkbox' %}
+                  <div class="form-check">
+                    {{ field }}
+                    <label class="form-check-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  </div>
+                {% else %}
+                  <label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  {{ field }}
+                {% endif %}
+                
+                {% if field.help_text %}
+                  <div class="form-text text-muted small mt-1">{{ field.help_text }}</div>
+                {% endif %}
+                {% if field.errors %}
+                  <div class="invalid-feedback d-block">{{ field.errors|join:", " }}</div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+          <div class="d-flex flex-wrap gap-2 mt-2">
+            <button type="submit" class="btn btn-primary px-4 rounded-pill">Save Test Case</button>
+            <a href="{% url 'test_detail' test.pk %}" class="btn btn-outline-secondary px-4 rounded-pill">Back to Test</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Existing Cases</h5>
+        <span class="badge bg-light text-dark">{{ existing_cases|length }} total</span>
+      </div>
+      <div class="card-body">
+        {% if existing_cases %}
+          <div class="table-responsive">
+            <table class="table align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Mode</th>
+                  <th>Input</th>
+                  <th>Expected</th>
+                  <th>Weight</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for case in existing_cases %}
+                  <tr>
+                    <td>{{ case.order }}</td>
+                    <td><span class="badge {% if case.is_sample %}bg-info text-dark{% else %}bg-dark{% endif %}">{% if case.is_sample %}Sample{% else %}Hidden{% endif %}</span></td>
+                    <td><code>{{ case.input_data }}</code></td>
+                    <td><code>{{ case.expected_output }}</code></td>
+                    <td>{{ case.weight }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-muted">No grading cases yet. Add sample cases for student practice and hidden cases for final automatic scoring.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

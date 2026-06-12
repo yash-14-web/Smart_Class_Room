@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}Quiz Result - {{ attempt.quiz.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+    <div class="card mb-4 text-center">
+      <div class="card-body py-5">
+        <i class="bi bi-trophy-fill text-warning" style="font-size:3rem"></i>
+        <h3 class="fw-bold mt-3">{{ attempt.quiz.title }}</h3>
+        <div class="display-4 fw-bold {% if attempt.percentage >= 80 %}text-success{% elif attempt.percentage >= 50 %}text-warning{% else %}text-danger{% endif %}">{{ attempt.score }} / {{ attempt.quiz.total_marks }}</div>
+        <p class="text-muted">{{ attempt.percentage }}% score</p>
+        <div class="d-flex justify-content-center flex-wrap gap-2 mt-3">
+          <span class="badge bg-light text-dark p-2">Finished: {{ attempt.finished_at|date:"M d, Y H:i" }}</span>
+          {% if attempt.percentage >= 80 %}<span class="badge bg-success p-2">Excellent</span>{% elif attempt.percentage >= 50 %}<span class="badge bg-warning text-dark p-2">Pass</span>{% else %}<span class="badge bg-danger p-2">Needs Improvement</span>{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <h5 class="fw-bold mb-3">Answer Review</h5>
+    {% for answer in answers %}
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="d-flex justify-content-between mb-2 flex-wrap gap-2">
+          <span class="fw-semibold"><span class="badge bg-primary me-2">Q{{ answer.question.order }}</span>{{ answer.question.text }}</span>
+          {% if answer.is_correct %}<span class="badge bg-success">Correct +{{ answer.question.marks }}</span>{% else %}<span class="badge bg-danger">Wrong</span>{% endif %}
+        </div>
+        <div class="small"><span class="text-muted">Your answer: </span><span class="{% if answer.is_correct %}text-success fw-semibold{% else %}text-danger{% endif %}">{{ answer.choice.text|default:"Not answered" }}</span></div>
+        {% if not answer.is_correct %}
+        <div class="small mt-1"><span class="text-muted">Correct answer: </span><span class="text-success fw-semibold">{% for choice in answer.question.choices.all %}{% if choice.is_correct %}{{ choice.text }}{% endif %}{% endfor %}</span></div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+
+    <div class="text-center mt-4"><a href="{% url 'course_detail' attempt.quiz.course.pk %}" class="btn btn-primary">Back to Course</a></div>
+  </div>
+</div>
+{% endblock %}

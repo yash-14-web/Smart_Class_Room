@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}Create Quiz{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header"><h5 class="fw-bold mb-0">Create Quiz - {{ course.title }}</h5></div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3"><label class="form-label fw-semibold">Quiz Title</label><input type="text" name="title" class="form-control" required placeholder="For example: Chapter 1 Test"/></div>
+          <div class="mb-3"><label class="form-label fw-semibold">Description</label><textarea name="description" class="form-control" rows="4" placeholder="Instructions for students"></textarea></div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6"><label class="form-label fw-semibold">Duration (minutes)</label><input type="number" name="duration" class="form-control" value="30" min="1"/></div>
+            <div class="col-md-6"><label class="form-label fw-semibold">Available From</label><input type="datetime-local" name="start_date" class="form-control"/></div>
+          </div>
+          <div class="mb-4"><label class="form-label fw-semibold">End Date</label><input type="datetime-local" name="due_date" class="form-control"/></div>
+          <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label fw-semibold mb-0">Assign to Specific Students</label>
+              <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" id="toggle-all-students">Select All</button>
+            </div>
+            <div class="form-text mb-2 text-muted">Leave blank to assign to all enrolled students.</div>
+            <div class="border rounded-3 p-3 bg-light bg-opacity-25" style="max-height: 200px; overflow-y: auto;">
+              {% for enrollment in enrolled_students %}
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" name="assigned_to" value="{{ enrollment.student.id }}" id="student_{{ enrollment.student.id }}">
+                  <label class="form-check-label ms-1" for="student_{{ enrollment.student.id }}">
+                    {{ enrollment.student.get_full_name|default:enrollment.student.username }} ({{ enrollment.student.username }})
+                  </label>
+                </div>
+              {% empty %}
+                <div class="text-muted text-center py-3">No students enrolled in this course yet.</div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="d-flex flex-wrap gap-2"><button type="submit" class="btn btn-primary">Create and Add Questions</button><a href="{% url 'course_detail' course.pk %}" class="btn btn-outline-secondary">Cancel</a></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.getElementById('toggle-all-students');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', function() {
+        const checkboxes = document.querySelectorAll('input[name="assigned_to"]');
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        checkboxes.forEach(cb => {
+          cb.checked = !allChecked;
+        });
+        toggleBtn.textContent = allChecked ? 'Select All' : 'Deselect All';
+      });
+    }
+  });
+</script>
+{% endblock %}

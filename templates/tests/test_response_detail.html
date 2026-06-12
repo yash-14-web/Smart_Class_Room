@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}Response Detail - {{ test.title }}{% endblock %}
+{% block extra_css %}
+<style>
+  .card { background: var(--sc-surface-strong) !important; border-color: var(--sc-border) !important; color: var(--sc-ink) !important; }
+  .card-header { background: var(--sc-surface) !important; border-color: var(--sc-border) !important; color: var(--sc-ink) !important; }
+  pre.bg-light { background: var(--sc-glass-bg) !important; border-color: var(--sc-border) !important; color: var(--sc-ink) !important; }
+  .table { color: var(--sc-ink) !important; }
+  .table th, .table td { border-color: var(--sc-border) !important; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <div>
+    <h4 class="fw-bold mb-1">{{ response.student.get_full_name|default:response.student.username }} - {{ test.title }}</h4>
+    <p class="text-muted mb-0">Submitted on {{ response.submitted_at|date:'M d, Y H:i' }}</p>
+  </div>
+  <a href="{% url 'test_responses' test.pk %}" class="btn btn-outline-secondary">Back to Responses</a>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4"><div class="card"><div class="card-body text-center"><div class="text-muted small">Quiz Score</div><div class="fw-bold fs-3">{{ response.quiz_score }}</div></div></div></div>
+  <div class="col-md-4"><div class="card"><div class="card-body text-center"><div class="text-muted small">Coding Score</div><div class="fw-bold fs-3">{{ response.coding_score }}</div></div></div></div>
+  <div class="col-md-4"><div class="card"><div class="card-body text-center"><div class="text-muted small">Total Score</div><div class="fw-bold fs-3">{{ response.score }}</div></div></div></div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header"><h5 class="mb-0">Per Question Summary</h5></div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Question</th>
+            <th>Type</th>
+            <th>Obtained</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Case Summary</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in summary_rows %}
+            <tr>
+              <td>{{ row.title }}</td>
+              <td>{{ row.type }}</td>
+              <td>{{ row.obtained_marks }}</td>
+              <td>{{ row.total_marks }}</td>
+              <td><span class="badge {% if row.status == 'Pass' %}bg-success{% else %}bg-danger{% endif %}">{{ row.status }}</span></td>
+              <td>
+                {% if row.type == 'Coding' %}
+                  {{ row.passed_cases|default:0 }}/{{ row.total_cases|default:0 }} cases passed
+                  {% if row.error %}<div class="small text-danger">{{ row.error }}</div>{% endif %}
+                {% else %}
+                  Auto-graded
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% if coding_entries %}
+<div class="card">
+  <div class="card-header"><h5 class="mb-0">Submitted Coding Answers</h5></div>
+  <div class="card-body">
+    <div class="vstack gap-4">
+      {% for entry in coding_entries %}
+        <div>
+          <div class="fw-semibold mb-2">{{ entry.question.question_text }}</div>
+          <pre class="bg-light border rounded-4 p-3 mb-0"><code>{{ entry.code }}</code></pre>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

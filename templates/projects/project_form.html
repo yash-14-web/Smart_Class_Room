@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}Submit Project - SmartClass{% endblock %}
+
+{% block extra_css %}
+<style>
+  .project-form-page .form-shell {
+    max-width: 940px;
+    margin: 0 auto;
+  }
+  .project-form-page .hero-card {
+    background: linear-gradient(135deg, #0f2f72 0%, #145af2 54%, #1aa3a3 100%);
+    color: #fff;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 20px 42px rgba(15, 47, 114, .20);
+    margin-bottom: 1.5rem;
+  }
+  .project-form-page .hero-title {
+    font-size: clamp(1.7rem, 3vw, 2.35rem);
+    font-weight: 800;
+    margin-bottom: .55rem;
+  }
+  .project-form-page .hero-copy {
+    color: rgba(255,255,255,.84);
+    max-width: 660px;
+    margin-bottom: 0;
+  }
+  .project-form-page .form-card {
+    background: var(--sc-surface-strong);
+    border: 1px solid var(--sc-border);
+    border-radius: 24px;
+    box-shadow: var(--sc-shadow-soft);
+    overflow: hidden;
+  }
+  .project-form-page .form-head {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--sc-border);
+  }
+  .project-form-page .form-body {
+    padding: 22px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="project-form-page">
+  <div class="form-shell">
+    <div class="hero-card">
+      <div class="hero-title">Submit Your Subject Project</div>
+      <p class="hero-copy">Share your project title, description, technologies, repository link, and ZIP package in one clean submission flow.</p>
+    </div>
+
+    <div class="form-card">
+      <div class="form-head">
+        <div class="fw-bold">Project Submission</div>
+        <small class="text-muted">Pick the subject and attach everything your teacher needs to review your work.</small>
+      </div>
+      <div class="form-body">
+        <form method="post" enctype="multipart/form-data" class="row g-4">
+          {% csrf_token %}
+          <div class="col-md-6">
+            <label for="id_course" class="form-label">Subject Project</label>
+            {{ form.course }}
+            {% for error in form.course.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+          </div>
+          <div class="col-md-6">
+            <label for="id_title" class="form-label">Project Title</label>
+            {{ form.title }}
+            {% for error in form.title.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+          </div>
+          <div class="col-12">
+            <label for="id_description" class="form-label">Project Description</label>
+            {{ form.description }}
+            {% for error in form.description.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+          </div>
+          <div class="col-md-6">
+            <label for="id_technologies_used" class="form-label">Technologies Used</label>
+            {{ form.technologies_used }}
+            {% for error in form.technologies_used.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+          </div>
+          <div class="col-md-6">
+            <label for="id_github_link" class="form-label">GitHub Link</label>
+            {{ form.github_link }}
+            {% for error in form.github_link.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+          </div>
+          <div class="col-md-6">
+            <label for="id_zip_file" class="form-label">ZIP File</label>
+            {{ form.zip_file }}
+            {% for error in form.zip_file.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+          </div>
+          <div class="col-12 d-flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-primary">Submit Project</button>
+            <a href="{% url 'project_list' %}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}{{ quiz.title }} - Students{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+  <h4 class="fw-bold mb-0">{{ quiz.title }} - Students</h4>
+  <a href="{% url 'quiz_list' quiz.course.pk %}" class="btn btn-sm btn-outline-secondary">Back</a>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3"><div class="stat-card bg-success"><div class="small opacity-75">Attempted</div><div class="fs-2 fw-bold">{{ attempts.count }}</div></div></div>
+  <div class="col-md-3"><div class="stat-card bg-warning"><div class="small opacity-75">Not Attempted</div><div class="fs-2 fw-bold">{{ not_attempted_students.count }}</div></div></div>
+  <div class="col-md-3"><div class="stat-card bg-primary"><div class="small opacity-75">Total Marks</div><div class="fs-2 fw-bold">{{ quiz.total_marks }}</div></div></div>
+  <div class="col-md-3"><div class="stat-card bg-info"><div class="small opacity-75">Questions</div><div class="fs-2 fw-bold">{{ quiz.question_count }}</div></div></div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header"><h6 class="fw-bold mb-0">Attempted ({{ attempts.count }})</h6></div>
+      <div class="card-body p-0">
+        {% if attempts %}
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr><th>Rank</th><th>Student</th><th class="text-center">Score</th><th class="text-center">Percentage</th><th class="text-center">Grade</th><th class="text-center">Detail</th></tr>
+            </thead>
+            <tbody>
+              {% for attempt in attempts %}
+              <tr>
+                <td><span class="text-muted">#{{ forloop.counter }}</span></td>
+                <td><div class="fw-semibold">{{ attempt.student.get_full_name|default:attempt.student.username }}</div><div class="text-muted small">{{ attempt.finished_at|date:"M d, H:i" }}</div></td>
+                <td class="text-center fw-bold">{{ attempt.score }} / {{ quiz.total_marks }}</td>
+                <td class="text-center">{{ attempt.percentage }}%</td>
+                <td class="text-center">{% if attempt.percentage >= 80 %}<span class="badge bg-success">Excellent</span>{% elif attempt.percentage >= 50 %}<span class="badge bg-warning text-dark">Pass</span>{% else %}<span class="badge bg-danger">Fail</span>{% endif %}</td>
+                <td class="text-center"><a href="{% url 'quiz_result' attempt.pk %}" class="btn btn-sm btn-outline-primary">View</a></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-muted">No students have attempted yet.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header"><h6 class="fw-bold mb-0">Not Attempted ({{ not_attempted_students.count }})</h6></div>
+      <div class="card-body p-0">
+        {% if not_attempted_students %}
+        <ul class="list-group list-group-flush">
+          {% for student in not_attempted_students %}
+          <li class="list-group-item d-flex align-items-center gap-2 py-3">
+            <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width:34px;height:34px;font-size:.8rem">{{ student.username|first|upper }}</div>
+            <div><div class="small fw-semibold">{{ student.get_full_name|default:student.username }}</div><div class="text-muted" style="font-size:.72rem">@{{ student.username }}</div></div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <div class="text-center py-4 text-muted">All enrolled students have attempted.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

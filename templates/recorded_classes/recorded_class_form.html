@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}{{ page_title|default:'Upload Recorded Class' }} - SmartClass{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header"><h5 class="mb-0">{{ page_title|default:'Upload Recorded Class' }}</h5></div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data" class="row g-3">
+          {% csrf_token %}
+          {% if form.non_field_errors %}<div class="col-12 alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+          <div class="col-md-4"><label class="form-label" for="id_course">Course</label>{{ form.course }}{% for error in form.course.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>
+          <div class="col-md-4"><label class="form-label" for="id_title">Class Name</label>{{ form.title }}{% for error in form.title.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>
+          <div class="col-md-4"><label class="form-label" for="id_subject">Topic Name</label>{{ form.subject }}{% for error in form.subject.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>
+          <div class="col-12"><label class="form-label" for="id_description">Description</label>{{ form.description }}{% for error in form.description.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>
+          <div class="col-md-6"><label class="form-label" for="id_video_file">Upload Video File</label>{{ form.video_file }}{% for error in form.video_file.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>
+          <div class="col-md-6"><label class="form-label" for="id_video_url">Video URL</label>{{ form.video_url }}{% for error in form.video_url.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>
+          <div class="col-12 d-flex flex-wrap gap-2"><button type="submit" class="btn btn-primary">{{ submit_label|default:'Upload Class' }}</button><a href="{% url 'recorded_class_list' %}" class="btn btn-outline-secondary">Cancel</a></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

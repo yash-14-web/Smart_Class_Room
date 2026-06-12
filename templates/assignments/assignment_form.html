@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% block title %}Assignment - SmartClass{% endblock %}
+
+{% block extra_css %}
+<style>
+  .assignment-form-page .form-shell {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .assignment-form-page .hero-card {
+    background: linear-gradient(135deg, #0f2f72 0%, #145af2 54%, #1aa3a3 100%);
+    color: #fff;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 20px 42px rgba(15, 47, 114, .20);
+    margin-bottom: 1.5rem;
+  }
+  .assignment-form-page .hero-title {
+    font-size: clamp(1.7rem, 3vw, 2.35rem);
+    font-weight: 800;
+    margin-bottom: .55rem;
+  }
+  .assignment-form-page .hero-copy {
+    color: rgba(255,255,255,.84);
+    max-width: 640px;
+    margin-bottom: 0;
+  }
+  .assignment-form-page .form-card {
+    background: var(--sc-surface-strong);
+    border: 1px solid var(--sc-border);
+    border-radius: 24px;
+    box-shadow: var(--sc-shadow-soft);
+    overflow: hidden;
+  }
+  .assignment-form-page .form-head {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--sc-border);
+  }
+  .assignment-form-page .form-body {
+    padding: 22px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="assignment-form-page">
+  <div class="form-shell">
+    <div class="hero-card">
+      <div class="hero-title">{{ page_title|default:"Create Assignment" }}</div>
+      <p class="hero-copy">Publish or update assignments, tests, or projects with clearer structure, deadline control, and optional file attachments for {{ course.title }}.</p>
+    </div>
+
+    <div class="form-card">
+      <div class="form-head">
+        <div class="fw-bold">Assessment Details</div>
+        <small class="text-muted">Set the title, type, due date, marks, and any support file students should download.</small>
+      </div>
+      <div class="form-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Title</label>
+            {{ form.title }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Description</label>
+            {{ form.description }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Type / Label</label>
+            {{ form.label }}
+            <div class="form-text">Choose whether this item is an assignment, test, or project.</div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Due Date</label>
+              {{ form.due_date }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Total Marks</label>
+              {{ form.total_marks }}
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Attachment</label>
+            {{ form.attachment }}
+          </div>
+          <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label fw-semibold mb-0">Assign to Specific Students</label>
+              <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" id="toggle-all-students">Select All</button>
+            </div>
+            <div class="form-text mb-2 text-muted">Leave blank to assign to all enrolled students.</div>
+            <div class="border rounded-3 p-3 bg-light bg-opacity-25" style="max-height: 250px; overflow-y: auto;">
+              {% for checkbox in form.assigned_to %}
+                <div class="form-check mb-2">
+                  {{ checkbox.tag }}
+                  <label class="form-check-label ms-1" for="{{ checkbox.id_for_label }}">
+                    {{ checkbox.choice_label }}
+                  </label>
+                </div>
+              {% empty %}
+                <div class="text-muted text-center py-3">No students enrolled in this course yet.</div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="d-flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>{{ submit_label|default:"Create" }}</button>
+            <a href="{% url 'course_detail' course.pk %}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.getElementById('toggle-all-students');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', function() {
+        const checkboxes = document.querySelectorAll('input[name="assigned_to"]');
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        checkboxes.forEach(cb => {
+          cb.checked = !allChecked;
+        });
+        toggleBtn.textContent = allChecked ? 'Select All' : 'Deselect All';
+      });
+    }
+  });
+</script>
+{% endblock %}

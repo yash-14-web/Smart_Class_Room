@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Delete Test - SmartClass{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+    <div class="card">
+      <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">Delete Test</h5>
+      </div>
+      <div class="card-body">
+        <p>Are you sure you want to delete the test "<strong>{{ test.title }}</strong>"?</p>
+        <p class="text-muted small">This action cannot be undone. All questions and student responses associated with this test will also be deleted.</p>
+        <form method="post">
+          {% csrf_token %}
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <a href="{% url 'test_list' %}" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-danger">Confirm Delete</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

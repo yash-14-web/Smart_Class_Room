@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - SmartClass{% endblock %}
+
+{% block extra_css %}
+<style>
+  .course-form-page .form-shell {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .course-form-page .hero-card {
+    background: linear-gradient(135deg, #0f2f72 0%, #145af2 54%, #1aa3a3 100%);
+    color: #fff;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 20px 42px rgba(15, 47, 114, .20);
+    margin-bottom: 1.5rem;
+  }
+  .course-form-page .hero-title {
+    font-size: clamp(1.7rem, 3vw, 2.35rem);
+    font-weight: 800;
+    margin-bottom: .55rem;
+  }
+  .course-form-page .hero-copy {
+    color: rgba(255,255,255,.84);
+    max-width: 620px;
+    margin-bottom: 0;
+  }
+  .course-form-page .form-card {
+    background: var(--sc-surface-strong);
+    border: 1px solid var(--sc-border);
+    border-radius: 24px;
+    box-shadow: var(--sc-shadow-soft);
+    overflow: hidden;
+  }
+  .course-form-page .form-head {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--sc-border);
+  }
+  .course-form-page .form-head-title {
+    font-weight: 800;
+    color: var(--sc-ink);
+    margin-bottom: .2rem;
+  }
+  .course-form-page .form-head-copy {
+    color: var(--sc-muted);
+    margin-bottom: 0;
+    font-size: .9rem;
+  }
+  .course-form-page .form-body {
+    padding: 22px;
+  }
+  .course-form-page .check-card {
+    border: 1px solid var(--sc-border);
+    border-radius: 18px;
+    padding: 14px 16px;
+    background: var(--sc-surface);
+    height: 100%;
+    color: var(--sc-ink);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="course-form-page">
+  <div class="form-shell">
+    <div class="hero-card">
+      <div class="hero-title">{{ title }}</div>
+      <p class="hero-copy">Build a polished course space with scheduling, visibility control, and result release settings in one simple form.</p>
+    </div>
+
+    <div class="form-card">
+      <div class="form-head">
+        <div class="form-head-title">Course Details</div>
+        <p class="form-head-copy">Set up the learning experience, student access window, and result visibility.</p>
+      </div>
+      <div class="form-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Course Title</label>
+            {{ form.title }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Description</label>
+            {{ form.description }}
+          </div>
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Cover Image</label>
+            {{ form.cover_image }}
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Available From</label>
+              {{ form.start_date }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">End Date</label>
+              {{ form.end_date }}
+            </div>
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Project Submissions Open From</label>
+              {{ form.project_start_date }}
+              <div class="text-muted small mt-1">When students can start submitting their course project (optional).</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Project Submission Deadline</label>
+              {{ form.project_end_date }}
+              <div class="text-muted small mt-1">The final date/time for project submissions (optional).</div>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <div class="check-card">
+                <div class="form-check mb-0">
+                  {{ form.is_active }}
+                  <label class="form-check-label fw-semibold" for="{{ form.is_active.id_for_label }}">Active Course</label>
+                  <div class="text-muted small mt-1">Students can see and access the course when this is enabled.</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="check-card">
+                <div class="form-check mb-0">
+                  {{ form.results_released }}
+                  <label class="form-check-label fw-semibold" for="{{ form.results_released.id_for_label }}">Release Results</label>
+                  <div class="text-muted small mt-1">Allow students to see pass or fail course status when you are ready.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Save Course</button>
+            <a href="{% url 'course_list' %}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

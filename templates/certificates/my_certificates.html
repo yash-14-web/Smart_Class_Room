@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}My Certificates - SmartClass{% endblock %}
+{% block content %}
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">My Certificates</h4>
+    <p class="text-muted mb-0">View, print, and download all certificates you have earned.</p>
+  </div>
+</div>
+
+{% if certificates %}
+<div class="row g-4">
+  {% for cert in certificates %}
+  <div class="col-md-6 col-xl-4">
+    <div class="card h-100 text-center">
+      <div class="card-body py-4">
+        <i class="bi {{ cert.badge_icon }}" style="font-size:3.5rem;color:{{ cert.badge_color }}"></i>
+        <h6 class="fw-bold mt-3">{{ cert.title|default:cert.get_badge_type_display }}</h6>
+        <p class="text-muted small mb-1">{{ cert.course.title }}</p>
+        <span class="badge mb-3" style="background:{{ cert.badge_color }};color:#fff;font-size:.75rem">{{ cert.get_badge_type_display }}</span>
+        <div class="text-muted mb-3" style="font-size:.78rem">Issued by {{ cert.issued_by.get_full_name|default:cert.issued_by.username }}<br/>{{ cert.issued_at|date:"M d, Y" }}</div>
+        <div class="d-flex gap-2 justify-content-center flex-wrap">
+          <a href="{% url 'view_certificate' cert.pk %}" target="_blank" class="btn btn-sm btn-outline-primary">View</a>
+          <a href="{% url 'download_certificate_pdf' cert.pk %}" target="_blank" class="btn btn-sm btn-outline-success">Download</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5"><i class="bi bi-award fs-1 text-muted"></i><p class="text-muted mt-3 fs-5">No certificates yet.</p><p class="text-muted small">Complete your courses to earn certificates from your teachers.</p><a href="{% url 'course_list' %}" class="btn btn-primary">Browse Courses</a></div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Report Card - {{ student.get_full_name|default:student.username }}</title>
+  <link rel="icon" type="image/png" href="/media/smart_logo.png"/>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 14mm;
+    }
+    :root {
+      --ink: #14211b;
+      --muted: #5f6f66;
+      --line: #d9e4dc;
+      --panel: #f7fbf8;
+      --panel-strong: #edf5ef;
+      --accent: #6f8f74;
+      --accent-dark: #3f5f49;
+      --gold: #c79a3b;
+      --pass: #1f7a46;
+      --fail: #c0392b;
+      --pending: #c28a13;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(111, 143, 116, 0.12), transparent 34%),
+        linear-gradient(180deg, #f9fcfa 0%, #ffffff 18%);
+    }
+    .print-actions {
+      max-width: 860px;
+      margin: 16px auto 0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .btn {
+      border: 1px solid #cfd9d2;
+      background: var(--sc-surface-strong);
+      color: var(--ink);
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: var(--accent-dark);
+      border-color: var(--accent-dark);
+      color: #ffffff;
+    }
+    .page {
+      position: relative;
+      max-width: 860px;
+      margin: 12px auto 24px;
+      padding: 24px;
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      box-shadow: 0 18px 50px rgba(20, 33, 27, 0.08);
+      overflow: hidden;
+    }
+    .page::before {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border: 1px solid rgba(111, 143, 116, 0.22);
+      border-radius: 20px;
+      pointer-events: none;
+    }
+    .page::after {
+      content: "";
+      position: absolute;
+      top: -80px;
+      right: -80px;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(111, 143, 116, 0.18), rgba(111, 143, 116, 0));
+      pointer-events: none;
+    }
+    .header {
+      position: relative;
+      display: grid;
+      grid-template-columns: 108px 1fr;
+      gap: 18px;
+      align-items: center;
+      padding: 8px 4px 18px;
+      border-bottom: 2px solid var(--panel-strong);
+    }
+    .logo-wrap {
+      width: 92px;
+      height: 92px;
+      border-radius: 24px;
+      background: var(--sc-surface);
+      border: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      box-shadow: 0 10px 20px rgba(63, 95, 73, 0.08);
+    }
+    .logo-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .brand-eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--accent-dark);
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+    .title {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.1;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+    }
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .issued-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .summary {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 0.8fr;
+      gap: 14px;
+      margin: 18px 0 20px;
+    }
+    .student-card,
+    .status-card,
+    .score-card {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: linear-gradient(180deg, #ffffff, var(--panel));
+      padding: 16px 18px;
+    }
+    .student-name {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .student-meta {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .mini-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 14px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--line);
+      font-size: 12px;
+    }
+    .label {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      margin-bottom: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .value {
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .status-card {
+      background: linear-gradient(180deg, #f9fcfa, #eef6f0);
+    }
+    .status-title,
+    .score-title {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+    .status-pill {
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+    .status-pass {
+      background: rgba(31, 122, 70, 0.12);
+      color: var(--pass);
+    }
+    .status-fail {
+      background: rgba(192, 57, 43, 0.12);
+      color: var(--fail);
+    }
+    .status-pending {
+      background: rgba(194, 138, 19, 0.14);
+      color: var(--pending);
+    }
+    .status-note {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .score-main {
+      font-size: 30px;
+      line-height: 1;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: var(--accent-dark);
+    }
+    .score-sub {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 22px 0 10px;
+    }
+    .section-title {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+    .section-badge {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--sc-surface-strong);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .course-block {
+      margin-bottom: 16px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+      background: var(--sc-surface-strong);
+      page-break-inside: avoid;
+    }
+    .course-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 14px 16px;
+      background: linear-gradient(180deg, var(--panel), #ffffff);
+      border-bottom: 1px solid var(--line);
+    }
+    .course-name {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 800;
+    }
+    .teacher-row {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .course-metrics {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .metric {
+      min-width: 92px;
+      padding: 8px 10px;
+      border-radius: 14px;
+      background: var(--sc-surface-strong);
+      border: 1px solid var(--line);
+      text-align: center;
+    }
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+    .metric strong {
+      font-size: 14px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    thead th {
+      background: #f3f7f4;
+      color: var(--accent-dark);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 11px 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+    }
+    tbody td {
+      padding: 11px 10px;
+      font-size: 12px;
+      border-bottom: 1px solid #edf2ee;
+      vertical-align: top;
+    }
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+    tbody tr:nth-child(even) td {
+      background: #fbfdfb;
+    }
+    .label-pill {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--panel-strong);
+      color: var(--accent-dark);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .status-text-pass { color: var(--pass); font-weight: 800; }
+    .status-text-fail { color: var(--fail); font-weight: 800; }
+    .status-text-pending { color: var(--pending); font-weight: 800; }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .footer strong {
+      color: var(--ink);
+    }
+    @media print {
+      body {
+        background: var(--sc-surface-strong);
+      }
+      .print-actions {
+        display: none;
+      }
+      .page {
+        margin: 0;
+        padding: 8px;
+        box-shadow: none;
+        border: none;
+        border-radius: 0;
+      }
+      .page::before,
+      .page::after {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="print-actions">
+  <button class="btn btn-primary" onclick="window.print()">Print / Save PDF</button>
+  <a class="btn" href="{% url 'report_card' %}{% if not is_own_report %}?student={{ student.pk }}{% endif %}">Back</a>
+</div>
+
+<div class="page">
+  <div class="header">
+    <div class="logo-wrap">
+      <img src="/media/smart_logo.png" alt="Academy Logo"/>
+    </div>
+    <div>
+      <div class="brand-eyebrow">Smart Class Academy</div>
+      <h1 class="title">Academic Report Card</h1>
+      <p class="subtitle">A consolidated progress record across assignments, tests, quizzes, and subject projects.</p>
+      <div class="issued-chip">
+        Issued on {% now "F d, Y" %} for {{ student.get_full_name|default:student.username }}
+      </div>
+    </div>
+  </div>
+
+  <div class="summary">
+    <div class="student-card">
+      <div class="label">Student Profile</div>
+      <div class="student-name">{{ student.get_full_name|default:student.username }}</div>
+      <div class="student-meta">@{{ student.username }}{% if student.email %} | {{ student.email }}{% endif %}</div>
+      <div class="mini-grid">
+        <div>
+          <span class="label">Date of Joining</span>
+          <div class="value">{{ joined_at|date:"M d, Y"|default:"-" }}</div>
+        </div>
+        <div>
+          <span class="label">Leaderboard Rank</span>
+          <div class="value">{% if rank %}#{{ rank }}{% else %}-{% endif %}</div>
+        </div>
+        <div>
+          <span class="label">Courses</span>
+          <div class="value">{{ courses_data|length }}</div>
+        </div>
+        <div>
+          <span class="label">Report ID</span>
+          <div class="value">RC-{{ student.pk|stringformat:"06d" }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="status-card">
+      <div class="status-title">Overall Standing</div>
+      {% if not grand_results_visible %}
+      <div class="status-pill status-pending">LOCKED</div>
+      {% elif grand_pass == 'Pass' %}
+      <div class="status-pill status-pass">PASS</div>
+      {% elif grand_pass == 'Fail' %}
+      <div class="status-pill status-fail">FAIL</div>
+      {% else %}
+      <div class="status-pill status-pending">PENDING</div>
+      {% endif %}
+      <div class="status-note">
+        {% if not grand_results_visible %}
+        Overall result is locked until the teacher releases course results.
+        {% else %}
+        This result reflects the current graded performance across all included coursework.
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="score-card">
+      <div class="score-title">Performance Snapshot</div>
+      <div class="score-main">{{ grand_avg }}%</div>
+      <div class="score-sub">
+        Grand average<br/>
+        <strong>{{ grand_obtained }}</strong> scored out of <strong>{{ grand_total_marks }}</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <h2 class="section-title">Subject Performance</h2>
+    <div class="section-badge">Official Progress Sheet</div>
+  </div>
+
+  {% for item in courses_data %}
+  <div class="course-block">
+    <div class="course-top">
+      <div>
+        <h3 class="course-name">{{ item.course.title }}</h3>
+        <div class="teacher-row">Course Teacher: {{ item.teacher.get_full_name|default:item.teacher.username }}</div>
+      </div>
+      <div class="course-metrics">
+        <div class="metric">
+          <span>Status</span>
+          <strong>
+            {% if not item.results_visible %}
+            <span class="status-text-pending">Locked</span>
+            {% elif item.course_pass == 'Pass' %}
+            <span class="status-text-pass">Pass</span>
+            {% elif item.course_pass == 'Fail' %}
+            <span class="status-text-fail">Fail</span>
+            {% else %}
+            <span class="status-text-pending">Pending</span>
+            {% endif %}
+          </strong>
+        </div>
+        <div class="metric">
+          <span>Average</span>
+          <strong>{{ item.course_avg }}%</strong>
+        </div>
+        <div class="metric">
+          <span>Scored</span>
+          <strong>{{ item.course_scored }}/{{ item.course_total }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:32%">Assignment Name</th>
+          <th style="width:22%">Category</th>
+          <th style="width:12%">Score</th>
+          <th style="width:14%">Total Marks</th>
+          <th style="width:20%">Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in item.rows %}
+        <tr>
+          <td>{{ row.assignment.title }}</td>
+          <td><span class="label-pill">{{ row.label }}</span></td>
+          <td>{% if row.score is not None %}{{ row.score }}{% else %}-{% endif %}</td>
+          <td>{{ row.total_marks }}</td>
+          <td>
+            {% if row.pass_fail == 'Pass' %}
+            <span class="status-text-pass">Pass</span>
+            {% elif row.pass_fail == 'Fail' %}
+            <span class="status-text-fail">Fail</span>
+            {% else %}
+            <span class="status-text-pending">Pending</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5">No records available.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endfor %}
+
+  <div class="footer">
+    <div>Smart Class Academy | This report card is system generated.</div>
+    <div><strong>Generated for:</strong> {{ student.get_full_name|default:student.username }}</div>
+  </div>
+</div>
+
+{% if auto_print %}
+<script>
+  window.addEventListener('load', function () {
+    window.print();
+  });
+</script>
+{% endif %}
+</body>
+</html>

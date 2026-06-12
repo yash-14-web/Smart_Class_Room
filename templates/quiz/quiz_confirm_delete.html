@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Delete Quiz - SmartClass{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card border-danger">
+      <div class="card-header bg-danger text-white"><h5 class="fw-bold mb-0">Delete Quiz</h5></div>
+      <div class="card-body text-center py-5 px-4">
+        <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size:3rem"></i>
+        <p class="fs-5 mt-3 mb-2">Delete quiz <strong>{{ quiz.title }}</strong>?</p>
+        <p class="text-muted mb-4">All {{ quiz.question_count }} questions and all student attempts will be permanently deleted. This cannot be undone.</p>
+        <form method="post" class="d-flex justify-content-center gap-2 flex-wrap">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Yes, Delete Quiz</button>
+          <a href="{% url 'quiz_list' quiz.course.pk %}" class="btn btn-outline-secondary">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

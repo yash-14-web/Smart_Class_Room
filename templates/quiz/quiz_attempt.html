@@ -1,0 +1,369 @@
+{% extends 'base.html' %}
+{% block title %}{{ quiz.title }} - Quiz{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── Quiz choice cards ── */
+  .quiz-attempt-page .choice-label {
+    cursor: pointer; border: 2px solid #e3ebf3;
+    border-radius: 16px; padding: 12px 16px; display: block;
+    transition: .2s; background: var(--sc-surface-strong);
+  }
+  .quiz-attempt-page .choice-label:hover { border-color: #145af2; background: #f5f9ff; }
+  .quiz-attempt-page input[type=radio]:checked + .choice-label {
+    border-color: #145af2; background: #eaf2ff; font-weight: 600;
+  }
+  .quiz-attempt-page .timer-box {
+    background: var(--sc-surface-strong);
+    border: 1px solid #f1c34f; border-radius: 16px;
+    padding: 10px 20px; font-size: 1.05rem; font-weight: 800;
+  }
+  .quiz-attempt-page .timer-box.danger { background: #fde3e7; border-color: #d34767; color: #d34767; }
+
+  /* ── Exam-mode: hide sidebar, navbar, footer ── */
+  body.exam-active .app-navbar,
+  body.exam-active .sidebar-panel,
+  body.exam-active .site-footer,
+  body.exam-active #mobileSidebar { display: none !important; }
+  body.exam-active .col-xl-2,
+  body.exam-active .col-lg-3     { display: none !important; }
+  body.exam-active .content-column {
+    width: 100% !important; max-width: 100% !important; flex: 0 0 100% !important;
+  }
+
+  /* ── Overlays (shared) ── */
+  .ac-overlay {
+    position: fixed; inset: 0; z-index: 99999;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(4, 9, 20, 0.97);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  }
+  .ac-box {
+    background: linear-gradient(155deg, #0d1b3e 0%, #091222 100%);
+    border: 1px solid rgba(255,255,255,.11);
+    border-radius: 26px; padding: 2.6rem 2.8rem;
+    max-width: 500px; width: 92%; text-align: center;
+    box-shadow: 0 40px 90px rgba(0,0,0,.75), inset 0 1px 0 rgba(255,255,255,.06);
+    animation: acPop .38s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes acPop {
+    from { transform: scale(.82) translateY(18px); opacity:0; }
+    to   { transform: scale(1)   translateY(0);    opacity:1; }
+  }
+
+  /* ── Start overlay ── */
+  .ac-start-icon  { font-size: 2.8rem; margin-bottom: .7rem; display: block; }
+  .ac-start-title { font-size: 1.55rem; font-weight: 800; color: #f1f5f9; margin-bottom: .35rem; line-height: 1.25; }
+  .ac-start-sub   { color: #94a3b8; font-size: .88rem; line-height: 1.6; margin-bottom: 1.4rem; }
+
+  .ac-rules-box {
+    background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
+    border-radius: 14px; padding: 1rem 1.2rem 1rem 1rem;
+    text-align: left; margin-bottom: 1.5rem;
+  }
+  .ac-rule {
+    display: grid; grid-template-columns: 14px 1fr;
+    gap: 0 .55rem; align-items: baseline;
+    color: #cbd5e1; font-size: .85rem; line-height: 1.55; padding: .28rem 0;
+  }
+  .ac-rule-dot  { color: #ef4444; font-size: .55rem; padding-top: .35em; }
+  .ac-rule-text strong { color: #fbbf24; font-weight: 600; }
+
+  .ac-start-btn {
+    display: block; width: 100%; border: none; cursor: pointer;
+    background: linear-gradient(135deg, #145af2, #0ea5e9);
+    color: #fff; border-radius: 14px;
+    padding: .9rem 1.5rem; font-size: .97rem; font-weight: 700;
+    letter-spacing: .025em; transition: transform .15s, box-shadow .15s;
+  }
+  .ac-start-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(20,90,242,.5); }
+
+  /* ── Warning overlay ── */
+  .ac-warn-icon  { font-size: 2.8rem; margin-bottom: .6rem; display: block; }
+  .ac-warn-badge {
+    display: inline-flex; align-items: center;
+    background: rgba(239,68,68,.14); border: 1px solid rgba(239,68,68,.33);
+    border-radius: 999px; padding: .24rem .85rem;
+    font-size: .74rem; font-weight: 700; color: #fca5a5; margin-bottom: .9rem;
+  }
+  .ac-pips { display: flex; gap: .4rem; justify-content: center; margin-bottom: 1.15rem; }
+  .ac-pip  { width: 34px; height: 6px; border-radius: 999px; background: rgba(255,255,255,.1); transition: background .3s; }
+  .ac-pip.used { background: #ef4444; }
+  .ac-warn-title { font-size: 1.4rem; font-weight: 800; color: #f1f5f9; margin-bottom: .4rem; }
+  .ac-warn-sub   { color: #94a3b8; font-size: .87rem; line-height: 1.6; margin-bottom: 1.4rem; }
+  .ac-warn-sub strong { color: #fbbf24; }
+  .ac-warn-sub em     { color: #ef4444; font-style: normal; font-weight: 700; }
+
+  .ac-return-btn {
+    display: block; width: 100%; border: none; cursor: pointer;
+    background: linear-gradient(135deg, #145af2, #0ea5e9);
+    color: #fff; border-radius: 14px;
+    padding: .9rem 1.5rem; font-size: .97rem; font-weight: 700;
+    letter-spacing: .025em; transition: transform .15s, box-shadow .15s;
+  }
+  .ac-return-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(20,90,242,.5); }
+  .ac-return-btn.danger { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+  .ac-return-btn.danger:hover { box-shadow: 0 10px 26px rgba(220,38,38,.5); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- START OVERLAY -->
+<div class="ac-overlay" id="startOverlay">
+  <div class="ac-box">
+    <span class="ac-start-icon">🔒</span>
+    <div class="ac-start-title">{{ quiz.title }}</div>
+    <div class="ac-start-sub">
+      This quiz is secured in <strong style="color:#e2e8f0">fullscreen mode</strong>.<br>
+      Read the rules before you begin.
+    </div>
+    <div class="ac-rules-box">
+      <div class="ac-rule">
+        <span class="ac-rule-dot">●</span>
+        <span class="ac-rule-text">Browser will be locked to <strong>fullscreen</strong> for the entire quiz.</span>
+      </div>
+      <div class="ac-rule">
+        <span class="ac-rule-dot">●</span>
+        <span class="ac-rule-text">Switching to another tab or minimising the window is a <strong>violation</strong>.</span>
+      </div>
+      <div class="ac-rule">
+        <span class="ac-rule-dot">●</span>
+        <span class="ac-rule-text">Exiting fullscreen (Esc, F11, or ✕ button) is also a <strong>violation</strong>.</span>
+      </div>
+      <div class="ac-rule">
+        <span class="ac-rule-dot">●</span>
+        <span class="ac-rule-text">You get <strong>2 warnings</strong>. The 3rd violation <strong>auto-submits</strong> your quiz immediately.</span>
+      </div>
+      <div class="ac-rule">
+        <span class="ac-rule-dot">●</span>
+        <span class="ac-rule-text">Time limit: <strong>{{ quiz.duration }} minutes</strong>.</span>
+      </div>
+    </div>
+    <button class="ac-start-btn" id="startExamBtn">🚀&nbsp;&nbsp;Enter Fullscreen &amp; Start Quiz</button>
+  </div>
+</div>
+
+<!-- WARNING OVERLAY -->
+<div class="ac-overlay" id="warnOverlay" style="display:none">
+  <div class="ac-box">
+    <span class="ac-warn-icon" id="warnIcon">⚠️</span>
+    <div class="ac-warn-badge" id="warnBadge">Warning 1 of 2</div>
+    <div class="ac-pips">
+      <div class="ac-pip" id="pip1"></div>
+      <div class="ac-pip" id="pip2"></div>
+    </div>
+    <div class="ac-warn-title" id="warnTitle">Violation Detected!</div>
+    <div class="ac-warn-sub" id="warnMsg"></div>
+    <button class="ac-return-btn" id="warnBtn">↩&nbsp; Return to Quiz</button>
+  </div>
+</div>
+
+<!-- QUIZ CONTENT -->
+<div id="examContent" style="display:none">
+  <div class="quiz-attempt-page">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+      <div>
+        <h4 class="fw-bold mb-0">{{ quiz.title }}</h4>
+        <p class="text-muted small mb-0">
+          {{ quiz.course.title }} &mdash; {{ questions.count }} question{{ questions.count|pluralize }} &mdash; {{ quiz.total_marks }} marks
+        </p>
+      </div>
+      <div class="timer-box" id="timerBox">
+        <i class="bi bi-clock me-2"></i><span id="timer">{{ quiz.duration }}:00</span>
+      </div>
+    </div>
+
+    <form method="post" id="quizForm">
+      {% csrf_token %}
+      {% for question in questions %}
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="d-flex justify-content-between mb-3 flex-wrap gap-2">
+            <h6 class="fw-bold mb-0">
+              <span class="badge bg-primary me-2">Q{{ question.order }}</span>{{ question.text }}
+            </h6>
+            <span class="badge bg-light text-dark">{{ question.marks }} mark{{ question.marks|pluralize }}</span>
+          </div>
+          <div class="row g-3">
+            {% for choice in question.choices.all %}
+            <div class="col-md-6">
+              <input type="radio" name="question_{{ question.pk }}" value="{{ choice.pk }}"
+                     id="c{{ choice.pk }}" class="d-none"/>
+              <label for="c{{ choice.pk }}" class="choice-label">
+                <span class="badge bg-light text-dark me-2">{{ forloop.counter }}</span>{{ choice.text }}
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+      <div class="text-center mt-4 mb-5">
+        <button type="submit" class="btn btn-success btn-lg px-5"
+                onclick="return confirm('Submit quiz? You cannot change your answers after submitting.')">
+          Submit Quiz
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  'use strict';
+
+  var MAX_WARNINGS = 2;
+  var totalSecs    = {{ quiz.duration }} * 60;
+
+  var violations  = 0;
+  var examStarted = false;
+  var submitting  = false;
+  var cooldown    = false;
+
+  var $start    = document.getElementById('startOverlay');
+  var $warn     = document.getElementById('warnOverlay');
+  var $content  = document.getElementById('examContent');
+  var $warnIcon = document.getElementById('warnIcon');
+  var $warnBadge= document.getElementById('warnBadge');
+  var $warnTitle= document.getElementById('warnTitle');
+  var $warnMsg  = document.getElementById('warnMsg');
+  var $warnBtn  = document.getElementById('warnBtn');
+  var $pip1     = document.getElementById('pip1');
+  var $pip2     = document.getElementById('pip2');
+  var $timerEl  = document.getElementById('timer');
+  var $timerBox = document.getElementById('timerBox');
+  var $form     = document.getElementById('quizForm');
+
+  /* ── Fullscreen ── */
+  function enterFs() {
+    var el = document.documentElement;
+    if (el.requestFullscreen)          el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if (el.mozRequestFullScreen)    el.mozRequestFullScreen();
+  }
+  function inFs() {
+    return !!(document.fullscreenElement ||
+              document.webkitFullscreenElement ||
+              document.mozFullScreenElement);
+  }
+
+  /* ── Timer ── */
+  function startTimer() {
+    function tick() {
+      if (submitting) return;
+      var m = Math.floor(totalSecs / 60), s = totalSecs % 60;
+      $timerEl.textContent = m + ':' + String(s).padStart(2, '0');
+      if (totalSecs <= 60) $timerBox.classList.add('danger');
+      if (totalSecs <= 0)  { doSubmit(); return; }
+      totalSecs--;
+    }
+    tick(); setInterval(tick, 1000);
+  }
+
+  /* ── Start exam ── */
+  document.getElementById('startExamBtn').addEventListener('click', function () {
+    enterFs();
+    document.body.classList.add('exam-active');
+    $start.style.display   = 'none';
+    $content.style.display = 'block';
+    examStarted = true;
+    startTimer();
+    setTimeout(function () { cooldown = false; }, 1000);
+  });
+
+  /* ── Submit ── */
+  function doSubmit() {
+    if (submitting) return;
+    submitting = true;
+    $form.submit();
+  }
+
+  /* ── Warning overlay ── */
+  function showWarning(n) {
+    $pip1.className = 'ac-pip used';
+    $pip2.className = (n >= 2) ? 'ac-pip used' : 'ac-pip';
+    if (n === 1) {
+      $warnIcon.textContent  = '⚠️';
+      $warnBadge.textContent = 'Warning  1 of 2';
+      $warnTitle.textContent = 'Violation Detected!';
+      $warnMsg.innerHTML     =
+        'You switched tabs or exited fullscreen. This is your <strong>1st warning (1/2)</strong>. ' +
+        'One more violation will <em>auto-submit your quiz</em> immediately.';
+      $warnBtn.textContent = '↩  Return to Quiz';
+      $warnBtn.className   = 'ac-return-btn';
+    } else {
+      $warnIcon.textContent  = '🚨';
+      $warnBadge.textContent = 'FINAL Warning — 2 of 2';
+      $warnTitle.textContent = 'Last Chance!';
+      $warnMsg.innerHTML     =
+        'This is your <strong>final warning (2/2)</strong>. ' +
+        'The very next violation will <em>immediately submit your quiz</em> with whatever answers you have selected.';
+      $warnBtn.textContent = '↩  Return to Quiz — Last Chance';
+      $warnBtn.className   = 'ac-return-btn danger';
+    }
+    $warn.style.display = 'flex';
+  }
+
+  /* ── Dismiss warning ── */
+  $warnBtn.addEventListener('click', function () {
+    $warn.style.display = 'none';
+    enterFs();
+    /* Cooldown resets via fullscreenchange if fullscreen succeeds.
+       Fallback: reset after 700 ms if browser blocks fullscreen. */
+    setTimeout(function () { cooldown = false; }, 700);
+  });
+
+  /* ── Violation handler ── */
+  function handleViolation() {
+    if (!examStarted || submitting || cooldown) return;
+    cooldown = true;
+    violations++;
+    if (violations > MAX_WARNINGS) { doSubmit(); }
+    else                           { showWarning(violations); }
+  }
+
+  /* ── Event: tab switch ── */
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) handleViolation();
+  });
+
+  /* ── Event: fullscreen exit (Esc / F11 / ✕ button) ── */
+  ['fullscreenchange','webkitfullscreenchange','mozfullscreenchange'].forEach(function (ev) {
+    document.addEventListener(ev, function () {
+      if (inFs()) { cooldown = false; }
+      else        { handleViolation(); }
+    });
+  });
+
+  /* ── Event: window blur — covers alt-tab, half-screen click-away, minimise ── */
+  /* No !inFs() check — ANY window focus loss counts as potential violation */
+  window.addEventListener('blur', function () {
+    setTimeout(function () {
+      if (!document.hasFocus()) handleViolation();
+    }, 200);
+  });
+
+  /* ── Block shortcuts ── */
+  document.addEventListener('keydown', function (e) {
+    if (!examStarted || submitting) return;
+    if ((e.ctrlKey && ['t','w','n'].includes(e.key.toLowerCase())) ||
+        (e.ctrlKey && e.key === 'Tab') ||
+        (e.altKey  && e.key === 'F4') ||
+        e.key === 'F5' || e.key === 'F11') {
+      e.preventDefault(); e.stopPropagation();
+    }
+  }, true);
+
+  /* ── Disable right-click ── */
+  document.addEventListener('contextmenu', function (e) {
+    if (examStarted && !submitting) e.preventDefault();
+  });
+
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}Recorded Classes - SmartClass{% endblock %}
+
+{% block extra_css %}
+<style>
+  .recordings-page .hero-card {
+    background: linear-gradient(135deg, #0f2f72 0%, #145af2 54%, #1aa3a3 100%);
+    color: #fff;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 20px 42px rgba(15, 47, 114, .20);
+    margin-bottom: 1.5rem;
+  }
+  .recordings-page .hero-title {
+    font-size: clamp(1.7rem, 3vw, 2.35rem);
+    font-weight: 800;
+    margin-bottom: .55rem;
+  }
+  .recordings-page .hero-copy {
+    color: rgba(255,255,255,.84);
+    margin-bottom: 0;
+  }
+  .recordings-page .table-card {
+    background: var(--sc-surface-strong);
+    border: 1px solid var(--sc-border);
+    border-radius: 22px;
+    box-shadow: var(--sc-shadow-soft);
+    overflow: hidden;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="recordings-page">
+  <div class="hero-card d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+    <div>
+      <div class="hero-title">Recorded Classes</div>
+      <p class="hero-copy">Browse recordings by topic, upload date, and teacher in a cleaner library for on-demand learning.</p>
+    </div>
+    {% if user.is_teacher %}<a class="btn btn-light" href="{% url 'recorded_class_upload' %}">Upload Class</a>{% endif %}
+  </div>
+
+  <div class="table-card">
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr><th>Name</th><th>Topic</th><th>Date</th><th>Uploaded By</th><th class="text-end">Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for recorded_class in classes %}
+          <tr>
+            <td><div class="fw-semibold">{{ recorded_class.title }}</div><div class="text-muted small">{{ recorded_class.description|truncatechars:80 }}</div></td>
+            <td>{{ recorded_class.subject }}</td>
+            <td>{{ recorded_class.uploaded_at|date:'d M Y' }}</td>
+            <td>{{ recorded_class.uploaded_by.get_full_name|default:recorded_class.uploaded_by.username }}</td>
+            <td class="text-end">
+              <a href="{% url 'recorded_class_detail' recorded_class.pk %}" class="btn btn-sm btn-outline-primary me-1">View</a>
+              {% if user.is_teacher %}<a href="{% url 'recorded_class_edit' recorded_class.pk %}" class="btn btn-sm btn-outline-secondary me-1">Edit</a><a href="{% url 'recorded_class_delete' recorded_class.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>{% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="text-center py-5 text-muted">No recorded classes have been uploaded yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

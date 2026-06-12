@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}Quizzes - {{ course.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .quiz-list-page .hero-card {
+    background: linear-gradient(135deg, #0f2f72 0%, #145af2 54%, #1aa3a3 100%);
+    color: #fff;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 20px 42px rgba(15, 47, 114, .20);
+    margin-bottom: 1.5rem;
+  }
+  .quiz-list-page .hero-title {
+    font-size: clamp(1.7rem, 3vw, 2.35rem);
+    font-weight: 800;
+    margin-bottom: .55rem;
+  }
+  .quiz-list-page .hero-copy {
+    color: rgba(255,255,255,.84);
+    margin-bottom: 0;
+  }
+  .quiz-list-page .quiz-card {
+    height: 100%;
+    background: var(--sc-surface-strong);
+    border: 1px solid var(--sc-border);
+    border-radius: 22px;
+    box-shadow: var(--sc-shadow-soft);
+    padding: 1.3rem;
+  }
+  .quiz-list-page .quiz-title {
+    color: var(--sc-ink);
+    font-size: 1.06rem;
+    font-weight: 800;
+    margin-bottom: .45rem;
+  }
+  .quiz-list-page .quiz-copy {
+    color: var(--sc-muted);
+    font-size: .88rem;
+    min-height: 42px;
+    margin-bottom: 1rem;
+  }
+  .quiz-list-page .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-bottom: 1rem;
+  }
+  .quiz-list-page .meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    border-radius: 999px;
+    padding: .35rem .65rem;
+    background: #f4f8fc;
+    color: #0f3fae;
+    font-size: .76rem;
+    font-weight: 700;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="quiz-list-page">
+  <div class="hero-card d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+    <div>
+      <div class="hero-title">Quizzes</div>
+      <p class="hero-copy">Create, attempt, and review quiz activity for {{ course.title }} from a cleaner quiz workspace.</p>
+    </div>
+    {% if user.is_teacher %}<a href="{% url 'quiz_create' course.pk %}" class="btn btn-light">Create Quiz</a>{% endif %}
+  </div>
+
+  <div class="row g-4">
+    {% for quiz in quizzes %}
+    <div class="col-md-6 col-xl-4">
+      <div class="quiz-card">
+        <div class="quiz-title">{{ quiz.title }}</div>
+        {% if quiz.description %}<p class="quiz-copy">{{ quiz.description|truncatechars:90 }}</p>{% endif %}
+        <div class="meta-row">
+          <span class="meta-pill"><i class="bi bi-clock"></i>{{ quiz.duration }} min</span>
+          <span class="meta-pill"><i class="bi bi-question-circle"></i>{{ quiz.question_count }} questions</span>
+          <span class="meta-pill"><i class="bi bi-star"></i>{{ quiz.total_marks }} marks</span>
+        </div>
+        {% if quiz.start_date %}<div class="text-muted small mb-1">Starts: {{ quiz.start_date|date:"M d, Y H:i" }}</div>{% endif %}
+        {% if quiz.due_date %}<div class="text-muted small mb-3">Ends: {{ quiz.due_date|date:"M d, Y H:i" }}</div>{% endif %}
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <span class="badge bg-secondary">{% if quiz.start_date and quiz.start_date > now %}Upcoming{% elif quiz.due_date and quiz.due_date < now %}Closed{% else %}Open{% endif %}</span>
+          {% if user.is_teacher %}
+            <a href="{% url 'quiz_edit' quiz.pk %}" class="btn btn-outline-primary btn-sm">Edit</a>
+            <a href="{% url 'quiz_attempted_students' quiz.pk %}" class="btn btn-outline-success btn-sm">Students</a>
+            <a href="{% url 'quiz_delete' quiz.pk %}" class="btn btn-outline-danger btn-sm">Delete</a>
+          {% else %}
+            {% if quiz.pk in attempted_ids %}
+              {% for attempt in request.user.quiz_attempts.all %}
+                {% if attempt.quiz.pk == quiz.pk %}<a href="{% url 'quiz_result' attempt.pk %}" class="btn btn-outline-success btn-sm">View Result</a>{% endif %}
+              {% endfor %}
+            {% elif not quiz.is_open %}
+              <span class="badge bg-warning text-dark">Unavailable</span>
+            {% else %}
+              <a href="{% url 'quiz_attempt' quiz.pk %}" class="btn btn-primary btn-sm">Start Quiz</a>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5 text-muted">No quizzes yet.</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

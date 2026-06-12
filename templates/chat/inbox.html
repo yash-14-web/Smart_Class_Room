@@ -1,0 +1,313 @@
+{% extends 'base.html' %}
+{% block title %}Messages - SmartClass{% endblock %}
+{% block page_messages %}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .chat-shell {
+    --chat-ink: var(--sc-ink);
+    --chat-muted: var(--sc-muted);
+    --chat-line: var(--sc-border);
+    --chat-soft: var(--sc-glass-bg);
+    --chat-primary: var(--sc-primary);
+    --chat-green: var(--sc-teal);
+  }
+  .chat-shell .hero-card {
+    background: linear-gradient(135deg, #0f2f72 0%, #145af2 54%, #1aa3a3 100%);
+    color: #fff;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 20px 42px rgba(15, 47, 114, .20);
+    margin-bottom: 1.5rem;
+  }
+  .chat-shell .hero-kicker {
+    text-transform: uppercase;
+    letter-spacing: .16em;
+    font-size: .74rem;
+    font-weight: 700;
+    opacity: .82;
+    margin-bottom: .75rem;
+  }
+  .chat-shell .hero-title {
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+    font-weight: 800;
+    line-height: 1.08;
+    margin-bottom: .6rem;
+  }
+  .chat-shell .hero-copy {
+    color: rgba(255,255,255,.84);
+    max-width: 620px;
+    margin-bottom: 0;
+  }
+  .chat-shell .panel-card {
+    background: var(--sc-surface-strong);
+    border: 1px solid var(--chat-line);
+    border-radius: 22px;
+    box-shadow: var(--sc-shadow-soft);
+    overflow: hidden;
+    height: 100%;
+  }
+  .chat-shell .panel-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--chat-line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .75rem;
+  }
+  .chat-shell .panel-title {
+    font-weight: 800;
+    font-size: 1.02rem;
+    color: var(--chat-ink);
+    margin-bottom: .15rem;
+  }
+  .chat-shell .panel-copy {
+    color: var(--chat-muted);
+    font-size: .88rem;
+    margin-bottom: 0;
+  }
+  .chat-shell .search-wrap {
+    padding: 18px 22px 10px;
+  }
+  .chat-shell .search-wrap input {
+    min-height: 48px;
+    border-radius: 999px;
+    border: 1px solid var(--chat-line);
+    width: 100%;
+    padding: .75rem 1rem;
+    box-shadow: none;
+  }
+  .chat-shell .search-wrap input:focus {
+    outline: none;
+    border-color: rgba(20, 90, 242, .35);
+    box-shadow: 0 0 0 .2rem rgba(20, 90, 242, .10);
+  }
+  .chat-shell .conversation-list,
+  .chat-shell .people-grid {
+    padding: 0 16px 16px;
+  }
+  .chat-shell .conversation-list {
+    display: grid;
+    gap: 10px;
+    max-height: 560px;
+    overflow-y: auto;
+  }
+  .chat-shell .conversation-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px;
+    border: 1px solid var(--chat-line);
+    border-radius: 18px;
+    text-decoration: none;
+    color: inherit;
+    background: var(--sc-surface);
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+  .chat-shell .conversation-item:hover {
+    transform: translateY(-1px);
+    border-color: rgba(20, 90, 242, .20);
+    box-shadow: var(--sc-shadow-soft);
+  }
+  .chat-shell .avatar,
+  .chat-shell .person-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 18px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .chat-shell .avatar-fallback,
+  .chat-shell .person-fallback {
+    width: 52px;
+    height: 52px;
+    border-radius: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1rem;
+    flex-shrink: 0;
+    color: #fff;
+    background: linear-gradient(135deg, #145af2, #1aa3a3);
+  }
+  .chat-shell .meta-name {
+    color: var(--chat-ink);
+    font-weight: 800;
+    margin-bottom: .15rem;
+  }
+  .chat-shell .meta-preview,
+  .chat-shell .meta-role {
+    color: var(--chat-muted);
+    font-size: .85rem;
+  }
+  .chat-shell .meta-time {
+    color: var(--chat-muted);
+    font-size: .74rem;
+    white-space: nowrap;
+  }
+  .chat-shell .count-pill {
+    border-radius: 999px;
+    background: rgba(20, 90, 242, .10);
+    color: #0f3fae;
+    padding: .4rem .7rem;
+    font-weight: 700;
+    font-size: .76rem;
+  }
+  .chat-shell .people-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+  }
+  .chat-shell .person-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    border: 1px solid var(--chat-line);
+    border-radius: 18px;
+    text-decoration: none;
+    color: inherit;
+    background: var(--sc-surface);
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+  .chat-shell .person-card:hover {
+    transform: translateY(-1px);
+    border-color: rgba(20, 90, 242, .20);
+    box-shadow: var(--sc-shadow-soft);
+  }
+  .chat-shell .role-pill {
+    display: inline-flex;
+    border-radius: 999px;
+    padding: .3rem .6rem;
+    font-size: .72rem;
+    font-weight: 700;
+    margin-top: .35rem;
+  }
+  .chat-shell .role-pill.teacher {
+    background: rgba(20, 90, 242, .10);
+    color: #0f3fae;
+  }
+  .chat-shell .role-pill.student {
+    background: rgba(21, 147, 107, .12);
+    color: #0f7254;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-shell">
+  <div class="hero-card">
+    <div class="hero-kicker">Communication Hub</div>
+    <div class="hero-title">Messages that feel cleaner and easier to manage.</div>
+    <p class="hero-copy">Open your recent conversations, start a new chat, and keep classroom communication in one focused place without noisy alerts.</p>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <div class="panel-card">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">Conversations</div>
+            <p class="panel-copy">Your recent student and teacher chats.</p>
+          </div>
+          <div class="count-pill">{{ conversations|length }}</div>
+        </div>
+        <div class="search-wrap">
+          <form method="GET" action="{% url 'inbox' %}" onsubmit="event.preventDefault();">
+            <input type="text" id="conversationSearch" name="q" value="{{ search_query }}" placeholder="Search conversations..." />
+          </form>
+        </div>
+        <div class="conversation-list" id="conversationList">
+          {% for conv in conversations %}
+          <a href="{% url 'chat_room' conv.contact.id %}" class="conversation-item">
+            {% if conv.contact.profile_pic %}
+              <img src="{{ conv.contact.profile_pic.url }}" class="avatar" alt="{{ conv.contact.username }}"/>
+            {% else %}
+              <div class="avatar-fallback">{{ conv.contact.username|first|upper }}</div>
+            {% endif %}
+            <div class="flex-grow-1 overflow-hidden">
+              <div class="d-flex justify-content-between align-items-center gap-2">
+                <div class="meta-name text-truncate">{{ conv.contact.get_full_name|default:conv.contact.username }}</div>
+                {% if conv.last_message %}<div class="meta-time">{{ conv.last_message.timestamp|date:"H:i" }}</div>{% endif %}
+              </div>
+              <div class="meta-preview text-truncate">
+                {% if conv.last_message %}
+                  {% if conv.last_message.sender == request.user %}<i class="bi bi-check2 me-1"></i>{% endif %}
+                  {{ conv.last_message.message }}
+                {% else %}
+                  No messages yet
+                {% endif %}
+              </div>
+            </div>
+            {% if conv.unread_count %}
+              <span class="count-pill">{{ conv.unread_count }}</span>
+            {% endif %}
+          </a>
+          {% empty %}
+          <div class="text-center py-5 text-muted">
+            <i class="bi bi-chat-square-dots fs-1 d-block mb-2"></i>
+            No conversations yet.
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-7">
+      <div class="panel-card">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">Start a New Conversation</div>
+            <p class="panel-copy">Choose someone from your classroom network and open a direct chat.</p>
+          </div>
+          <a href="{% url 'dashboard' %}" class="btn btn-sm btn-outline-primary">Back to Dashboard</a>
+        </div>
+        <div class="people-grid" id="peopleGrid">
+          {% for u in available_users %}
+          <a href="{% url 'chat_room' u.id %}" class="person-card">
+            {% if u.profile_pic %}
+              <img src="{{ u.profile_pic.url }}" class="person-avatar" alt="{{ u.username }}"/>
+            {% else %}
+              <div class="person-fallback">{{ u.username|first|upper }}</div>
+            {% endif %}
+            <div>
+              <div class="meta-name">{{ u.get_full_name|default:u.username }}</div>
+              <div class="meta-role">Open a private conversation inside SmartClass.</div>
+              <span class="role-pill {% if u.is_teacher %}teacher{% else %}student{% endif %}">{{ u.role|capfirst }}</span>
+            </div>
+          </a>
+          {% empty %}
+          <div class="text-center py-5 text-muted w-100">
+            <i class="bi bi-person-x fs-1 d-block mb-2"></i>
+            No new people to chat with right now.
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const conversationSearch = document.getElementById('conversationSearch');
+  if (conversationSearch) {
+    conversationSearch.addEventListener('input', function () {
+      const query = this.value.toLowerCase();
+      // Filter recent conversations
+      document.querySelectorAll('#conversationList .conversation-item').forEach(function (item) {
+        const name = item.querySelector('.meta-name')?.textContent.toLowerCase() || '';
+        const preview = item.querySelector('.meta-preview')?.textContent.toLowerCase() || '';
+        item.style.display = name.includes(query) || preview.includes(query) ? '' : 'none';
+      });
+      // Filter start a new conversation list
+      document.querySelectorAll('#peopleGrid .person-card').forEach(function (card) {
+        const name = card.querySelector('.meta-name')?.textContent.toLowerCase() || '';
+        card.style.display = name.includes(query) ? '' : 'none';
+      });
+    });
+  }
+</script>
+{% endblock %}

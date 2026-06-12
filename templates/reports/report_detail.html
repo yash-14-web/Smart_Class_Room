@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Report Detail - {{ report.student.username }}{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div><h5 class="mb-0">Report for {{ report.student.get_full_name|default:report.student.username }}</h5><small class="text-muted">Course: {{ report.course.title }}</small></div>
+    {% if user.is_teacher %}<a class="btn btn-outline-primary btn-sm" href="{% url 'report_edit' report.pk %}">Edit</a>{% endif %}
+  </div>
+  <div class="card-body">
+    <div class="row g-4 mb-4">
+      <div class="col-md-3"><div class="stat-card bg-primary text-white p-3"><div class="small opacity-75">Assignment Score</div><div class="fs-3 fw-bold">{{ report.assignment_score }}</div></div></div>
+      <div class="col-md-3"><div class="stat-card bg-success text-white p-3"><div class="small opacity-75">Quiz Score</div><div class="fs-3 fw-bold">{{ report.quiz_score }}</div></div></div>
+      <div class="col-md-3"><div class="stat-card bg-info text-white p-3"><div class="small opacity-75">Test Score</div><div class="fs-3 fw-bold">{{ report.test_score }}</div></div></div>
+      <div class="col-md-3"><div class="stat-card bg-warning text-dark p-3"><div class="small opacity-75">Overall Score</div><div class="fs-3 fw-bold">{{ report.overall_score }}</div></div></div>
+    </div>
+    <p><strong>Course:</strong> {{ report.course.title }}</p>
+    <p class="mb-0"><strong>Last updated:</strong> {{ report.updated_at|date:'M d, Y H:i' }}</p>
+  </div>
+</div>
+{% endblock %}

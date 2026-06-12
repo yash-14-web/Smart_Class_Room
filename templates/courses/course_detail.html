@@ -1,0 +1,289 @@
+{% extends 'base.html' %}
+{% block title %}{{ course.title }} - SmartClass{% endblock %}
+
+{% block extra_css %}
+<style>
+  .course-detail-page .hero-card {
+    background: linear-gradient(135deg, #0f2f72 0%, #145af2 54%, #1aa3a3 100%);
+    color: #fff;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 20px 42px rgba(15, 47, 114, .20);
+    margin-bottom: 1.5rem;
+  }
+  .course-detail-page .hero-title {
+    font-size: clamp(1.8rem, 3vw, 2.45rem);
+    font-weight: 800;
+    margin-bottom: .55rem;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  .course-detail-page .hero-copy {
+    color: rgba(255,255,255,.84);
+    max-width: 760px;
+    margin-bottom: 1rem;
+    white-space: pre-line;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  .course-detail-page .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+  }
+  .course-detail-page .hero-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    border-radius: 999px;
+    padding: .45rem .75rem;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.16);
+    font-size: .8rem;
+    font-weight: 700;
+  }
+  .course-detail-page .action-wrap {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: .65rem;
+    width: 100%;
+  }
+  @media (max-width: 991.98px) {
+    .course-detail-page .action-wrap a:last-child:nth-child(odd) {
+      grid-column: span 2;
+    }
+  }
+  @media (min-width: 992px) {
+    .course-detail-page .action-wrap {
+      grid-template-columns: 1fr;
+      max-width: 240px;
+      margin-left: auto;
+    }
+  }
+  .course-detail-page .section-card {
+    background: var(--sc-surface-strong);
+    border: 1px solid var(--sc-border);
+    border-radius: 22px;
+    box-shadow: var(--sc-shadow-soft);
+    overflow: hidden;
+    height: 100%;
+  }
+  .course-detail-page .section-head {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--sc-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+  .course-detail-page .section-title {
+    font-weight: 800;
+    color: var(--sc-ink);
+    margin-bottom: .15rem;
+  }
+  .course-detail-page .section-copy {
+    color: var(--sc-muted);
+    font-size: .86rem;
+    margin-bottom: 0;
+  }
+  .course-detail-page .section-body {
+    padding: 14px 18px 18px;
+  }
+  .course-detail-page .resource-list,
+  .course-detail-page .student-list {
+    display: grid;
+    gap: 12px;
+  }
+  .course-detail-page .resource-item,
+  .course-detail-page .student-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid var(--sc-border);
+    border-radius: 18px;
+    background: var(--sc-surface);
+  }
+  .course-detail-page .resource-title,
+  .course-detail-page .student-name {
+    font-weight: 800;
+    color: var(--sc-ink);
+    margin-bottom: .2rem;
+  }
+  .course-detail-page .resource-copy,
+  .course-detail-page .student-copy {
+    color: var(--sc-muted);
+    font-size: .84rem;
+    margin-bottom: 0;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="course-detail-page">
+  <div class="hero-card">
+    <div class="row g-4 align-items-start">
+      <div class="col-lg-8">
+        <div class="hero-title">{{ course.title }}</div>
+        <p class="hero-copy">{{ course.description }}</p>
+        <div class="hero-meta">
+          <div class="hero-pill"><i class="bi bi-person"></i>{{ course.teacher.get_full_name|default:course.teacher.username }}</div>
+          <div class="hero-pill"><i class="bi bi-people"></i>{{ students.count }} enrolled</div>
+          <div class="hero-pill"><i class="bi bi-activity"></i>{{ course_status }}</div>
+          {% if course.start_date %}<div class="hero-pill"><i class="bi bi-calendar-event"></i>{{ course.start_date|date:"M d, Y H:i" }}</div>{% endif %}
+          {% if course.project_end_date %}<div class="hero-pill text-warning"><i class="bi bi-journal-code"></i>Project Deadline: {{ course.project_end_date|date:"M d, Y H:i" }}</div>{% endif %}
+        </div>
+      </div>
+      <div class="col-lg-4">
+        {% if user.is_teacher %}
+        <div class="action-wrap">
+          <a href="{% url 'material_upload' course.pk %}" class="btn btn-light btn-sm">Upload Material</a>
+          <a href="{% url 'assignment_create' course.pk %}" class="btn btn-warning btn-sm">New Assignment</a>
+          <a href="{% url 'quiz_create' course.pk %}" class="btn btn-light btn-sm">New Quiz</a>
+          <a href="{% url 'group_chat' course.pk %}" class="btn btn-outline-light btn-sm">Group Chat</a>
+          <a href="{% url 'attendance_list' course.pk %}" class="btn btn-outline-light btn-sm">Attendance</a>
+          <a href="{% url 'issue_certificate' course.pk %}" class="btn btn-outline-light btn-sm">Certificates</a>
+          <a href="{% url 'course_edit' course.pk %}" class="btn btn-outline-light btn-sm">Edit Course</a>
+        </div>
+        {% else %}
+        <div class="action-wrap">
+          <a href="{% url 'quiz_list' course.pk %}" class="btn btn-light btn-sm">Quizzes</a>
+          <a href="{% url 'group_chat' course.pk %}" class="btn btn-outline-light btn-sm">Group Chat</a>
+          <a href="{% url 'student_attendance' course.pk %}" class="btn btn-outline-light btn-sm">Attendance</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if not course_available and user.is_student and is_enrolled %}
+  <div class="alert alert-warning mb-4">This course will become available on <strong>{{ course.start_date|date:"F d, Y H:i" }}</strong>. You are enrolled and will gain access once the course starts.</div>
+  {% endif %}
+
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="section-card">
+        <div class="section-head">
+          <div>
+            <div class="section-title">Course Materials</div>
+            <p class="section-copy">Resources shared for this course.</p>
+          </div>
+        </div>
+        <div class="section-body">
+          {% if materials %}
+          <div class="resource-list">
+            {% for material in materials %}
+            <div class="resource-item">
+              <div>
+                <div class="resource-title">{{ material.title }}</div>
+                <p class="resource-copy">{% if material.description %}{{ material.description|truncatechars:60 }}{% else %}Course file ready to download.{% endif %}</p>
+              </div>
+              <div class="d-flex gap-2 flex-wrap">
+                <a href="{% url 'material_download' material.pk %}" class="btn btn-outline-primary btn-sm">Download</a>
+                {% if user.is_teacher %}<a href="{% url 'material_delete' material.pk %}" class="btn btn-outline-danger btn-sm">Delete</a>{% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-4 text-muted">No materials uploaded yet.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="section-card">
+        <div class="section-head">
+          <div>
+            <div class="section-title">Assignments</div>
+            <p class="section-copy">Track coursework and deadlines.</p>
+          </div>
+        </div>
+        <div class="section-body">
+          {% if assignments %}
+          <div class="resource-list">
+            {% for assignment in assignments %}
+            <div class="resource-item">
+              <div>
+                <div class="resource-title">{{ assignment.title }}</div>
+                <p class="resource-copy">Due {{ assignment.due_date|date:"M d, Y H:i" }} - {{ assignment.total_marks }} marks</p>
+              </div>
+              <a href="{% url 'assignment_detail' assignment.pk %}" class="btn btn-outline-primary btn-sm">Open</a>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-4 text-muted">No assignments yet.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="section-card">
+        <div class="section-head">
+          <div>
+            <div class="section-title">Quizzes</div>
+            <p class="section-copy">Quick access to quiz activity for this course.</p>
+          </div>
+          <a href="{% url 'quiz_list' course.pk %}" class="btn btn-sm btn-outline-primary">View All</a>
+        </div>
+        <div class="section-body">
+          {% if quizzes %}
+          <div class="resource-list">
+            {% for quiz in quizzes|slice:3 %}
+            <div class="resource-item">
+              <div>
+                <div class="resource-title">{{ quiz.title }}</div>
+                <p class="resource-copy">Due {{ quiz.due_date|date:"M d, Y H:i" }} - {{ quiz.total_marks }} marks</p>
+              </div>
+              <a href="{% url 'quiz_list' course.pk %}" class="btn btn-outline-primary btn-sm">Open</a>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-4 text-muted">No quizzes created yet.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {% if user.is_teacher %}
+    <div class="col-12">
+      <div class="section-card">
+        <div class="section-head">
+          <div>
+            <div class="section-title">Enrolled Students</div>
+            <p class="section-copy">Connect, track attendance, and issue certificates.</p>
+          </div>
+          <a href="{% url 'group_chat' course.pk %}" class="btn btn-sm btn-outline-primary">Group Chat</a>
+        </div>
+        <div class="section-body">
+          {% if students %}
+          <div class="student-list">
+            {% for enrollment in students %}
+            <div class="student-item">
+              <div>
+                <div class="student-name">{{ enrollment.student.get_full_name|default:enrollment.student.username }}</div>
+                <p class="student-copy">{{ enrollment.student.email }} - Enrolled {{ enrollment.enrolled_at|date:"M d, Y" }}</p>
+              </div>
+              <div class="d-flex gap-2 flex-wrap">
+                <a href="{% url 'chat_room' enrollment.student.id %}" class="btn btn-outline-primary btn-sm">Message</a>
+                <a href="{% url 'student_attendance' course.pk %}?student={{ enrollment.student.pk }}" class="btn btn-outline-success btn-sm">Attendance</a>
+                <a href="{% url 'issue_certificate' course.pk %}" class="btn btn-outline-warning btn-sm">Certificate</a>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-4 text-muted">No students enrolled yet.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

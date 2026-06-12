@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}Subject Projects - SmartClass{% endblock %}
+
+{% block extra_css %}
+<style>
+  .project-list-page .hero-card {
+    background: linear-gradient(135deg, #0f2f72 0%, #145af2 54%, #1aa3a3 100%);
+    color: #fff;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 20px 42px rgba(15, 47, 114, .20);
+    margin-bottom: 1.5rem;
+  }
+  .project-list-page .hero-title {
+    font-size: clamp(1.8rem, 3vw, 2.45rem);
+    font-weight: 800;
+    margin-bottom: .55rem;
+  }
+  .project-list-page .hero-copy {
+    color: rgba(255,255,255,.84);
+    max-width: 680px;
+    margin-bottom: 0;
+  }
+  .project-list-page .table-card {
+    background: var(--sc-surface-strong);
+    border: 1px solid var(--sc-border);
+    border-radius: 22px;
+    box-shadow: var(--sc-shadow-soft);
+    overflow: hidden;
+  }
+  .project-list-page .submission-title {
+    font-weight: 800;
+    color: var(--sc-ink);
+  }
+  .project-list-page .submission-meta {
+    color: var(--sc-muted);
+    font-size: .84rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="project-list-page">
+  <div class="hero-card d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+    <div>
+      <div class="hero-title">Subject Projects</div>
+      <p class="hero-copy">Track project submissions, grading progress, and teacher feedback in one clean workspace for project-based learning.</p>
+    </div>
+    {% if not user.is_teacher %}
+    <a class="btn btn-light" href="{% url 'project_submit' %}"><i class="bi bi-upload me-1"></i>Submit Project</a>
+    {% endif %}
+  </div>
+
+  <div class="table-card">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Subject</th>
+            <th>Project</th>
+            <th>Student</th>
+            <th>Grade</th>
+            <th class="text-center">Score</th>
+            <th class="text-center">Submitted</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for submission in submissions %}
+          <tr>
+            <td>{{ submission.course.title|default:"N/A" }}</td>
+            <td>
+              <div class="submission-title">{{ submission.title }}</div>
+              <div class="submission-meta">{{ submission.description|truncatechars:70 }}</div>
+            </td>
+            <td>{{ submission.student.get_full_name|default:submission.student.username }}</td>
+            <td>
+              {% if submission.score is not None %}
+                <span class="badge bg-success">{{ submission.grade_letter }}</span>
+              {% else %}
+                <span class="badge bg-warning text-dark">Pending</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if submission.score is not None %}
+                {{ submission.score }} / {{ submission.total_marks }}
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+            <td class="text-center">{{ submission.submitted_at|date:'M d, Y' }}</td>
+            <td class="text-end">
+              <a href="{% url 'project_detail' submission.pk %}" class="btn btn-sm btn-outline-primary">Details</a>
+              {% if submission.student == user %}
+              <form method="post" action="{% url 'project_delete' submission.pk %}" class="d-inline ms-1">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this submission?');">Delete</button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center text-muted py-5">No project submissions yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

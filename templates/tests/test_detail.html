@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% block title %}{{ test.title }} - SmartClass{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+  <div>
+    <h4 class="fw-bold mb-1">{{ test.title }}</h4>
+    <p class="text-muted mb-0" style="white-space: pre-line; overflow-wrap: break-word; word-break: break-word;">{{ test.description|default:'Hybrid coding and quiz assessment.' }}</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    {% if user.is_teacher %}
+      <a class="btn btn-primary" href="{% url 'question_add' test.pk %}">Add Question</a>
+      <a class="btn btn-outline-secondary" href="{% url 'test_edit' test.pk %}">Edit Test</a>
+      <a class="btn btn-outline-danger" href="{% url 'test_delete' test.pk %}">Delete Test</a>
+      <a class="btn btn-outline-secondary" href="{% url 'test_responses' test.pk %}">View Responses</a>
+    {% else %}
+      {% if response %}
+        <a class="btn btn-primary" href="{% url 'test_response_detail' test.pk response.pk %}">View Summary</a>
+      {% elif test.is_open %}
+        <a class="btn btn-primary" href="{% url 'test_take' test.pk %}">Start Test</a>
+      {% else %}
+        <span class="badge bg-secondary rounded-pill px-3 py-2">{{ test.status_label }}</span>
+      {% endif %}
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <span class="badge bg-primary">{{ test.total_marks }} marks</span>
+          <span class="badge bg-info text-dark">{{ test.time_limit }} min</span>
+          <span class="badge {% if test.status_label == 'Open' %}bg-success{% elif test.status_label == 'Closed' %}bg-danger{% elif test.status_label == 'Upcoming' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">{{ test.status_label }}</span>
+        </div>
+        <p><strong>Available:</strong> {{ test.available_from|date:'M d, Y H:i' }}</p>
+        <p><strong>Deadline:</strong> {% if test.end_date %}{{ test.end_date|date:'M d, Y H:i' }}{% else %}Open ended{% endif %}</p>
+        <p><strong>Question Mix:</strong> {{ test.coding_questions_count }} coding and {{ test.mcq_questions_count }} quiz</p>
+        {% if test.notebook_file %}
+          <a class="btn btn-outline-primary btn-sm" href="{{ test.notebook_file.url }}" download>Download Notebook / Brief</a>
+        {% endif %}
+        {% if response %}
+          <hr>
+          <div class="row g-2 text-center">
+            <div class="col-4">
+              <div class="border rounded-4 p-2">
+                <div class="text-muted small">Quiz</div>
+                <div class="fw-bold">{{ response.quiz_score }}</div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="border rounded-4 p-2">
+                <div class="text-muted small">Coding</div>
+                <div class="fw-bold">{{ response.coding_score }}</div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="border rounded-4 p-2">
+                <div class="text-muted small">Total</div>
+                <div class="fw-bold">{{ response.score }}</div>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="card h-100">
+      <div class="card-header bg-white">
+        <h5 class="mb-0">Assessment Structure</h5>
+      </div>
+      <div class="card-body">
+        {% if questions %}
+          <div class="vstack gap-3">
+            {% for question in questions %}
+              <div class="border rounded-4 p-3">
+                <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                  <div>
+                    <div class="fw-semibold mb-1">Q{{ forloop.counter }}. {{ question.question_text }}</div>
+                    <div class="d-flex flex-wrap gap-2">
+                      <span class="badge {% if question.is_coding %}bg-warning text-dark{% else %}bg-primary{% endif %}">
+                        {% if question.is_coding %}Coding{% else %}Quiz{% endif %}
+                      </span>
+                      <span class="badge bg-light text-dark">{{ question.marks }} marks</span>
+                      {% if question.is_coding %}
+                        <span class="badge bg-light text-dark">{{ question.sample_case_count }} sample</span>
+                        <span class="badge bg-light text-dark">{{ question.hidden_case_count }} hidden</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                  {% if user.is_teacher and question.is_coding %}
+                    <a class="btn btn-sm btn-outline-primary" href="{% url 'coding_testcase_add' question.pk %}">Manage Test Cases</a>
+                  {% endif %}
+                </div>
+                {% if question.code_cell %}
+                  <div class="mt-3 small text-muted">{{ question.code_cell|linebreaksbr }}</div>
+                {% endif %}
+                {% if question.is_coding and question.expected_function_name %}
+                  <div class="mt-2"><code>Required function: {{ question.expected_function_name }}</code></div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-5 text-muted">No questions yet. Add quiz or coding questions to activate this test.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if response_summary %}
+<div class="card">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Latest Result Summary</h5>
+    <small class="text-muted">Submitted on {{ response.submitted_at|date:'M d, Y H:i' }}</small>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Question</th>
+            <th>Type</th>
+            <th>Obtained</th>
+            <th>Total</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in response_summary %}
+          <tr>
+            <td>{{ row.title }}</td>
+            <td>{{ row.type }}</td>
+            <td>{{ row.obtained_marks }}</td>
+            <td>{{ row.total_marks }}</td>
+            <td>
+              <span class="badge {% if row.status == 'Pass' %}bg-success{% elif row.status == 'Fail' %}bg-danger{% else %}bg-warning text-dark{% endif %}">{{ row.status }}</span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
