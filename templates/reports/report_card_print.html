@@ -129,6 +129,10 @@
       {{ student.get_full_name|default:student.username }}
     </div>
     <div class="info-line">
+      <strong>Student ID:</strong>
+      {{ student.student_id|default:"N/A" }}
+    </div>
+    <div class="info-line">
       <strong>Rank:</strong>
       {% if rank %}#{{ rank }}{% else %}N/A{% endif %}
     </div>
@@ -157,8 +161,11 @@
 {% for item in courses_data %}
 <div class="subject-section">
 
-  <div class="subject-name">
-    Subject name: {{ item.course.title }}
+  <div class="subject-name" style="font-size: 11.5px; margin-bottom: 8px;">
+    Subject: <strong>{{ item.course.title }}</strong> &nbsp;|&nbsp; 
+    Course Code: <strong>{{ item.course.course_code|default:"N/A" }}</strong> &nbsp;|&nbsp; 
+    Department: <strong>{{ item.course.department.name|default:"N/A" }} ({{ item.course.department.code|default:"N/A" }})</strong> &nbsp;|&nbsp; 
+    Batch: <strong>{{ item.course.batch|default:"N/A" }}</strong>
   </div>
 
   <table>

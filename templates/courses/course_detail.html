@@ -42,23 +42,35 @@
     font-size: .8rem;
     font-weight: 700;
   }
-  .course-detail-page .action-wrap {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: .65rem;
-    width: 100%;
+  /* Course Detail Dropdown menu styles */
+  .course-detail-page .dropdown-menu {
+    border: 1px solid var(--sc-border) !important;
+    border-radius: 18px !important;
+    box-shadow: var(--sc-shadow) !important;
+    padding: 0.6rem !important;
+    overflow: hidden;
   }
-  @media (max-width: 991.98px) {
-    .course-detail-page .action-wrap a:last-child:nth-child(odd) {
-      grid-column: span 2;
-    }
+  .course-detail-page .dropdown-item {
+    border-radius: 12px !important;
+    padding: 0.65rem 0.85rem !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    color: var(--sc-ink) !important;
+    transition: all 0.15s ease !important;
   }
-  @media (min-width: 992px) {
-    .course-detail-page .action-wrap {
-      grid-template-columns: 1fr;
-      max-width: 240px;
-      margin-left: auto;
-    }
+  .course-detail-page .dropdown-item i {
+    font-size: 1.05rem;
+    width: 20px;
+    text-align: center;
+  }
+  .course-detail-page .dropdown-item:hover {
+    background: rgba(20, 90, 242, 0.08) !important;
+    transform: translateX(4px);
+    color: var(--sc-primary-deep) !important;
+  }
+  .course-detail-page .dropdown-item.text-danger:hover {
+    background: rgba(211, 71, 103, 0.10) !important;
+    color: var(--sc-danger) !important;
   }
   .course-detail-page .section-card {
     background: var(--sc-surface-strong);
@@ -93,6 +105,9 @@
   .course-detail-page .student-list {
     display: grid;
     gap: 12px;
+    max-height: 340px;
+    overflow-y: auto;
+    padding-right: 6px;
   }
   .course-detail-page .resource-item,
   .course-detail-page .student-item {
@@ -117,43 +132,98 @@
     font-size: .84rem;
     margin-bottom: 0;
   }
+
+  /* Scoped detail page overrides */
+  .course-detail-page .course-card-aligned {
+    width: 100%;
+    height: auto !important; /* Prevent vertical stretching in detail page */
+    align-self: flex-start !important; /* Avoid vertical alignment stretch */
+    margin-bottom: 1.5rem;
+    overflow: visible !important; /* Fix dropdown clipping */
+  }
+  .course-detail-page .cover-image-wrap {
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+  }
+  .course-detail-page .course-card-aligned .course-copy {
+    display: block !important;
+    overflow: visible !important;
+    height: auto !important;
+    -webkit-line-clamp: unset !important;
+    color: var(--sc-ink) !important; /* Ensure clear text visibility */
+    font-size: 0.95rem !important;
+    line-height: 1.5 !important;
+  }
+  .course-detail-page .accordion-item {
+    border-radius: 16px !important;
+    border: 1px solid var(--sc-border) !important;
+    background: var(--sc-surface-strong);
+  }
+  .course-detail-page .accordion-button {
+    border-radius: 16px !important;
+    font-weight: 700;
+  }
+  .course-detail-page .accordion-button:not(.collapsed) {
+    background-color: rgba(20, 90, 242, 0.05) !important;
+    color: var(--sc-primary-deep) !important;
+    box-shadow: none !important;
+  }
+  .course-detail-page .accordion-collapse {
+    border-top: 1px solid var(--sc-border);
+  }
+  .course-detail-page .course-description {
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.6;
+    font-size: 0.95rem;
+    color: var(--sc-muted);
+  }
+  .course-detail-page .course-description p {
+    margin-bottom: 0.75rem;
+  }
+  .course-detail-page .course-description p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Custom scrollbar for scrollable lists inside cards */
+  .course-detail-page .student-list::-webkit-scrollbar,
+  .course-detail-page .list-group::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .course-detail-page .student-list::-webkit-scrollbar-track,
+  .course-detail-page .list-group::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .course-detail-page .student-list::-webkit-scrollbar-thumb,
+  .course-detail-page .list-group::-webkit-scrollbar-thumb {
+    background: rgba(20, 90, 242, 0.15);
+    border-radius: 99px;
+  }
+  .course-detail-page .student-list::-webkit-scrollbar-thumb:hover,
+  .course-detail-page .list-group::-webkit-scrollbar-thumb:hover {
+    background: rgba(20, 90, 242, 0.35);
+  }
+  
+  /* Apply scrollbar and max height to accordion lists */
+  .course-detail-page .list-group {
+    max-height: 340px;
+    overflow-y: auto;
+    padding-right: 6px;
+  }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="course-detail-page">
-  <div class="hero-card">
-    <div class="row g-4 align-items-start">
-      <div class="col-lg-8">
-        <div class="hero-title">{{ course.title }}</div>
-        <p class="hero-copy">{{ course.description }}</p>
-        <div class="hero-meta">
-          <div class="hero-pill"><i class="bi bi-person"></i>{{ course.teacher.get_full_name|default:course.teacher.username }}</div>
-          <div class="hero-pill"><i class="bi bi-people"></i>{{ students.count }} enrolled</div>
-          <div class="hero-pill"><i class="bi bi-activity"></i>{{ course_status }}</div>
-          {% if course.start_date %}<div class="hero-pill"><i class="bi bi-calendar-event"></i>{{ course.start_date|date:"M d, Y H:i" }}</div>{% endif %}
-          {% if course.project_end_date %}<div class="hero-pill text-warning"><i class="bi bi-journal-code"></i>Project Deadline: {{ course.project_end_date|date:"M d, Y H:i" }}</div>{% endif %}
-        </div>
-      </div>
-      <div class="col-lg-4">
-        {% if user.is_teacher %}
-        <div class="action-wrap">
-          <a href="{% url 'material_upload' course.pk %}" class="btn btn-light btn-sm">Upload Material</a>
-          <a href="{% url 'assignment_create' course.pk %}" class="btn btn-warning btn-sm">New Assignment</a>
-          <a href="{% url 'quiz_create' course.pk %}" class="btn btn-light btn-sm">New Quiz</a>
-          <a href="{% url 'group_chat' course.pk %}" class="btn btn-outline-light btn-sm">Group Chat</a>
-          <a href="{% url 'attendance_list' course.pk %}" class="btn btn-outline-light btn-sm">Attendance</a>
-          <a href="{% url 'issue_certificate' course.pk %}" class="btn btn-outline-light btn-sm">Certificates</a>
-          <a href="{% url 'course_edit' course.pk %}" class="btn btn-outline-light btn-sm">Edit Course</a>
-        </div>
-        {% else %}
-        <div class="action-wrap">
-          <a href="{% url 'quiz_list' course.pk %}" class="btn btn-light btn-sm">Quizzes</a>
-          <a href="{% url 'group_chat' course.pk %}" class="btn btn-outline-light btn-sm">Group Chat</a>
-          <a href="{% url 'student_attendance' course.pk %}" class="btn btn-outline-light btn-sm">Attendance</a>
-        </div>
-        {% endif %}
-      </div>
+  <!-- Top Navigation & Title Bar -->
+  <div class="d-flex align-items-center mb-4">
+    <a href="{% url 'course_list' %}" class="btn btn-outline-secondary btn-sm me-3">
+      <i class="bi bi-arrow-left"></i>
+    </a>
+    <div>
+      <h2 class="mb-0 h4 font-weight-bold">{{ course.title }}</h2>
+      <p class="text-muted small mb-0">{{ course.course_code|default:"Course Details" }}</p>
     </div>
   </div>
 
@@ -161,129 +231,383 @@
   <div class="alert alert-warning mb-4">This course will become available on <strong>{{ course.start_date|date:"F d, Y H:i" }}</strong>. You are enrolled and will gain access once the course starts.</div>
   {% endif %}
 
+  <!-- Main Split Layout -->
   <div class="row g-4">
-    <div class="col-lg-6">
-      <div class="section-card">
-        <div class="section-head">
-          <div>
-            <div class="section-title">Course Materials</div>
-            <p class="section-copy">Resources shared for this course.</p>
-          </div>
-        </div>
-        <div class="section-body">
-          {% if materials %}
-          <div class="resource-list">
-            {% for material in materials %}
-            <div class="resource-item">
-              <div>
-                <div class="resource-title">{{ material.title }}</div>
-                <p class="resource-copy">{% if material.description %}{{ material.description|truncatechars:60 }}{% else %}Course file ready to download.{% endif %}</p>
-              </div>
-              <div class="d-flex gap-2 flex-wrap">
-                <a href="{% url 'material_download' material.pk %}" class="btn btn-outline-primary btn-sm">Download</a>
-                {% if user.is_teacher %}<a href="{% url 'material_delete' material.pk %}" class="btn btn-outline-danger btn-sm">Delete</a>{% endif %}
-              </div>
-            </div>
-            {% endfor %}
-          </div>
+    <!-- Left Column: Course Preview Card (Udemy style) -->
+    <div class="col-lg-4 align-self-start">
+      <div class="course-card-aligned shadow-sm">
+        <div class="cover-image-wrap">
+          {% if course.cover_image %}
+            <img src="{{ course.cover_image.url }}" class="cover-image" alt="{{ course.title }}"/>
           {% else %}
-          <div class="text-center py-4 text-muted">No materials uploaded yet.</div>
+            <div class="cover-fallback"><i class="bi bi-book-half"></i></div>
           {% endif %}
         </div>
+        <div class="card-body">
+          <div>
+            <div class="course-title fs-5 mb-2">{{ course.title }}</div>
+            <p class="course-copy mb-3">{% if course.description %}{{ course.description|striptags|truncatechars:80 }}{% else %}No description provided.{% endif %}</p>
+            
+            <div class="instructor mb-2"><strong>Instructor:</strong> {{ course.teacher.get_full_name|default:course.teacher.username }}</div>
+            <div class="instructor mb-2"><strong>Course ID:</strong> <span class="badge bg-primary bg-opacity-10 text-primary px-2 py-1 fs-6" style="font-weight: 600;">{{ course.course_code }}</span></div>
+            {% if course.batch %}
+              <div class="instructor mb-3"><strong>Batch:</strong> <span class="badge bg-secondary bg-opacity-10 text-secondary px-2 py-1 fs-6" style="font-weight: 600;">{{ course.batch }}</span></div>
+            {% endif %}
+            
+            <div class="meta-row">
+              <span class="meta-pill"><i class="bi bi-people"></i>{{ students.count }} enrolled</span>
+              {% if course.department %}
+                <span class="meta-pill"><i class="bi bi-building"></i>{{ course.department.name }}</span>
+              {% endif %}
+              <span class="meta-pill"><i class="bi bi-activity"></i>{{ course_status }}</span>
+            </div>
+            
+            <div class="small text-muted mb-2">
+              {% if course.start_date %}<i class="bi bi-calendar-event me-1"></i>Starts: {{ course.start_date|date:"M d, Y" }}<br>{% endif %}
+              {% if course.project_end_date %}<i class="bi bi-journal-code text-warning me-1"></i>Project Due: {{ course.project_end_date|date:"M d, Y" }}{% endif %}
+            </div>
+          </div>
+
+          <!-- Dropdown Settings Button (Course Actions) -->
+          <div class="mt-auto pt-3 border-top w-100">
+            {% if user.is_teacher %}
+            <div class="dropup w-100">
+              <button class="btn btn-light w-100 d-flex align-items-center justify-content-center gap-2 dropdown-toggle py-3 px-4 shadow-sm" type="button" id="courseSettingsDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius: 16px; font-weight: 700; background: var(--sc-surface-strong); border: 1px solid var(--sc-border); color: var(--sc-ink);">
+                <i class="bi bi-gear-fill text-primary"></i> Course Actions
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end p-2 border-0 shadow-lg mb-2" aria-labelledby="courseSettingsDropdown" style="background: var(--sc-surface-strong); width: 100%; max-height: 60vh; overflow-y: auto;">
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'course_about' course.pk %}"><i class="bi bi-info-circle text-primary"></i> About this Course</a></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'material_upload' course.pk %}"><i class="bi bi-cloud-arrow-up text-primary"></i> Upload Material</a></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'assignment_create' course.pk %}"><i class="bi bi-journal-plus text-warning"></i> New Assignment</a></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'quiz_create' course.pk %}"><i class="bi bi-patch-question text-info"></i> New Quiz</a></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'create_virtual_session' course.pk %}"><i class="bi bi-camera-video text-success"></i> Schedule Session</a></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'ai_tutor_view' course.pk %}"><i class="bi bi-robot text-dark"></i> AI Assistant</a></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'group_chat' course.pk %}"><i class="bi bi-chat-dots text-primary"></i> Group Chat</a></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'attendance_list' course.pk %}"><i class="bi bi-calendar-check text-secondary"></i> Attendance</a></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'issue_certificate' course.pk %}"><i class="bi bi-award text-success"></i> Certificates</a></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'export_marks_csv' course.pk %}"><i class="bi bi-filetype-csv text-success"></i> Export Data (CSV)</a></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'export_marks_excel' course.pk %}"><i class="bi bi-file-earmark-spreadsheet text-success"></i> Export Data (Excel)</a></li>
+                <li><hr class="dropdown-divider my-2" style="border-color: var(--sc-border);"></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'course_edit' course.pk %}"><i class="bi bi-pencil-square text-secondary"></i> Edit Course</a></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="{% url 'course_delete' course.pk %}"><i class="bi bi-trash-fill"></i> Delete Course</a></li>
+              </ul>
+            </div>
+            {% else %}
+            <div class="dropup w-100">
+              <button class="btn btn-light w-100 d-flex align-items-center justify-content-center gap-2 dropdown-toggle py-3 px-4 shadow-sm" type="button" id="courseActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius: 16px; font-weight: 700; background: var(--sc-surface-strong); border: 1px solid var(--sc-border); color: var(--sc-ink);">
+                <i class="bi bi-grid-fill text-primary"></i> Course Actions
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end p-2 border-0 shadow-lg mb-2" aria-labelledby="courseActionsDropdown" style="background: var(--sc-surface-strong); width: 100%; max-height: 60vh; overflow-y: auto;">
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'course_about' course.pk %}"><i class="bi bi-info-circle text-primary"></i> About this Course</a></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'quiz_list' course.pk %}"><i class="bi bi-patch-question text-info"></i> Quizzes</a></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'ai_tutor_view' course.pk %}"><i class="bi bi-robot text-dark"></i> AI Tutor</a></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'group_chat' course.pk %}"><i class="bi bi-chat-dots text-primary"></i> Group Chat</a></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'student_attendance' course.pk %}"><i class="bi bi-calendar-check text-secondary"></i> Attendance</a></li>
+              </ul>
+            </div>
+            {% endif %}
+          </div>
+
+        </div>
       </div>
+
+      <!-- Bottom Section: Member & Registration Management (Only for teachers/admins) -->
+      {% if user.is_teacher or user.is_superuser or user.role == 'admin' %}
+        <div class="d-flex flex-column gap-4 mt-4">
+          <!-- Pending Requests -->
+          {% if pending_enrollments %}
+          <div class="section-card">
+            <div class="section-head" style="background: rgba(253, 126, 20, 0.05); padding: 16px 20px;">
+              <div class="d-flex align-items-center justify-content-between w-100">
+                <div>
+                  <div class="section-title text-warning fw-bold mb-1"><i class="bi bi-hourglass-split me-2"></i>Pending Join Requests</div>
+                  <p class="section-copy small">Review requests.</p>
+                </div>
+                <span class="badge bg-warning text-dark px-2 py-1 fs-6 rounded-pill">{{ pending_enrollments|length }}</span>
+              </div>
+            </div>
+            <div class="section-body p-3">
+              <div class="student-list gap-3 d-flex flex-column">
+                {% for enrollment in pending_enrollments %}
+                <div class="student-item d-flex flex-column gap-3 p-3 bg-light rounded-3 border-0">
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="avatar-fallback rounded-circle d-flex align-items-center justify-content-center bg-warning bg-opacity-10 text-warning fw-bold" style="width: 40px; height: 40px; min-width: 40px;">
+                      {{ enrollment.student.username|slice:":1"|upper }}
+                    </div>
+                    <div class="min-width-0">
+                      <div class="student-name fw-bold text-dark fs-6 text-truncate mb-0">{{ enrollment.student.get_full_name|default:enrollment.student.username }}</div>
+                      <div class="student-copy text-muted small text-truncate">
+                        {{ enrollment.student.email }}
+                        {% if enrollment.student.student_id %} | ID: <strong>{{ enrollment.student.student_id }}</strong>{% endif %}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="d-flex gap-2 pt-2 border-top border-light w-100">
+                    <a href="{% url 'approve_enrollment' enrollment.pk %}" class="btn btn-sm btn-success rounded-pill flex-grow-1 text-center py-2"><i class="bi bi-check-circle-fill me-1"></i>Approve</a>
+                    <a href="{% url 'reject_enrollment' enrollment.pk %}" class="btn btn-sm btn-danger rounded-pill flex-grow-1 text-center py-2"><i class="bi bi-x-circle-fill me-1"></i>Reject</a>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Classroom Members -->
+          <div class="section-card">
+            <div class="section-head d-flex justify-content-between align-items-center flex-wrap gap-2" style="padding: 16px 20px;">
+              <div>
+                <div class="section-title fw-bold text-dark mb-1"><i class="bi bi-people me-2"></i>Enrolled Students</div>
+                <p class="section-copy">Track individual attendance or issue certificates.</p>
+              </div>
+              <a href="{% url 'group_chat' course.pk %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Chat</a>
+            </div>
+            <div class="section-body p-3">
+              {% if students %}
+              <div class="student-list gap-3 d-flex flex-column">
+                {% for enrollment in students %}
+                <div class="student-item d-flex flex-column gap-3 p-3 bg-light rounded-3 border-0">
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="avatar-fallback rounded-circle d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary fw-bold" style="width: 40px; height: 40px; min-width: 40px;">
+                      {{ enrollment.student.username|slice:":1"|upper }}
+                    </div>
+                    <div class="min-width-0">
+                      <div class="student-name fw-bold text-dark fs-6 text-truncate mb-0">{{ enrollment.student.get_full_name|default:enrollment.student.username }}</div>
+                      <div class="student-copy text-muted small text-truncate">
+                        {{ enrollment.student.email }}
+                        {% if enrollment.student.student_id %} | ID: <strong>{{ enrollment.student.student_id }}</strong>{% endif %}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="d-flex flex-wrap gap-2 pt-2 border-top border-light w-100">
+                    <a href="{% url 'chat_room' enrollment.student.id %}" class="btn btn-sm btn-outline-primary rounded-pill flex-grow-1 text-center py-2 px-2" style="font-size: 0.8rem; min-width: 75px;"><i class="bi bi-chat-text me-1"></i>Message</a>
+                    <a href="{% url 'student_attendance' course.pk %}?student={{ enrollment.student.pk }}" class="btn btn-sm btn-outline-success rounded-pill flex-grow-1 text-center py-2 px-2" style="font-size: 0.8rem; min-width: 90px;"><i class="bi bi-calendar-check me-1"></i>Attendance</a>
+                    <a href="{% url 'issue_certificate' course.pk %}" class="btn btn-sm btn-outline-warning rounded-pill flex-grow-1 text-center py-2 px-2" style="font-size: 0.8rem; min-width: 85px;"><i class="bi bi-award me-1"></i>Certificate</a>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% else %}
+              <div class="text-center py-4 text-muted">No students enrolled yet.</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endif %}
     </div>
 
-    <div class="col-lg-6">
-      <div class="section-card">
-        <div class="section-head">
-          <div>
-            <div class="section-title">Assignments</div>
-            <p class="section-copy">Track coursework and deadlines.</p>
-          </div>
-        </div>
-        <div class="section-body">
-          {% if assignments %}
-          <div class="resource-list">
-            {% for assignment in assignments %}
-            <div class="resource-item">
-              <div>
-                <div class="resource-title">{{ assignment.title }}</div>
-                <p class="resource-copy">Due {{ assignment.due_date|date:"M d, Y H:i" }} - {{ assignment.total_marks }} marks</p>
-              </div>
-              <a href="{% url 'assignment_detail' assignment.pk %}" class="btn btn-outline-primary btn-sm">Open</a>
-            </div>
-            {% endfor %}
-          </div>
-          {% else %}
-          <div class="text-center py-4 text-muted">No assignments yet.</div>
-          {% endif %}
-        </div>
-      </div>
-    </div>
+    <!-- Right Column: Course Curriculum (Dynamic Accordion) -->
+    <div class="col-lg-8">
+      
 
-    <div class="col-12">
       <div class="section-card">
-        <div class="section-head">
+        <div class="section-head d-flex justify-content-between align-items-center flex-wrap gap-2" style="background: rgba(20, 90, 242, 0.02); padding: 20px;">
           <div>
-            <div class="section-title">Quizzes</div>
-            <p class="section-copy">Quick access to quiz activity for this course.</p>
+            <div class="section-title h5 mb-1"><i class="bi bi-list-check text-primary me-2"></i>Content Covered</div>
+            <p class="section-copy">Explore materials, assignments, quizzes, and live classrooms scheduled for this course space.</p>
           </div>
-          <a href="{% url 'quiz_list' course.pk %}" class="btn btn-sm btn-outline-primary">View All</a>
-        </div>
-        <div class="section-body">
-          {% if quizzes %}
-          <div class="resource-list">
-            {% for quiz in quizzes|slice:3 %}
-            <div class="resource-item">
-              <div>
-                <div class="resource-title">{{ quiz.title }}</div>
-                <p class="resource-copy">Due {{ quiz.due_date|date:"M d, Y H:i" }} - {{ quiz.total_marks }} marks</p>
-              </div>
-              <a href="{% url 'quiz_list' course.pk %}" class="btn btn-outline-primary btn-sm">Open</a>
-            </div>
-            {% endfor %}
-          </div>
-          {% else %}
-          <div class="text-center py-4 text-muted">No quizzes created yet.</div>
+          <!-- Collapse all button visible if other items exist -->
+          {% if materials or course.virtual_sessions.all or assignments or quizzes or course.recorded_classes.all %}
+            <button id="accordion-toggle-all" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="toggleAllAccordionItems()">Collapse all</button>
           {% endif %}
         </div>
-      </div>
-    </div>
+        <div class="section-body p-3">
+          <div class="accordion" id="curriculumAccordion">
+            
+            <!-- Dynamic Accordion Items -->
+            {% if materials %}
+            <div class="accordion-item border-0 mb-3 rounded-4 overflow-hidden shadow-sm" style="border: 1px solid var(--sc-border) !important;">
+              <h2 class="accordion-header" id="headingMaterials">
+                <button class="accordion-button fw-bold py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMaterials" aria-expanded="true" aria-controls="collapseMaterials" style="background: var(--sc-surface); color: var(--sc-ink);">
+                  <i class="bi bi-file-earmark-text text-primary me-2"></i> Course Materials & Handouts ({{ materials|length }})
+                </button>
+              </h2>
+              <div id="collapseMaterials" class="accordion-collapse collapse show" aria-labelledby="headingMaterials" data-bs-parent="#curriculumAccordion">
+                <div class="accordion-body p-3" style="background: var(--sc-surface-strong);">
+                  <div class="list-group list-group-flush gap-2">
+                    {% for material in materials %}
+                      <div class="list-group-item border-0 d-flex justify-content-between align-items-center p-3 rounded-3 bg-light">
+                        <div class="d-flex align-items-center gap-3">
+                          <i class="bi bi-file-earmark-text text-primary fs-4"></i>
+                          <div>
+                            <div class="fw-bold text-dark">{{ material.title }}</div>
+                            <div class="mb-0 text-muted small">{% if material.description %}{{ material.description|safe }}{% else %}Downloadable file.{% endif %}</div>
+                          </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                          <a href="{% url 'material_download' material.pk %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">Download</a>
+                          {% if user.is_teacher %}
+                            <a href="{% url 'material_delete' material.pk %}" class="btn btn-outline-danger btn-sm rounded-pill"><i class="bi bi-trash"></i></a>
+                          {% endif %}
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
 
-    {% if user.is_teacher %}
-    <div class="col-12">
-      <div class="section-card">
-        <div class="section-head">
-          <div>
-            <div class="section-title">Enrolled Students</div>
-            <p class="section-copy">Connect, track attendance, and issue certificates.</p>
-          </div>
-          <a href="{% url 'group_chat' course.pk %}" class="btn btn-sm btn-outline-primary">Group Chat</a>
-        </div>
-        <div class="section-body">
-          {% if students %}
-          <div class="student-list">
-            {% for enrollment in students %}
-            <div class="student-item">
-              <div>
-                <div class="student-name">{{ enrollment.student.get_full_name|default:enrollment.student.username }}</div>
-                <p class="student-copy">{{ enrollment.student.email }} - Enrolled {{ enrollment.enrolled_at|date:"M d, Y" }}</p>
-              </div>
-              <div class="d-flex gap-2 flex-wrap">
-                <a href="{% url 'chat_room' enrollment.student.id %}" class="btn btn-outline-primary btn-sm">Message</a>
-                <a href="{% url 'student_attendance' course.pk %}?student={{ enrollment.student.pk }}" class="btn btn-outline-success btn-sm">Attendance</a>
-                <a href="{% url 'issue_certificate' course.pk %}" class="btn btn-outline-warning btn-sm">Certificate</a>
+            {% if course.virtual_sessions.all %}
+            <div class="accordion-item border-0 mb-3 rounded-4 overflow-hidden shadow-sm" style="border: 1px solid var(--sc-border) !important;">
+              <h2 class="accordion-header" id="headingSessions">
+                <button class="accordion-button fw-bold py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSessions" aria-expanded="true" aria-controls="collapseSessions" style="background: var(--sc-surface); color: var(--sc-ink);">
+                  <i class="bi bi-camera-video text-info me-2"></i> Live Virtual Sessions ({{ course.virtual_sessions.all|length }})
+                </button>
+              </h2>
+              <div id="collapseSessions" class="accordion-collapse collapse show" aria-labelledby="headingSessions" data-bs-parent="#curriculumAccordion">
+                <div class="accordion-body p-3" style="background: var(--sc-surface-strong);">
+                  <div class="list-group list-group-flush gap-2">
+                    {% for session in course.virtual_sessions.all|dictsort:"scheduled_at" %}
+                      <div class="list-group-item border-0 d-flex justify-content-between align-items-center p-3 rounded-3 bg-light" style="{% if session.is_expired %}opacity: 0.75;{% endif %}">
+                        <div class="d-flex align-items-center gap-3">
+                          <i class="bi bi-camera-video {% if session.is_expired %}text-secondary{% else %}text-info{% endif %} fs-4"></i>
+                          <div>
+                            <div class="fw-bold {% if session.is_expired %}text-muted{% else %}text-dark{% endif %}">{{ session.title }}</div>
+                            <p class="mb-0 text-muted small">
+                              {{ session.scheduled_at|date:"M d, Y H:i" }} IST | {{ session.duration_minutes }} mins
+                              {% if session.description %}<br><span class="text-muted">{{ session.description|safe }}</span>{% endif %}
+                            </p>
+                          </div>
+                        </div>
+                        {% if session.is_expired %}
+                          <button class="btn btn-secondary btn-sm rounded-pill px-3" disabled style="background: var(--sc-border); border: none; color: var(--sc-muted); font-weight: 600;">
+                            Session Ended
+                          </button>
+                        {% else %}
+                          <a href="{{ session.meeting_link }}" target="_blank" class="btn btn-info btn-sm text-white rounded-pill px-3">
+                            Join Meeting
+                          </a>
+                        {% endif %}
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
               </div>
             </div>
-            {% endfor %}
+            {% endif %}
+
+            {% if assignments %}
+            <div class="accordion-item border-0 mb-3 rounded-4 overflow-hidden shadow-sm" style="border: 1px solid var(--sc-border) !important;">
+              <h2 class="accordion-header" id="headingAssignments">
+                <button class="accordion-button fw-bold py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAssignments" aria-expanded="true" aria-controls="collapseAssignments" style="background: var(--sc-surface); color: var(--sc-ink);">
+                  <i class="bi bi-journal-code text-warning me-2"></i> Assignments & Homework ({{ assignments|length }})
+                </button>
+              </h2>
+              <div id="collapseAssignments" class="accordion-collapse collapse show" aria-labelledby="headingAssignments" data-bs-parent="#curriculumAccordion">
+                <div class="accordion-body p-3" style="background: var(--sc-surface-strong);">
+                  <div class="list-group list-group-flush gap-2">
+                    {% for assignment in assignments %}
+                      <div class="list-group-item border-0 d-flex justify-content-between align-items-center p-3 rounded-3 bg-light">
+                        <div class="d-flex align-items-center gap-3">
+                          <i class="bi bi-journal-code text-warning fs-4"></i>
+                          <div>
+                            <div class="fw-bold text-dark">{{ assignment.title }}</div>
+                            <p class="mb-0 text-muted small">Due {{ assignment.due_date|date:"M d, Y H:i" }} &bull; {{ assignment.total_marks }} marks</p>
+                          </div>
+                        </div>
+                        <a href="{% url 'assignment_detail' assignment.pk %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">Open</a>
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+
+            {% if quizzes %}
+            <div class="accordion-item border-0 mb-3 rounded-4 overflow-hidden shadow-sm" style="border: 1px solid var(--sc-border) !important;">
+              <h2 class="accordion-header" id="headingQuizzes">
+                <button class="accordion-button fw-bold py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseQuizzes" aria-expanded="true" aria-controls="collapseQuizzes" style="background: var(--sc-surface); color: var(--sc-ink);">
+                  <i class="bi bi-patch-question text-info me-2"></i> Interactive Quizzes ({{ quizzes|length }})
+                </button>
+              </h2>
+              <div id="collapseQuizzes" class="accordion-collapse collapse show" aria-labelledby="headingQuizzes" data-bs-parent="#curriculumAccordion">
+                <div class="accordion-body p-3" style="background: var(--sc-surface-strong);">
+                  <div class="list-group list-group-flush gap-2">
+                    {% for quiz in quizzes %}
+                      <div class="list-group-item border-0 d-flex justify-content-between align-items-center p-3 rounded-3 bg-light">
+                        <div class="d-flex align-items-center gap-3">
+                          <i class="bi bi-patch-question text-info fs-4"></i>
+                          <div>
+                            <div class="fw-bold text-dark">{{ quiz.title }}</div>
+                            <p class="mb-0 text-muted small">Due {{ quiz.due_date|date:"M d, Y H:i" }} &bull; {{ quiz.total_marks }} marks</p>
+                          </div>
+                        </div>
+                        <a href="{% url 'quiz_list' course.pk %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">Open</a>
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+
+            {% if course.recorded_classes.all %}
+            <div class="accordion-item border-0 mb-3 rounded-4 overflow-hidden shadow-sm" style="border: 1px solid var(--sc-border) !important;">
+              <h2 class="accordion-header" id="headingVideos">
+                <button class="accordion-button fw-bold py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseVideos" aria-expanded="true" aria-controls="collapseVideos" style="background: var(--sc-surface); color: var(--sc-ink);">
+                  <i class="bi bi-play-btn-fill text-danger me-2"></i> Recorded Video Lectures ({{ course.recorded_classes.all|length }})
+                </button>
+              </h2>
+              <div id="collapseVideos" class="accordion-collapse collapse show" aria-labelledby="headingVideos" data-bs-parent="#curriculumAccordion">
+                <div class="accordion-body p-3" style="background: var(--sc-surface-strong);">
+                  <div class="list-group list-group-flush gap-2">
+                    {% for video in course.recorded_classes.all %}
+                      <div class="list-group-item border-0 d-flex justify-content-between align-items-center p-3 rounded-3 bg-light">
+                        <div class="d-flex align-items-center gap-3">
+                          <i class="bi bi-play-btn-fill text-danger fs-4"></i>
+                          <div>
+                            <div class="fw-bold text-dark">{{ video.title }}</div>
+                            <p class="mb-0 text-muted small">{{ video.subject }} &bull; Uploaded {{ video.uploaded_at|date:"M d, Y" }}</p>
+                          </div>
+                        </div>
+                        <a href="{% url 'recorded_class_list' %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">Watch</a>
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+
           </div>
-          {% else %}
-          <div class="text-center py-4 text-muted">No students enrolled yet.</div>
+
+          {% if not materials and not course.virtual_sessions.all and not assignments and not quizzes and not course.recorded_classes.all %}
+            <div class="text-center py-4 text-muted border border-dashed rounded-4 p-3 mt-3" style="border: 1.5px dashed var(--sc-border) !important; background: rgba(0,0,0,0.01);">
+              <i class="bi bi-journal-x fs-2 d-block mb-2 text-muted" style="opacity: 0.5;"></i>
+              <p class="mb-1 fw-bold">No other coursework published yet.</p>
+              {% if user.is_teacher %}
+                <p class="small text-muted mb-0">Use the <strong>Course Actions</strong> dropup on the left to upload materials, create assignments, or schedule live sessions!</p>
+              {% else %}
+                <p class="small text-muted mb-0">Course materials, live sessions, quizzes, and assignments will appear here once published.</p>
+              {% endif %}
+            </div>
           {% endif %}
         </div>
       </div>
     </div>
-    {% endif %}
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  let accordionOpen = true;
+  function toggleAllAccordionItems() {
+    const accordionBtn = document.getElementById("accordion-toggle-all");
+    const collapses = document.querySelectorAll("#curriculumAccordion .accordion-collapse");
+    const bsCollapses = Array.from(collapses).map(c => bootstrap.Collapse.getOrCreateInstance(c, { toggle: false }));
+    
+    if (accordionOpen) {
+      bsCollapses.forEach(c => c.hide());
+      accordionBtn.textContent = "Expand all";
+      accordionOpen = false;
+    } else {
+      bsCollapses.forEach(c => c.show());
+      accordionBtn.textContent = "Collapse all";
+      accordionOpen = true;
+    }
+  }
+</script>
 {% endblock %}

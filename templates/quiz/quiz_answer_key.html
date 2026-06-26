@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{% url 'quiz_list' quiz.course.pk %}" class="btn btn-sm btn-outline-secondary mb-2">&larr; Back to Quizzes</a>
+            <h2 class="fw-bold mb-0">Answer Key: {{ quiz.title }}</h2>
+            <p class="text-muted mb-0">Course: {{ quiz.course.title }}</p>
+        </div>
+        <button onclick="window.print()" class="btn btn-primary shadow-sm"><i class="bi bi-printer me-2"></i> Print Answer Key</button>
+    </div>
+
+    <!-- Print styling specifically to hide buttons during print -->
+    <style>
+        @media print {
+            .btn, nav, header, footer { display: none !important; }
+            body { padding: 0; background: white; }
+            .card { border: none !important; box-shadow: none !important; }
+            .container { max-width: 100% !important; padding: 0 !important; }
+        }
+    </style>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-5">
+            <h4 class="text-center mb-5 border-bottom pb-3">Official Answer Key</h4>
+            
+            {% if questions %}
+                {% for question in questions %}
+                <div class="mb-5 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="fw-bold m-0"><span class="text-primary me-2">{{ question.order }}.</span> {{ question.text }}</h5>
+                        <span class="badge bg-light text-dark border">{{ question.marks }} Mark{{ question.marks|pluralize }}</span>
+                    </div>
+
+                    <div class="ms-4">
+                        {% for choice in question.choices.all %}
+                            <div class="d-flex align-items-center mb-2 px-3 py-2 rounded {% if choice.is_correct %}bg-success bg-opacity-10 border border-success{% else %}text-muted{% endif %}">
+                                {% if choice.is_correct %}
+                                    <i class="bi bi-check-circle-fill text-success me-3 fs-5"></i>
+                                    <span class="fw-bold text-success fs-5">{{ choice.text }}</span>
+                                    <span class="ms-auto badge bg-success text-white">CORRECT ANSWER</span>
+                                {% else %}
+                                    <i class="bi bi-circle text-secondary me-3"></i>
+                                    <span>{{ choice.text }}</span>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-exclamation-circle fs-1 mb-3 d-block"></i>
+                    <h5>No questions have been added to this quiz yet.</h5>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

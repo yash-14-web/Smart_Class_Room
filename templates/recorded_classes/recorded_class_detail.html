@@ -7,7 +7,7 @@
     <div class="card mb-4">
       <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2"><h5 class="mb-0">{{ recorded_class.title }}</h5><div class="d-flex gap-2">{% if user.is_teacher %}<a href="{% url 'recorded_class_edit' recorded_class.pk %}" class="btn btn-outline-secondary btn-sm">Edit</a><a href="{% url 'recorded_class_delete' recorded_class.pk %}" class="btn btn-outline-danger btn-sm">Delete</a>{% endif %}<a href="{% url 'recorded_class_list' %}" class="btn btn-outline-secondary btn-sm">Back</a></div></div>
       <div class="card-body">
-        <p class="text-muted">{{ recorded_class.description|default:'No description provided.' }}</p>
+        <div class="text-muted mb-3">{% if recorded_class.description %}{{ recorded_class.description|safe }}{% else %}No description provided.{% endif %}</div>
         <dl class="row mb-0">
           <dt class="col-sm-4 text-muted">Topic</dt><dd class="col-sm-8">{{ recorded_class.subject }}</dd>
           <dt class="col-sm-4 text-muted">Uploaded by</dt><dd class="col-sm-8">{{ recorded_class.uploaded_by.get_full_name|default:recorded_class.uploaded_by.username }}</dd>

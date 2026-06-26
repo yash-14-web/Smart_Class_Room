@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Account Status - SmartClass</title>
+  <link rel="icon" type="image/png" href="/media/smart_logo.png?v=2"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"/>
+  <style>
+    body {
+      min-height: 100vh;
+      margin: 0;
+      font-family: "Poppins", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,.20), transparent 24%),
+        linear-gradient(135deg, #0f2f72 0%, #145af2 52%, #1aa3a3 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .status-shell {
+      width: min(600px, 100%);
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.18);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 24px 60px rgba(7, 25, 66, .25);
+      border-radius: 32px;
+      overflow: hidden;
+      color: #fff;
+      padding: 48px 32px;
+      text-align: center;
+    }
+    .status-icon {
+      font-size: 4rem;
+      margin-bottom: 1.5rem;
+    }
+    .status-icon.pending {
+      color: #ffd000;
+      animation: pulse 2s infinite;
+    }
+    .status-icon.rejected {
+      color: #ff4d4d;
+    }
+    .status-title {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+    }
+    .status-desc {
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 1.05rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .btn {
+      border-radius: 999px;
+      font-weight: 700;
+      padding: .78rem 2rem;
+    }
+    .btn-outline-light {
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      transition: all 0.3s ease;
+    }
+    .btn-outline-light:hover {
+      background: #fff;
+      color: #145af2;
+      border-color: #fff;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="status-shell">
+    {% if request.user.account_status == 'pending' %}
+      <div class="status-icon pending">
+        <i class="bi bi-clock-history"></i>
+      </div>
+      <div class="status-title">Account Pending Approval</div>
+      <div class="status-desc">
+        Thank you for registering, <strong>{{ request.user.username }}</strong>! Your account request is currently pending review by the school administration. You will gain full access as soon as the Admin approves your account.
+      </div>
+    {% elif request.user.account_status == 'rejected' %}
+      <div class="status-icon rejected">
+        <i class="bi bi-exclamation-octagon"></i>
+      </div>
+      <div class="status-title">Registration Declined</div>
+      <div class="status-desc">
+        We regret to inform you that your registration request has been declined by the system administrator. If you believe this is an error, please contact your department manager or support.
+      </div>
+    {% endif %}
+    
+    <a href="{% url 'logout' %}" class="btn btn-outline-light">
+      <i class="bi bi-box-arrow-left me-2"></i>Sign Out
+    </a>
+  </div>
+</body>
+</html>

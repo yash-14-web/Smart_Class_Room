@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+{% block title %}{% if is_edit %}Edit Course{% else %}Create New Course{% endif %} — SmartClass Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+  .course-form-page { max-width: 860px; margin: 0 auto; }
+  .hero-card {
+    background: linear-gradient(135deg, #0f2f72, #145af2, #1aa3a3);
+    border-radius: 20px;
+    padding: 2rem 2rem 1.5rem;
+    color: #fff;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 16px 34px rgba(15, 47, 114, 0.22);
+  }
+  .hero-title {
+    font-weight: 800;
+    font-size: 1.5rem;
+    margin-bottom: .4rem;
+  }
+  .hero-copy { opacity: .85; font-size: .9rem; margin: 0; }
+  .form-card {
+    background: var(--sc-surface-strong);
+    border: 1px solid var(--sc-border);
+    border-radius: 20px;
+    box-shadow: var(--sc-shadow-soft);
+    overflow: hidden;
+  }
+  .form-head {
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid var(--sc-border);
+    background: var(--sc-card-header);
+  }
+  .form-head h5 { font-weight: 700; margin: 0; }
+  .form-head p { margin: .3rem 0 0; color: var(--sc-muted); font-size: .85rem; }
+  .form-body { padding: 1.5rem; }
+  .section-divider {
+    border: none;
+    border-top: 1px dashed var(--sc-border);
+    margin: 1.5rem 0;
+  }
+  .section-label {
+    font-weight: 700;
+    font-size: .85rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--sc-muted);
+    margin-bottom: .75rem;
+  }
+  .check-card {
+    background: var(--sc-glass-bg);
+    border: 1px solid var(--sc-glass-border);
+    border-radius: 14px;
+    padding: .85rem 1rem;
+    margin-bottom: .5rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="course-form-page">
+  <div class="hero-card">
+    <div class="hero-title">
+      <i class="bi bi-journal-bookmark me-2"></i>
+      {% if is_edit %}Edit Course{% else %}Create New Course{% endif %}
+    </div>
+    <p class="hero-copy">
+      {% if is_edit %}Update course details, reassign teacher, or change department.{% else %}Set up a new course with department, assigned teacher, and schedule.{% endif %}
+    </p>
+  </div>
+
+  <div class="form-card">
+    <div class="form-head">
+      <h5>Course Details</h5>
+      <p>Fill in the course information below</p>
+    </div>
+    <div class="form-body">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Course Code & Title -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Course Code</label>
+            <input type="text" name="course_code" class="form-control"
+                   value="{% if is_edit %}{{ course.course_code }}{% elif form_data %}{{ form_data.course_code }}{% endif %}"
+                   placeholder="e.g. CS-101" style="text-transform: uppercase;" />
+            <div class="text-muted small mt-1">Leave blank to auto-generate (e.g. 202601)</div>
+          </div>
+          <div class="col-md-8">
+            <label class="form-label fw-semibold">Course Title <span class="text-danger">*</span></label>
+            <input type="text" name="title" class="form-control" required
+                   value="{% if is_edit %}{{ course.title }}{% elif form_data %}{{ form_data.title }}{% endif %}"
+                   placeholder="Introduction to Computer Science" />
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Description</label>
+          <textarea name="description" class="form-control" rows="3"
+                    placeholder="Brief course description...">{% if is_edit %}{{ course.description }}{% elif form_data %}{{ form_data.description }}{% endif %}</textarea>
+        </div>
+
+        <!-- Cover Image -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Cover Image</label>
+          <input type="file" name="cover_image" class="form-control"
+                 accept="image/jpeg,image/jpg,image/png,image/webp" />
+          <div class="text-muted small mt-1"><i class="bi bi-info-circle me-1"></i>Supported formats: JPEG, JPG, PNG, WebP.</div>
+          {% if is_edit and course.cover_image %}
+            <div class="mt-2 text-muted small">Current image: <a href="{{ course.cover_image.url }}" target="_blank">{{ course.cover_image.name }}</a></div>
+          {% endif %}
+        </div>
+
+        <hr class="section-divider" />
+        <div class="section-label"><i class="bi bi-diagram-3 me-1"></i> Assignment & Structure</div>
+
+        <!-- Department & Teacher -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Department</label>
+            <select name="department" class="form-select">
+              <option value="">— Select Department (optional) —</option>
+              {% for dept in departments %}
+              <option value="{{ dept.pk }}"
+                {% if is_edit and course.department_id == dept.pk %}selected{% endif %}
+                {% if form_data and form_data.department == dept.pk|stringformat:"d" %}selected{% endif %}>
+                {{ dept.name }} ({{ dept.code }})
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Assigned Teacher <span class="text-danger">*</span></label>
+            <select name="teacher" class="form-select" required>
+              <option value="">— Select Teacher —</option>
+              {% for t in teachers %}
+              <option value="{{ t.pk }}"
+                {% if is_edit and course.teacher_id == t.pk %}selected{% endif %}
+                {% if form_data and form_data.teacher == t.pk|stringformat:"d" %}selected{% endif %}>
+                {{ t.first_name }} {{ t.last_name }} ({{ t.username }})
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <!-- Batch & Max Students -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Batch</label>
+            <input type="text" name="batch" class="form-control"
+                   value="{% if is_edit %}{{ course.batch }}{% elif form_data %}{{ form_data.batch }}{% endif %}"
+                   placeholder="e.g. Batch 2026, CSE-A" />
+            <div class="text-muted small mt-1">Leave blank to auto-generate (e.g. Batch 2026, NLP-A)</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Max Students</label>
+            <input type="number" name="max_students" class="form-control" min="1"
+                   value="{% if is_edit %}{{ course.max_students }}{% elif form_data %}{{ form_data.max_students }}{% else %}50{% endif %}" />
+          </div>
+        </div>
+
+        <hr class="section-divider" />
+        <div class="section-label"><i class="bi bi-calendar-event me-1"></i> Schedule</div>
+
+        <!-- Dates -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Start Date</label>
+            <input type="date" name="start_date" class="form-control"
+                   value="{% if is_edit and course.start_date %}{{ course.start_date|date:'Y-m-d' }}{% elif form_data %}{{ form_data.start_date }}{% endif %}" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">End Date</label>
+            <input type="date" name="end_date" class="form-control"
+                   value="{% if is_edit and course.end_date %}{{ course.end_date|date:'Y-m-d' }}{% elif form_data %}{{ form_data.end_date }}{% endif %}" />
+          </div>
+        </div>
+
+        {% if is_edit %}
+        <hr class="section-divider" />
+        <div class="section-label"><i class="bi bi-gear me-1"></i> Settings</div>
+        <div class="check-card">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="is_active" id="isActive"
+                   {% if course.is_active %}checked{% endif %} />
+            <label class="form-check-label fw-semibold" for="isActive">Course is Active</label>
+            <div class="text-muted small">Inactive courses won't be visible to students</div>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="d-flex flex-wrap gap-2 mt-4">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-lg me-1"></i>
+            {% if is_edit %}Update Course{% else %}Create Course{% endif %}
+          </button>
+          <a href="{% url 'admin_course_list' %}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

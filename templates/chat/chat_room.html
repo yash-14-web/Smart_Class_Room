@@ -15,19 +15,39 @@
   .direct-chat .chat-frame {
     display: grid;
     grid-template-columns: 320px minmax(0, 1fr);
-    gap: 18px;
-    height: calc(100vh - 160px);
+    gap: 20px;
+    height: calc(100vh - 125px);
+    transition: grid-template-columns 0.35s cubic-bezier(0.4, 0, 0.2, 1), gap 0.35s ease;
   }
-  .direct-chat .panel {
+  
+  /* Collapsed sidebar state */
+  .direct-chat .chat-frame.sidebar-hidden {
+    grid-template-columns: 0px minmax(0, 1fr);
+    gap: 0;
+  }
+  .direct-chat .chat-frame.sidebar-hidden aside {
+    width: 0;
+    transform: translateX(-320px);
+    opacity: 0;
+    pointer-events: none;
+    border: none;
+    overflow: hidden;
+  }
+
+  .direct-chat aside.panel {
     background: var(--sc-surface-strong);
     border: 1px solid var(--dm-line);
     border-radius: 24px;
-    box-shadow: var(--sc-shadow-soft);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    width: 320px;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease, width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .direct-chat .sidebar-head,
   .direct-chat .chat-head {
-    padding: 18px 20px;
+    padding: 20px;
     border-bottom: 1px solid var(--dm-line);
     background: var(--sc-surface);
   }
@@ -54,42 +74,50 @@
   }
   .direct-chat .search-wrap input {
     width: 100%;
-    min-height: 46px;
-    border-radius: 999px;
+    min-height: 44px;
+    border-radius: 22px;
     border: 1px solid var(--dm-line);
-    padding: .7rem 1rem;
+    padding: .7rem 1.2rem;
+    background: var(--sc-surface);
+    color: var(--sc-ink);
+    transition: all 0.2s ease;
   }
   .direct-chat .search-wrap input:focus {
     outline: none;
-    border-color: rgba(20, 90, 242, .35);
-    box-shadow: 0 0 0 .2rem rgba(20, 90, 242, .10);
+    border-color: var(--sc-primary-subtle);
+    box-shadow: 0 0 10px rgba(var(--sc-primary-rgb), 0.12);
   }
   .direct-chat .conversation-list {
     padding: 0 14px 14px;
-    max-height: calc(100vh - 330px);
+    flex: 1;
     overflow-y: auto;
-    display: grid;
-    gap: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
   .direct-chat .contact-item {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 12px;
-    border: 1px solid var(--dm-line);
+    border: 1px solid transparent;
     border-radius: 18px;
     text-decoration: none;
     color: inherit;
-    background: var(--sc-surface);
+    background: transparent;
+    transition: all 0.2s ease;
+  }
+  .direct-chat .contact-item:hover {
+    background: var(--sc-glass-bg);
   }
   .direct-chat .contact-item.active {
-    border-color: rgba(20, 90, 242, .25);
-    background: rgba(20, 90, 242, .06);
+    border-color: var(--sc-primary-subtle);
+    background: rgba(var(--sc-primary-rgb), 0.06);
   }
   .direct-chat .avatar,
   .direct-chat .avatar-fallback {
-    width: 48px;
-    height: 48px;
+    width: 46px;
+    height: 46px;
     border-radius: 16px;
     object-fit: cover;
     flex-shrink: 0;
@@ -100,7 +128,7 @@
     justify-content: center;
     color: #fff;
     font-weight: 800;
-    background: linear-gradient(135deg, #145af2, #1aa3a3);
+    background: linear-gradient(135deg, var(--sc-primary), #1aa3a3);
   }
   .direct-chat .unread-pill,
   .direct-chat .role-pill,
@@ -132,12 +160,19 @@
   .direct-chat .chat-column {
     display: grid;
     grid-template-rows: auto minmax(0, 1fr) auto;
+    background: var(--sc-surface-strong);
+    border: 1px solid var(--dm-line);
+    border-radius: 24px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
   }
   .direct-chat .chat-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
+    border-bottom: 1px solid var(--dm-line);
+    background: var(--sc-surface);
   }
   .direct-chat .chat-head-main {
     display: flex;
@@ -150,30 +185,34 @@
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
   }
   .direct-chat .msg-row {
     display: flex;
+    margin-bottom: 4px;
   }
   .direct-chat .msg-row.me {
     justify-content: flex-end;
   }
   .direct-chat .msg-bubble {
-    max-width: min(72%, 560px);
+    max-width: min(82%, 720px);
     border-radius: 20px;
-    padding: 14px 16px 12px;
-    box-shadow: var(--sc-shadow-soft);
+    padding: 14px 18px 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    transition: all 0.2s ease;
   }
   .direct-chat .msg-row.me .msg-bubble {
-    background: linear-gradient(135deg, #145af2, #1f77ff);
+    background: linear-gradient(135deg, var(--sc-primary), #2563eb);
     color: #fff;
-    border-bottom-right-radius: 8px;
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.15);
   }
   .direct-chat .msg-row.other .msg-bubble {
     background: var(--sc-surface-strong);
     color: var(--dm-ink);
     border: 1px solid var(--sc-border);
-    border-bottom-left-radius: 8px;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.02);
   }
   .direct-chat .msg-name {
     font-size: .76rem;
@@ -187,6 +226,7 @@
   .direct-chat .msg-text {
     line-height: 1.55;
     font-size: .94rem;
+    word-break: break-word;
   }
   .direct-chat .msg-time {
     margin-top: .55rem;
@@ -195,38 +235,48 @@
     text-align: right;
   }
   .direct-chat .chat-footer {
-    padding: 16px 18px;
+    padding: 16px 20px;
     border-top: 1px solid var(--dm-line);
-    background: var(--sc-surface-strong);
+    background: var(--sc-surface);
   }
   .direct-chat .composer {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     gap: 12px;
   }
   .direct-chat .msg-input {
-    border-radius: 20px;
+    border-radius: 24px;
     border: 1px solid var(--dm-line);
-    padding: 14px 16px;
-    min-height: 54px;
+    padding: 12px 18px;
+    min-height: 48px;
     resize: none;
+    background: var(--sc-surface-strong);
+    color: var(--sc-ink);
     box-shadow: none;
+    transition: all 0.2s ease;
   }
   .direct-chat .msg-input:focus {
-    border-color: rgba(20, 90, 242, .35);
-    box-shadow: 0 0 0 .2rem rgba(20, 90, 242, .10);
+    border-color: var(--sc-primary-subtle);
+    box-shadow: 0 0 10px rgba(var(--sc-primary-rgb), 0.12);
   }
   .direct-chat .send-btn {
-    width: 54px;
-    height: 54px;
-    border-radius: 18px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
     border: none;
-    background: linear-gradient(135deg, #145af2, #1aa3a3);
+    background: linear-gradient(135deg, var(--sc-primary), #2563eb);
     color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
-    box-shadow: 0 14px 28px rgba(20, 90, 242, .20);
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
   }
-  /* Custom attachment link contrast styling for light/dark mode */
+  .direct-chat .send-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+  }
   .chat-attachment-link {
     display: inline-flex;
     align-items: center;
@@ -239,7 +289,6 @@
     transition: background-color 0.2s, opacity 0.2s;
     border: 1px solid rgba(255, 255, 255, 0.15);
   }
-  /* Sent by me - inside blue bubble */
   .msg-row.me .chat-attachment-link {
     background: rgba(255, 255, 255, 0.18);
     color: #ffffff !important;
@@ -249,7 +298,6 @@
     background: rgba(255, 255, 255, 0.28);
     opacity: 0.95;
   }
-  /* Sent by other - inside white/slate bubble */
   .msg-row.other .chat-attachment-link {
     background: var(--sc-surface);
     color: var(--sc-primary) !important;
@@ -279,7 +327,7 @@
       <div class="sidebar-head">
         <div>
           <div class="sidebar-title">Messages</div>
-          <p class="sidebar-copy">Direct conversations inside SmartClass.</p>
+          <p class="sidebar-copy">Direct conversations.</p>
         </div>
         <a href="{% url 'inbox' %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-lg"></i></a>
       </div>
@@ -328,8 +376,11 @@
           </div>
         </div>
         <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-outline-secondary rounded-pill d-none d-lg-inline-flex align-items-center justify-content-center" id="toggleSidebarBtn" title="Toggle Sidebar" style="width: 34px; height: 34px;" onclick="toggleSidebar()">
+            <i class="bi bi-layout-sidebar-inset" id="toggleIcon"></i>
+          </button>
           <input type="text" id="messageSearch" class="form-control form-control-sm rounded-pill px-3" placeholder="Search messages..." style="max-width: 180px;" />
-          <a href="{% url 'inbox' %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back</a>
+          <a href="{% url 'inbox' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3"><i class="bi bi-arrow-left me-1"></i>Back</a>
         </div>
       </div>
 
@@ -416,6 +467,29 @@
 
 {% block extra_js %}
 <script>
+  // Toggle sidebar functionality
+  function toggleSidebar() {
+    const frame = document.querySelector('.chat-frame');
+    const icon = document.getElementById('toggleIcon');
+    const isHidden = frame.classList.toggle('sidebar-hidden');
+    localStorage.setItem('chatSidebarHidden', isHidden);
+    if (isHidden) {
+      icon.className = 'bi bi-layout-sidebar';
+    } else {
+      icon.className = 'bi bi-layout-sidebar-inset';
+    }
+  }
+
+  // Restore state on load
+  document.addEventListener('DOMContentLoaded', function() {
+    if (localStorage.getItem('chatSidebarHidden') === 'true') {
+      const frame = document.querySelector('.chat-frame');
+      const icon = document.getElementById('toggleIcon');
+      if (frame) frame.classList.add('sidebar-hidden');
+      if (icon) icon.className = 'bi bi-layout-sidebar';
+    }
+  });
+
   const box = document.getElementById('messageBox');
   if (box) {
     box.scrollTop = box.scrollHeight;

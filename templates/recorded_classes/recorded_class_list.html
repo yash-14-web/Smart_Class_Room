@@ -49,7 +49,7 @@
         <tbody>
           {% for recorded_class in classes %}
           <tr>
-            <td><div class="fw-semibold">{{ recorded_class.title }}</div><div class="text-muted small">{{ recorded_class.description|truncatechars:80 }}</div></td>
+            <td><div class="fw-semibold">{{ recorded_class.title }}</div><div class="text-muted small">{{ recorded_class.description|striptags|truncatechars:80 }}</div></td>
             <td>{{ recorded_class.subject }}</td>
             <td>{{ recorded_class.uploaded_at|date:'d M Y' }}</td>
             <td>{{ recorded_class.uploaded_by.get_full_name|default:recorded_class.uploaded_by.username }}</td>

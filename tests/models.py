@@ -96,6 +96,7 @@ class Question(models.Model):
     question_text = models.TextField()
     code_cell = models.TextField(blank=True, null=True)
     starter_code = models.TextField(blank=True, null=True)
+    reference_solution = models.TextField(blank=True, null=True)
     expected_function_name = models.CharField(max_length=120, blank=True)
     option1 = models.CharField(max_length=255, blank=True, null=True)
     option2 = models.CharField(max_length=255, blank=True, null=True)
@@ -177,6 +178,8 @@ class StudentResponse(models.Model):
     coding_submissions = models.JSONField(default=dict, blank=True)
     evaluation_summary = models.JSONField(default=list, blank=True)
     submitted_at = models.DateTimeField(default=timezone.now)
+    retake_allowed = models.BooleanField(default=False)
+    retake_requested = models.BooleanField(default=False)
 
     class Meta:
         constraints = [

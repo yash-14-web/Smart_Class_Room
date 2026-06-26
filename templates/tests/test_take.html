@@ -4,15 +4,21 @@
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
 <style>
-  /* ── CodeMirror ── */
+  /* ── CodeMirror Dark Editor ── */
   .CodeMirror {
     height: auto; min-height: 250px; border-radius: 14px;
-    border: 1px solid rgba(16,32,51,.12);
+    border: 1px solid var(--sc-border);
     font-family: var(--bs-font-monospace); font-size: 14px; padding: 10px;
+    background: #0f172a !important;
+    color: #f8fafc !important;
+  }
+  .CodeMirror-gutters {
+    background-color: #0f172a !important;
+    border-right: 1px solid var(--sc-border) !important;
   }
   .CodeMirror-focused {
-    border-color: rgba(20,90,242,.45);
-    box-shadow: 0 0 0 .2rem rgba(20,90,242,.12);
+    border-color: rgba(3b, 130, 246, 0.45);
+    box-shadow: 0 0 0 .2rem rgba(3b, 130, 246, 0.12);
   }
 
   /* ── Exam-mode: hide sidebar, navbar, footer ── */
@@ -163,121 +169,142 @@
 
 <!-- EXAM CONTENT -->
 <div id="examContent" style="display:none">
-  <div class="card mb-4">
-    <div class="card-header bg-white">
+  <div class="card mb-4 border-0 shadow-sm rounded-4" style="background: var(--sc-surface-strong) !important; border: 1px solid var(--sc-border) !important; color: var(--sc-ink) !important;">
+    <div class="card-header bg-transparent pt-4 pb-0 border-0">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
-          <h4 class="mb-1">{{ test.title }}</h4>
-          <p class="text-muted mb-0">Complete all sections below. Sample runs do not reveal hidden grading cases.</p>
+          <h4 class="mb-1 fw-bold">{{ test.title }}</h4>
+          <p class="text-muted mb-0">Complete all sections sequentially. Sample runs will run hidden grading cases without showing details.</p>
         </div>
         <div class="d-flex flex-wrap gap-2">
-          <span class="badge bg-info text-dark">{{ test.time_limit }} min total</span>
-          <span class="badge bg-warning text-dark" id="timeLeftBadge">{{ remaining_minutes }} min left</span>
-          {% if test.end_date %}<span class="badge bg-secondary">Due {{ test.end_date|date:'M d, Y H:i' }}</span>{% endif %}
+          <span class="badge py-2 px-3 rounded-pill text-dark fw-bold" style="background: rgba(148, 163, 184, 0.1) !important; color: var(--sc-muted) !important; border: 1px solid rgba(148, 163, 184, 0.2) !important;">
+            {{ test.time_limit }} min total
+          </span>
+          <span class="badge py-2 px-3 rounded-pill fw-bold" id="timeLeftBadge" style="background: rgba(245, 158, 11, 0.1) !important; color: #f59e0b !important; border: 1px solid rgba(245, 158, 11, 0.2) !important;">
+            {{ remaining_minutes }} min left
+          </span>
         </div>
       </div>
     </div>
 
-    <div class="card-body">
+    <div class="card-body p-4">
       {% if test.notebook_file %}
-        <div class="alert alert-light border d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="alert alert-light border border-secondary d-flex justify-content-between align-items-center flex-wrap gap-2 rounded-4 mb-4" style="background: rgba(255,255,255,0.02); color: var(--sc-ink);">
           <div>
             <div class="fw-semibold">Starter notebook / brief attached</div>
             <div class="small text-muted">Download before writing your solution.</div>
           </div>
-          <a href="{{ test.notebook_file.url }}" class="btn btn-outline-primary btn-sm" download>Download File</a>
+          <a href="{{ test.notebook_file.url }}" class="btn btn-outline-primary btn-sm rounded-pill px-4" download>Download File</a>
         </div>
       {% endif %}
+
+      <!-- Section Title & Navigation Banner -->
+      <div class="card p-3 mb-4 rounded-4" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--sc-border) !important; color: var(--sc-ink) !important;">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <h5 class="fw-bold mb-0 text-primary" id="currentSectionTitle">Section: Loading...</h5>
+          <span class="badge bg-secondary rounded-pill px-3 py-1.5 fw-bold" id="sectionProgressBadge">Section 1 of 1</span>
+        </div>
+      </div>
 
       <form method="post" id="testTakeForm">
         {% csrf_token %}
         <input type="hidden" name="action" id="autoActionInput" value="submit">
 
-        <div class="vstack gap-4">
+        <!-- Section 1: Quiz (MCQ) Questions -->
+        <div id="sectionMCQContainer" class="vstack gap-4">
           {% for row in form_rows %}
-            <div class="border rounded-4 p-4">
-              <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
-                <div>
-                  <div class="h5 mb-1">Q{{ forloop.counter }}. {{ row.question.question_text }}</div>
-                  <div class="d-flex flex-wrap gap-2">
-                    <span class="badge {% if row.question.is_coding %}bg-warning text-dark{% else %}bg-primary{% endif %}">
-                      {% if row.question.is_coding %}Coding{% else %}Quiz{% endif %}
-                    </span>
-                    <span class="badge bg-light text-dark">{{ row.question.marks }} marks</span>
-                    {% if row.question.is_coding %}
-                      <span class="badge bg-light text-dark">{{ row.question.sample_case_count }} sample</span>
-                      <span class="badge bg-light text-dark">{{ row.question.hidden_case_count }} hidden</span>
-                    {% endif %}
+            {% if row.question.is_mcq %}
+              <div class="border rounded-4 p-4 question-card" data-qid="{{ row.question.pk }}" data-qtype="mcq" style="border-color: var(--sc-border) !important;">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                  <div>
+                    <h5 class="mb-1 fw-bold">Q<span class="q-display-index"></span>. {{ row.question.question_text }}</h5>
+                    <div class="d-flex gap-2">
+                      <span class="badge bg-primary rounded-pill">Quiz / MCQ</span>
+                      <span class="badge bg-light text-dark border rounded-pill">{{ row.question.marks }} marks</span>
+                    </div>
                   </div>
                 </div>
-                {% if row.question.is_coding and row.question.expected_function_name %}
-                  <code>{{ row.question.expected_function_name }}(...)</code>
-                {% endif %}
-              </div>
 
-              {% if row.question.code_cell %}
-                <div class="mb-3 text-muted small">{{ row.question.code_cell|linebreaksbr }}</div>
-              {% endif %}
-
-              <div class="mb-3">
-                {{ row.field.label_tag }}
-                {{ row.field }}
-                {% if row.field.help_text %}<div class="form-text">{{ row.field.help_text }}</div>{% endif %}
-                {% if row.field.errors %}<div class="text-danger small mt-2">{{ row.field.errors }}</div>{% endif %}
-              </div>
-
-              {% if row.feedback %}
-                <div class="mt-3 rounded-4 border bg-light p-3">
-                  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
-                    <div class="fw-semibold">Sample Run Result</div>
-                    <span class="badge bg-dark">{{ row.feedback.passed_cases }}/{{ row.feedback.total_cases }} passed</span>
-                  </div>
-                  {% if row.feedback.error %}
-                    <div class="alert alert-danger py-2 mb-3">{{ row.feedback.error }}</div>
-                  {% endif %}
-                  {% if row.feedback.stdout %}
-                    <div class="mb-3">
-                      <div class="small text-muted mb-1">Console Output</div>
-                      <pre class="bg-white border rounded-3 p-2 small mb-0">{{ row.feedback.stdout }}</pre>
-                    </div>
-                  {% endif %}
-                  {% if row.feedback.results %}
-                    <div class="table-responsive">
-                      <table class="table table-sm align-middle mb-0">
-                        <thead><tr><th>Case</th><th>Input</th><th>Expected</th><th>Actual</th><th>Result</th></tr></thead>
-                        <tbody>
-                          {% for result in row.feedback.results %}
-                            <tr>
-                              <td>Sample {{ forloop.counter }}</td>
-                              <td><code>{{ result.input_preview }}</code></td>
-                              <td><code>{{ result.expected_preview }}</code></td>
-                              <td><code>{{ result.actual_preview }}</code></td>
-                              <td>
-                                <span class="badge {% if result.passed %}bg-success{% else %}bg-danger{% endif %}">
-                                  {% if result.passed %}Passed{% else %}Failed{% endif %}
-                                </span>
-                              </td>
-                            </tr>
-                          {% endfor %}
-                        </tbody>
-                      </table>
-                    </div>
-                  {% endif %}
+                <div class="mb-3">
+                  {{ row.field }}
+                  {% if row.field.errors %}<div class="text-danger small mt-2">{{ row.field.errors }}</div>{% endif %}
                 </div>
-              {% endif %}
-            </div>
+              </div>
+            {% endif %}
           {% endfor %}
         </div>
 
-        <div class="d-flex flex-wrap gap-2 mt-4">
-          {% if test.coding_questions_count %}
-            <button type="submit"
-                    onclick="document.getElementById('autoActionInput').value='run'"
-                    class="btn btn-outline-primary">Run Sample Tests</button>
-          {% endif %}
-          <button type="submit"
-                  onclick="document.getElementById('autoActionInput').value='submit'"
-                  class="btn btn-primary">Submit Final Test</button>
+        <!-- Section 2: Coding Challenges -->
+        <div id="sectionCodingContainer" class="vstack gap-4" style="display: none;">
+          {% for row in form_rows %}
+            {% if row.question.is_coding %}
+              <div class="border rounded-4 p-4 question-card" data-qid="{{ row.question.pk }}" data-qtype="coding" style="border-color: var(--sc-border) !important;">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                  <div>
+                    <h5 class="mb-1 fw-bold">Q<span class="q-display-index"></span>. {{ row.question.question_text }}</h5>
+                    <div class="d-flex gap-2">
+                      <span class="badge bg-warning text-dark rounded-pill">Coding</span>
+                      <span class="badge bg-light text-dark border rounded-pill">{{ row.question.marks }} marks</span>
+                      <span class="badge bg-light text-dark border rounded-pill">{{ row.question.sample_case_count }} sample</span>
+                      <span class="badge bg-light text-dark border rounded-pill">{{ row.question.hidden_case_count }} hidden</span>
+                    </div>
+                  </div>
+                  {% if row.question.expected_function_name %}
+                    <code>Function: {{ row.question.expected_function_name }}(...)</code>
+                  {% endif %}
+                </div>
+
+                {% if row.question.code_cell %}
+                  <div class="mb-3 text-muted small whitespace-pre-line">{{ row.question.code_cell }}</div>
+                {% endif %}
+
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Write your Python code below:</label>
+                  {{ row.field }}
+                  {% if row.field.errors %}<div class="text-danger small mt-2">{{ row.field.errors }}</div>{% endif %}
+                </div>
+
+                <!-- Run button specific to this question -->
+                <div class="mb-3">
+                  <button type="button" class="btn btn-outline-primary rounded-pill px-4 py-2 run-single-test-btn" data-qid="{{ row.question.pk }}">
+                    <span class="spinner-border spinner-border-sm d-none run-spinner" role="status" aria-hidden="true"></span>
+                    <span class="run-btn-text">Run Sample Tests</span>
+                  </button>
+                </div>
+
+                <!-- AJAX Feedback Container -->
+                <div class="mt-3 rounded-4 border p-4 d-none" id="feedback-container-{{ row.question.pk }}" style="background: rgba(0,0,0,0.2); border-color: var(--sc-border) !important;">
+                  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                    <div class="fw-bold text-white fs-6"><i class="bi bi-terminal me-1"></i> Practice Run Results</div>
+                    <span class="badge bg-secondary case-passed-badge">0/0 passed</span>
+                  </div>
+                  
+                  <!-- Counts summary breakdown -->
+                  <div class="small text-muted mb-3 case-breakdown-text" style="color: var(--sc-muted) !important;"></div>
+                  
+                  <div class="alert alert-danger py-2 mb-3 d-none error-message-div"></div>
+                  
+                  <div class="mb-3 d-none stdout-div">
+                    <div class="small text-muted mb-1">Standard Console Output</div>
+                    <pre class="bg-black text-light border rounded-3 p-2.5 small mb-0 stdout-pre" style="border-color: var(--sc-border) !important; font-family: monospace;"></pre>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        <!-- Section Navigation Buttons -->
+        <div class="d-flex gap-2 mt-4 flex-wrap align-items-center">
+          <button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-pill d-none" id="prevStepBtn">
+            &larr; Previous Page
+          </button>
+          <button type="button" class="btn btn-primary px-4 py-2 rounded-pill shadow-sm d-none" id="nextStepBtn">
+            Next Page &rarr;
+          </button>
+          <button type="submit" id="submitTestBtn" onclick="document.getElementById('autoActionInput').value='submit'" class="btn btn-success rounded-pill px-5 py-2 shadow-sm ms-auto d-none">
+            Submit Final Test
+          </button>
         </div>
       </form>
     </div>
@@ -316,6 +343,13 @@
   var $action       = document.getElementById('autoActionInput');
   var $timeBadge    = document.getElementById('timeLeftBadge');
 
+  // Multi-Section configuration
+  var hasMCQs = {% if test.mcq_questions_count %}true{% else %}false{% endif %};
+  var hasCoding = {% if test.coding_questions_count %}true{% else %}false{% endif %};
+  var currentSection = 1; // 1 = MCQ, 2 = Coding
+  var steps = [];
+  var currentStepIdx = 0;
+
   /* ── Fullscreen ── */
   function enterFs() {
     var el = document.documentElement;
@@ -349,7 +383,8 @@
       if ($timeBadge) {
         $timeBadge.textContent = m + ':' + String(s).padStart(2,'0') + ' left';
         $timeBadge.className = secs <= 60
-          ? 'badge bg-danger text-white' : 'badge bg-warning text-dark';
+          ? 'badge bg-danger text-white rounded-pill py-2 px-3' 
+          : 'badge bg-warning text-dark rounded-pill py-2 px-3';
       }
       if (secs <= 0) { doSubmit(); return; }
       secs--;
@@ -367,7 +402,220 @@
     examStarted = true;
     initCM();
     startTimer();
+    setupSections();
     setTimeout(function () { cooldown = false; }, 1000);
+  });
+
+  /* ── Section Setup & Multi-Section Navigation ── */
+  function showStep(index) {
+    // Hide all step elements
+    steps.forEach(function(step) {
+      step.element.style.display = 'none';
+    });
+
+    const mcqContainer = document.getElementById('sectionMCQContainer');
+    const codingContainer = document.getElementById('sectionCodingContainer');
+    
+    const activeStep = steps[index];
+    activeStep.element.style.display = 'block';
+
+    if (activeStep.type === 'mcq') {
+      if (mcqContainer) mcqContainer.style.display = 'flex';
+      if (codingContainer) codingContainer.style.display = 'none';
+    } else {
+      if (mcqContainer) mcqContainer.style.display = 'none';
+      if (codingContainer) codingContainer.style.display = 'block';
+
+      // Refresh CodeMirror layout for this card
+      const ta = activeStep.element.querySelector('.code-editor');
+      if (ta) {
+        cmEditors.forEach(cm => {
+          if (cm.getTextArea() === ta) {
+            cm.refresh();
+          }
+        });
+      }
+    }
+
+    // Update title and progress badge
+    document.getElementById('currentSectionTitle').textContent = activeStep.title;
+    document.getElementById('sectionProgressBadge').textContent = `Page ${index + 1} of ${steps.length}`;
+
+    // Toggle navigation buttons
+    const prevBtn = document.getElementById('prevStepBtn');
+    const nextBtn = document.getElementById('nextStepBtn');
+    const submitBtn = document.getElementById('submitTestBtn');
+
+    if (index === 0) {
+      prevBtn.classList.add('d-none');
+    } else {
+      prevBtn.classList.remove('d-none');
+    }
+
+    if (index === steps.length - 1) {
+      nextBtn.classList.add('d-none');
+      submitBtn.classList.remove('d-none');
+    } else {
+      nextBtn.classList.remove('d-none');
+      submitBtn.classList.add('d-none');
+    }
+  }
+
+  function setupSections() {
+    // Number question index labels chronologically
+    let displayIndex = 1;
+    document.querySelectorAll('.question-card').forEach(card => {
+      card.querySelector('.q-display-index').textContent = displayIndex++;
+    });
+
+    steps = [];
+    if (hasMCQs) {
+      const mcqContainer = document.getElementById('sectionMCQContainer');
+      if (mcqContainer) {
+        steps.push({
+          type: 'mcq',
+          element: mcqContainer,
+          title: "Multiple Choice Quiz"
+        });
+      }
+    }
+
+    document.querySelectorAll('#sectionCodingContainer .question-card').forEach(function(card, idx) {
+      steps.push({
+        type: 'coding',
+        element: card,
+        title: "Coding Challenge: Question " + card.querySelector('.q-display-index').textContent
+      });
+    });
+
+    if (steps.length > 0) {
+      currentStepIdx = 0;
+      showStep(currentStepIdx);
+    }
+  }
+
+  // Previous Page handler
+  document.getElementById('prevStepBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    if (currentStepIdx > 0) {
+      currentStepIdx--;
+      showStep(currentStepIdx);
+    }
+  });
+
+  // Next Page handler
+  document.getElementById('nextStepBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    // If currently on MCQ page, validate before leaving (optional prompt)
+    if (steps[currentStepIdx].type === 'mcq') {
+      let unansweredCount = 0;
+      document.querySelectorAll('#sectionMCQContainer .question-card').forEach(card => {
+        const qid = card.dataset.qid;
+        const checked = card.querySelector(`input[name="question_${qid}"]:checked`);
+        if (!checked) unansweredCount++;
+      });
+      if (unansweredCount > 0) {
+        const proceed = confirm(`You have ${unansweredCount} unanswered quiz question(s). Are you sure you want to proceed to the next page?`);
+        if (!proceed) return;
+      }
+    }
+
+    if (currentStepIdx < steps.length - 1) {
+      currentStepIdx++;
+      showStep(currentStepIdx);
+    }
+  });
+
+  /* ── AJAX Run Sample Tests Handler (Single Question) ── */
+  document.querySelectorAll('.run-single-test-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const qid = btn.dataset.qid;
+      const spinner = btn.querySelector('.run-spinner');
+      const btnText = btn.querySelector('.run-btn-text');
+
+      btn.disabled = true;
+      if (spinner) spinner.classList.remove('d-none');
+      if (btnText) btnText.textContent = 'Running tests...';
+
+      // Save CodeMirror content back to standard textarea inputs
+      cmEditors.forEach(cm => cm.save());
+
+      // Serialize form
+      const formData = new FormData($form);
+      formData.set('action', 'run');
+      formData.set('question_id', qid);
+
+      fetch(window.location.href, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        btn.disabled = false;
+        if (spinner) spinner.classList.add('d-none');
+        if (btnText) btnText.textContent = 'Run Sample Tests';
+
+        if (data.success) {
+          const feedback = data.feedback[qid];
+          const feedbackContainer = document.getElementById(`feedback-container-${qid}`);
+          if (feedback && feedbackContainer) {
+            feedbackContainer.classList.remove('d-none');
+
+            // Update case breakdown text
+            const breakdownText = feedbackContainer.querySelector('.case-breakdown-text');
+            if (breakdownText) {
+              const sampleCount = feedback.sample_cases_count || 0;
+              const samplePassed = feedback.sample_cases_passed || 0;
+              const hiddenCount = feedback.hidden_cases_count || 0;
+              const hiddenPassed = feedback.hidden_cases_passed || 0;
+              breakdownText.textContent = `${samplePassed}/${sampleCount} sample cases, ${hiddenPassed}/${hiddenCount} hidden cases passed. (Total: ${feedback.passed_cases}/${feedback.total_cases} cases passed)`;
+            }
+
+            // Update primary passed badge
+            const passedBadge = feedbackContainer.querySelector('.case-passed-badge');
+            if (passedBadge) {
+              passedBadge.textContent = `${feedback.passed_cases}/${feedback.total_cases} passed`;
+            }
+
+            // Update error display
+            const errDiv = feedbackContainer.querySelector('.error-message-div');
+            if (errDiv) {
+              if (feedback.error) {
+                errDiv.textContent = feedback.error;
+                errDiv.classList.remove('d-none');
+              } else {
+                errDiv.classList.add('d-none');
+              }
+            }
+
+            // Update stdout display
+            const stdoutDiv = feedbackContainer.querySelector('.stdout-div');
+            const stdoutPre = feedbackContainer.querySelector('.stdout-pre');
+            if (stdoutDiv && stdoutPre) {
+              if (feedback.stdout) {
+                stdoutPre.textContent = feedback.stdout;
+                stdoutDiv.classList.remove('d-none');
+              } else {
+                stdoutDiv.classList.add('d-none');
+              }
+            }
+          }
+        } else {
+          alert('Failed to evaluate code: ' + data.error);
+        }
+      })
+      .catch(err => {
+        btn.disabled = false;
+        if (spinner) spinner.classList.add('d-none');
+        if (btnText) btnText.textContent = 'Run Sample Tests';
+        alert('Network error when sending request.');
+      });
+    });
   });
 
   /* ── Submit ── */
@@ -409,8 +657,6 @@
   $warnBtn.addEventListener('click', function () {
     $warnOverlay.style.display = 'none';
     enterFs();
-    /* Cooldown reset: fullscreenchange resets it if fullscreen succeeds.
-       Fallback timeout resets it if browser blocks fullscreen. */
     setTimeout(function () { cooldown = false; }, 700);
   });
 
@@ -440,7 +686,6 @@
   });
 
   /* ── Event: window blur (alt-tab, half-screen click-away, minimise) ── */
-  /* NOTE: no !inFs() check — any window focus loss counts */
   window.addEventListener('blur', function () {
     setTimeout(function () {
       if (!document.hasFocus()) handleViolation();

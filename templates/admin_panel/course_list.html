@@ -1,0 +1,358 @@
+{% extends 'base.html' %}
+{% block title %}Course Management - SmartClass{% endblock %}
+
+{% block extra_css %}
+<style>
+  .admin-courses .hero-banner {
+    background: linear-gradient(135deg, #0f2f72 0%, #145af2 54%, #1aa3a3 100%);
+    color: #fff;
+    border-radius: 24px;
+    padding: 32px 30px;
+    box-shadow: 0 20px 42px rgba(15, 47, 114, .20);
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .admin-courses .hero-banner::before {
+    content: '';
+    position: absolute;
+    top: -40%;
+    right: -8%;
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, rgba(255,255,255,.08) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .admin-courses .hero-banner::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: 12%;
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(circle, rgba(26,163,163,.18) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .admin-courses .hero-kicker {
+    text-transform: uppercase;
+    letter-spacing: .16em;
+    font-size: .74rem;
+    font-weight: 700;
+    opacity: .82;
+    margin-bottom: .7rem;
+  }
+  .admin-courses .hero-title {
+    font-size: clamp(1.7rem, 3vw, 2.4rem);
+    font-weight: 800;
+    line-height: 1.08;
+    margin-bottom: .55rem;
+  }
+  .admin-courses .hero-copy {
+    color: rgba(255,255,255,.82);
+    max-width: 620px;
+    margin-bottom: 0;
+  }
+
+  /* ── Stat cards ── */
+  .admin-courses .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .admin-courses .stat-card {
+    border-radius: 20px;
+    padding: 1.15rem 1.3rem;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .admin-courses .stat-card::after {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: -15%;
+    width: 100px;
+    height: 100px;
+    background: rgba(255,255,255,.1);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .admin-courses .stat-card .stat-icon {
+    font-size: 1.6rem;
+    opacity: .85;
+    margin-bottom: .4rem;
+  }
+  .admin-courses .stat-card .stat-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+  .admin-courses .stat-card .stat-label {
+    font-size: .78rem;
+    opacity: .82;
+    font-weight: 600;
+  }
+  .stat-total   { background: linear-gradient(135deg, #0f3fae, #145af2); }
+  .stat-active  { background: linear-gradient(135deg, #0b7568, #0d9f8c); }
+  .stat-inactive{ background: linear-gradient(135deg, #9f3a54, #d34767); }
+
+  /* ── Table card ── */
+  .admin-courses .table-card {
+    background: var(--sc-surface-strong);
+    border: 1px solid var(--sc-border);
+    border-radius: 22px;
+    box-shadow: var(--sc-shadow-soft);
+    overflow: hidden;
+  }
+  .admin-courses .table-head {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--sc-border);
+    background: var(--sc-card-header);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: .75rem;
+  }
+  .admin-courses .table-head-title {
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: var(--sc-ink);
+    margin: 0;
+  }
+  .admin-courses .table-responsive {
+    border-radius: 0 0 22px 22px;
+  }
+  .admin-courses .table {
+    margin-bottom: 0;
+  }
+  .admin-courses .table th {
+    white-space: nowrap;
+    padding: .85rem 1rem;
+  }
+  .admin-courses .table td {
+    padding: .85rem 1rem;
+    white-space: nowrap;
+  }
+  .admin-courses .course-title-cell {
+    white-space: normal !important;
+    min-width: 180px;
+    max-width: 260px;
+    font-weight: 700;
+    color: var(--sc-ink);
+  }
+  .admin-courses .code-pill {
+    display: inline-block;
+    background: rgba(20, 90, 242, 0.08);
+    color: var(--sc-primary-deep);
+    font-weight: 700;
+    font-size: .78rem;
+    padding: .3rem .65rem;
+    border-radius: 999px;
+    letter-spacing: .03em;
+  }
+  .admin-courses .dept-cell {
+    color: var(--sc-muted);
+    font-weight: 600;
+    font-size: .88rem;
+  }
+  .admin-courses .teacher-cell {
+    font-weight: 600;
+    font-size: .88rem;
+  }
+  .admin-courses .students-cell {
+    font-weight: 700;
+    font-size: .88rem;
+  }
+  .admin-courses .batch-pill {
+    display: inline-block;
+    background: rgba(13, 159, 140, 0.08);
+    color: #0b7568;
+    font-weight: 700;
+    font-size: .76rem;
+    padding: .28rem .6rem;
+    border-radius: 999px;
+  }
+
+  /* ── Empty state ── */
+  .admin-courses .empty-state {
+    text-align: center;
+    padding: 3.5rem 1.5rem;
+  }
+  .admin-courses .empty-state .empty-icon {
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(20, 90, 242, 0.06);
+    font-size: 2.2rem;
+    color: var(--sc-primary);
+  }
+  .admin-courses .empty-state h5 {
+    font-weight: 800;
+    color: var(--sc-ink);
+    margin-bottom: .4rem;
+  }
+  .admin-courses .empty-state p {
+    color: var(--sc-muted);
+    max-width: 380px;
+    margin: 0 auto 1.2rem;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 767.98px) {
+    .admin-courses .hero-banner { padding: 22px 18px; }
+    .admin-courses .table-head { padding: 14px 16px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-courses">
+
+  <!-- ═══ Hero Banner ═══ -->
+  <div class="hero-banner d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+    <div>
+      <div class="hero-kicker"><i class="bi bi-shield-lock me-1"></i> Admin Panel</div>
+      <div class="hero-title">Course Management</div>
+      <p class="hero-copy">Create, edit, and oversee every course across all departments — right from one place.</p>
+    </div>
+    <a href="{% url 'admin_course_create' %}" class="btn btn-light fw-bold">
+      <i class="bi bi-plus-circle me-1"></i> Create Course
+    </a>
+  </div>
+
+  <!-- ═══ Stat Cards ═══ -->
+  <div class="stat-row">
+    <div class="stat-card stat-total">
+      <div class="stat-icon"><i class="bi bi-journal-bookmark"></i></div>
+      <div class="stat-value">{{ courses|length }}</div>
+      <div class="stat-label">Total Courses</div>
+    </div>
+    <div class="stat-card stat-active">
+      <div class="stat-icon"><i class="bi bi-check-circle"></i></div>
+      <div class="stat-value">{{ active_count|default:"0" }}</div>
+      <div class="stat-label">Active Courses</div>
+    </div>
+    <div class="stat-card stat-inactive">
+      <div class="stat-icon"><i class="bi bi-pause-circle"></i></div>
+      <div class="stat-value">{{ inactive_count|default:"0" }}</div>
+      <div class="stat-label">Inactive Courses</div>
+    </div>
+  </div>
+
+  {% if courses %}
+  <!-- ═══ Table Card ═══ -->
+  <div class="table-card">
+    <div class="table-head">
+      <h6 class="table-head-title"><i class="bi bi-table me-2"></i>All Courses</h6>
+      <span class="text-muted" style="font-size:.85rem;font-weight:600;">{{ courses|length }} record{{ courses|length|pluralize }}</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Title</th>
+            <th>Department</th>
+            <th>Teacher</th>
+            <th>Students</th>
+            <th>Batch</th>
+            <th>Status</th>
+            <th>Approval</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for course in courses %}
+          <tr>
+            <td><span class="code-pill">{{ course.course_code }}</span></td>
+            <td class="course-title-cell">{{ course.title }}</td>
+            <td class="dept-cell">
+              {% if course.department %}
+                {{ course.department.name }}
+              {% else %}
+                <span class="text-muted">&mdash;</span>
+              {% endif %}
+            </td>
+            <td class="teacher-cell">
+              <i class="bi bi-person-circle me-1 text-muted"></i>{{ course.teacher.username }}
+            </td>
+            <td class="students-cell">
+              <i class="bi bi-people me-1 text-muted"></i>{{ course.student_count }}/{{ course.max_students }}
+            </td>
+            <td>
+              {% if course.batch %}
+                <span class="batch-pill">{{ course.batch }}</span>
+              {% else %}
+                <span class="text-muted">&mdash;</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if course.is_active %}
+                <span class="badge" style="background:rgba(13,159,140,.12);color:#0b7568;">
+                  <i class="bi bi-check-circle-fill me-1"></i>Active
+                </span>
+              {% else %}
+                <span class="badge" style="background:rgba(211,71,103,.10);color:#d34767;">
+                  <i class="bi bi-x-circle-fill me-1"></i>Inactive
+                </span>
+              {% endif %}
+            </td>
+            <td>
+              {% if course.approval_status == 'approved' %}
+                <span class="badge" style="background:rgba(13,159,140,.12);color:#0b7568;">
+                  <i class="bi bi-check-circle-fill me-1"></i>Approved
+                </span>
+              {% elif course.approval_status == 'pending' %}
+                <span class="badge" style="background:rgba(253,126,20,.12);color:#fd7e14;">
+                  <i class="bi bi-hourglass-split me-1"></i>Pending
+                </span>
+              {% else %}
+                <span class="badge" style="background:rgba(211,71,103,.10);color:#d34767;">
+                  <i class="bi bi-x-circle-fill me-1"></i>Rejected
+                </span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              {% if course.approval_status == 'pending' %}
+                <a href="{% url 'admin_course_approve' course.pk %}" class="btn btn-sm btn-success me-1">
+                  <i class="bi bi-check-lg"></i> Approve
+                </a>
+                <a href="{% url 'admin_course_reject' course.pk %}" class="btn btn-sm btn-danger me-1">
+                  <i class="bi bi-x-lg"></i> Reject
+                </a>
+              {% endif %}
+              <a href="{% url 'admin_course_edit' course.pk %}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-pencil-square me-1"></i>Edit
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% else %}
+  <!-- ═══ Empty State ═══ -->
+  <div class="table-card">
+    <div class="empty-state">
+      <div class="empty-icon"><i class="bi bi-journal-bookmark"></i></div>
+      <h5>No courses yet</h5>
+      <p>Start building your academic catalog by creating the first course for your institution.</p>
+      <a href="{% url 'admin_course_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i> Create First Course
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

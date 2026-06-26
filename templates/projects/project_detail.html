@@ -104,7 +104,7 @@
       <div class="section-card mb-4">
         <div class="section-head"><div class="fw-bold">Project Overview</div></div>
         <div class="section-body">
-          <p class="text-muted mb-4">{{ submission.description }}</p>
+          <div class="text-muted mb-4">{{ submission.description|safe }}</div>
           <div class="info-grid">
             <div class="info-card">
               <div class="text-muted small">Technologies Used</div>

@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% block title %}{% if is_edit %}Edit Student{% else %}Add New Student{% endif %} - SmartClass{% endblock %}
+
+{% block extra_css %}
+<style>
+  .stu-form-page .form-shell {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .stu-form-page .hero-card {
+    background: linear-gradient(135deg, #0f2f72 0%, #145af2 54%, #1aa3a3 100%);
+    color: #fff;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 20px 42px rgba(15, 47, 114, .20);
+    margin-bottom: 1.5rem;
+  }
+  .stu-form-page .hero-kicker {
+    text-transform: uppercase;
+    letter-spacing: .16em;
+    font-size: .74rem;
+    font-weight: 700;
+    opacity: .82;
+    margin-bottom: .75rem;
+  }
+  .stu-form-page .hero-title {
+    font-size: clamp(1.7rem, 3vw, 2.35rem);
+    font-weight: 800;
+    margin-bottom: .55rem;
+  }
+  .stu-form-page .hero-copy {
+    color: rgba(255,255,255,.84);
+    max-width: 620px;
+    margin-bottom: 0;
+  }
+  .stu-form-page .form-card {
+    background: var(--sc-surface-strong);
+    border: 1px solid var(--sc-border);
+    border-radius: 24px;
+    box-shadow: var(--sc-shadow-soft);
+    overflow: hidden;
+  }
+  .stu-form-page .form-head {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--sc-border);
+    background: var(--sc-card-header);
+  }
+  .stu-form-page .form-head-title {
+    font-weight: 800;
+    color: var(--sc-ink);
+    margin-bottom: .2rem;
+  }
+  .stu-form-page .form-head-copy {
+    color: var(--sc-muted);
+    margin-bottom: 0;
+    font-size: .9rem;
+  }
+  .stu-form-page .form-body {
+    padding: 22px;
+  }
+  .stu-form-page .section-title {
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--sc-ink);
+    margin-bottom: .25rem;
+  }
+  .stu-form-page .section-copy {
+    color: var(--sc-muted);
+    font-size: .85rem;
+    margin-bottom: 1rem;
+  }
+  .stu-form-page .course-check-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: .75rem;
+  }
+  .stu-form-page .check-card {
+    border: 1px solid var(--sc-border);
+    border-radius: 18px;
+    padding: 14px 16px;
+    background: var(--sc-surface);
+    transition: all .2s ease;
+    color: var(--sc-ink);
+  }
+  .stu-form-page .check-card:hover {
+    border-color: rgba(20, 90, 242, .30);
+    background: rgba(20, 90, 242, .04);
+  }
+  .stu-form-page .check-card .course-code {
+    font-size: .74rem;
+    font-weight: 700;
+    color: var(--sc-primary);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="stu-form-page">
+  <div class="form-shell">
+
+    <!-- ── Hero ── -->
+    <div class="hero-card">
+      <div class="hero-kicker">Admin Panel</div>
+      <div class="hero-title">
+        {% if is_edit %}Edit Student{% else %}Add New Student{% endif %}
+      </div>
+      <p class="hero-copy">
+        {% if is_edit %}Update student account details and course enrollments.
+        {% else %}Create a new student account and optionally enroll them in courses right away.{% endif %}
+      </p>
+    </div>
+
+    <!-- ── Form Card ── -->
+    <div class="form-card">
+      <div class="form-head">
+        <div class="form-head-title"><i class="bi bi-person-plus me-2"></i>Account Details</div>
+        <p class="form-head-copy">Fill in the student's credentials and personal information.</p>
+      </div>
+      <div class="form-body">
+        <form method="post">
+          {% csrf_token %}
+
+          <!-- Account Fields -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Username <span class="text-danger">*</span></label>
+              <input type="text" name="username" class="form-control" placeholder="e.g. john_doe"
+                     value="{{ form_data.username|default:'' }}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Email</label>
+              <input type="email" name="email" class="form-control" placeholder="student@example.com"
+                     value="{{ form_data.email|default:'' }}">
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">First Name</label>
+              <input type="text" name="first_name" class="form-control" placeholder="John"
+                     value="{{ form_data.first_name|default:'' }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Last Name</label>
+              <input type="text" name="last_name" class="form-control" placeholder="Doe"
+                     value="{{ form_data.last_name|default:'' }}">
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Password <span class="text-danger">*</span></label>
+            <input type="password" name="password" class="form-control" placeholder="Minimum 8 characters" required>
+            <div class="form-text"><i class="bi bi-info-circle me-1"></i>The student will use this password to log in.</div>
+          </div>
+
+          <!-- Divider -->
+          <hr style="border-color: var(--sc-border); margin: 1.5rem 0;">
+
+          <!-- Course Enrollment Section -->
+          <div class="section-title"><i class="bi bi-journal-bookmark me-2"></i>Course Enrollment</div>
+          <p class="section-copy">Optionally select courses to enroll this student in immediately.</p>
+
+          {% if courses %}
+          <div class="course-check-grid mb-4">
+            {% for course in courses %}
+            <label class="check-card d-flex align-items-start gap-3" style="cursor:pointer;">
+              <input type="checkbox" name="courses" value="{{ course.pk }}" class="form-check-input mt-1"
+                     {% if form_data and course.pk|stringformat:"d" in form_data.courses %}checked{% endif %}>
+              <div>
+                <div class="fw-bold" style="font-size:.92rem;">{{ course.title }}</div>
+                <span class="course-code">{{ course.course_code }}</span>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-3 mb-4" style="background:var(--sc-surface);border-radius:16px;border:1px solid var(--sc-border);">
+            <i class="bi bi-journal-x d-block mb-1" style="font-size:1.5rem;color:var(--sc-muted);opacity:.5;"></i>
+            <span class="text-muted" style="font-size:.88rem;">No active courses available for enrollment.</span>
+          </div>
+          {% endif %}
+
+          <!-- Actions -->
+          <div class="d-flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-circle me-1"></i>
+              {% if is_edit %}Save Changes{% else %}Create Student{% endif %}
+            </button>
+            <a href="{% url 'admin_student_list' %}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

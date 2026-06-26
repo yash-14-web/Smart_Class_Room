@@ -11,7 +11,7 @@ from .services import evaluate_coding_question
 
 
 def _student_is_enrolled(user, course):
-    return Enrollment.objects.filter(student=user, course=course).exists()
+    return Enrollment.objects.filter(student=user, course=course, status='approved').exists()
 
 
 @login_required
@@ -289,7 +289,7 @@ def test_responses_view(request, test_id):
 
     responses = test.responses.select_related('student').order_by('-submitted_at')
     submitted_student_ids = responses.values_list('student_id', flat=True)
-    missed_students = Enrollment.objects.filter(course=test.course).exclude(
+    missed_students = Enrollment.objects.filter(course=test.course, status='approved').exclude(
         student_id__in=submitted_student_ids
     ).select_related('student')
     return render(request, 'tests/test_responses.html', {

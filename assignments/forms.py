@@ -24,7 +24,7 @@ class AssignmentForm(forms.ModelForm):
         if course:
             from courses.models import Enrollment
             from users.models import CustomUser
-            student_ids = Enrollment.objects.filter(course=course).values_list('student_id', flat=True)
+            student_ids = Enrollment.objects.filter(course=course, status='approved').values_list('student_id', flat=True)
             self.fields['assigned_to'].queryset = CustomUser.objects.filter(id__in=student_ids)
             self.fields['assigned_to'].widget.attrs.update({'class': 'form-check-input'})
             self.fields['assigned_to'].required = False

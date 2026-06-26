@@ -64,10 +64,16 @@ def quiz_create(request, course_pk):
         if assigned_to_ids:
             quiz.assigned_to.set(assigned_to_ids)
             
+        # Notify approved students
+        from users.models import notify_user
+        enrolled = Enrollment.objects.filter(course=course, status='approved')
+        for e in enrolled:
+            notify_user(e.student, "New Quiz Released", f"A new quiz '{quiz.title}' has been released for course '{course.title}'.", "quiz")
+
         messages.success(request, f'Quiz "{quiz.title}" created! Now add questions.')
         return redirect('quiz_add_questions', quiz_pk=quiz.pk)
         
-    enrolled_students = Enrollment.objects.filter(course=course).select_related('student')
+    enrolled_students = Enrollment.objects.filter(course=course, status='approved').select_related('student')
     return render(request, 'quiz/quiz_create.html', {
         'course': course,
         'enrolled_students': enrolled_students,
@@ -92,7 +98,7 @@ def quiz_edit(request, quiz_pk):
         messages.success(request, f'Quiz "{quiz.title}" updated.')
         return redirect('quiz_add_questions', quiz_pk=quiz.pk)
         
-    enrolled_students = Enrollment.objects.filter(course=quiz.course).select_related('student')
+    enrolled_students = Enrollment.objects.filter(course=quiz.course, status='approved').select_related('student')
     assigned_ids = list(quiz.assigned_to.values_list('id', flat=True))
     return render(request, 'quiz/quiz_edit.html', {
         'quiz': quiz,
@@ -132,6 +138,74 @@ def quiz_add_questions(request, quiz_pk):
         'questions': questions,
     })
 
+@login_required
+def quiz_answer_key(request, quiz_pk):
+    """View to show the full answer key to the teacher."""
+    quiz = get_object_or_404(Quiz, pk=quiz_pk, course__teacher=request.user)
+    questions = quiz.questions.prefetch_related('choices').all()
+    return render(request, 'quiz/quiz_answer_key.html', {
+        'quiz': quiz,
+        'questions': questions,
+    })
+
+
+from django.http import JsonResponse
+import json
+
+@login_required
+def quiz_generate_ai(request, quiz_pk):
+    """API endpoint to generate quiz questions via AI."""
+    quiz = get_object_or_404(Quiz, pk=quiz_pk, course__teacher=request.user)
+    if request.method == 'POST':
+        topic = request.POST.get('topic')
+        num_questions = int(request.POST.get('num_questions', 5))
+        difficulty = request.POST.get('difficulty', 'medium')
+        marks_per_q = int(request.POST.get('marks', 1))
+        
+        from .ai_generator import generate_quiz_questions
+        questions, error = generate_quiz_questions(topic, num_questions, difficulty)
+        
+        if error:
+            return JsonResponse({'success': False, 'error': error})
+            
+        # Override the AI-generated marks with the teacher's explicitly chosen marks
+        for q in questions:
+            q['marks'] = marks_per_q
+            
+        return JsonResponse({'success': True, 'questions': questions})
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+
+@login_required
+def quiz_save_bulk(request, quiz_pk):
+    """API endpoint to save multiple questions at once from the AI generator."""
+    quiz = get_object_or_404(Quiz, pk=quiz_pk, course__teacher=request.user)
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            questions_data = data.get('questions', [])
+            
+            for q_data in questions_data:
+                order = quiz.questions.count() + 1
+                question = Question.objects.create(
+                    quiz=quiz,
+                    text=q_data['text'],
+                    marks=q_data.get('marks', 1),
+                    order=order
+                )
+                for choice_data in q_data.get('choices', []):
+                    Choice.objects.create(
+                        question=question,
+                        text=choice_data['text'],
+                        is_correct=choice_data['is_correct']
+                    )
+            
+            quiz.calculate_total()
+            return JsonResponse({'success': True, 'message': f'{len(questions_data)} questions added.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+            
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 @login_required
 def quiz_attempt(request, quiz_pk):
@@ -142,7 +216,7 @@ def quiz_attempt(request, quiz_pk):
         return redirect('quiz_list', course_pk=quiz.course.pk)
 
     if not Enrollment.objects.filter(
-        student=request.user, course=quiz.course
+        student=request.user, course=quiz.course, status='approved'
     ).exists():
         messages.error(request, 'You must be enrolled to attempt this quiz.')
         return redirect('course_list')
@@ -265,7 +339,7 @@ def quiz_attempted_students(request, quiz_pk):
 
     # Students who have NOT attempted
     enrolled_ids = Enrollment.objects.filter(
-        course=quiz.course
+        course=quiz.course, status='approved'
     ).values_list('student_id', flat=True)
     attempted_ids = attempts.values_list('student_id', flat=True)
     not_attempted = [

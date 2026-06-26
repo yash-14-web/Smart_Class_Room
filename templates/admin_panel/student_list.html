@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+{% block title %}Student Management — SmartClass Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+  .admin-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .admin-page-header h2 {
+    font-weight: 800;
+    font-size: 1.5rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+  }
+  .filter-bar {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+  }
+  .filter-pill {
+    padding: .5rem 1rem;
+    border-radius: 999px;
+    border: 1px solid var(--sc-border);
+    background: var(--sc-surface-strong);
+    color: var(--sc-muted);
+    font-weight: 600;
+    font-size: .85rem;
+    text-decoration: none;
+    transition: all .2s ease;
+  }
+  .filter-pill:hover {
+    border-color: var(--sc-primary);
+    color: var(--sc-primary);
+    background: rgba(20, 90, 242, 0.06);
+  }
+  .filter-pill.active {
+    background: var(--sc-primary);
+    color: #fff;
+    border-color: var(--sc-primary);
+  }
+  .pending-badge {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    color: #fff;
+    font-weight: 700;
+    padding: .25rem .65rem;
+    border-radius: 999px;
+    font-size: .75rem;
+    margin-left: .4rem;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--sc-muted);
+  }
+  .empty-state i {
+    font-size: 3rem;
+    opacity: .4;
+    display: block;
+    margin-bottom: 1rem;
+  }
+  .action-btn-group {
+    display: flex;
+    gap: .4rem;
+    flex-wrap: wrap;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-page-header">
+  <h2>
+    <i class="bi bi-people" style="color: var(--sc-teal);"></i>
+    Student Management
+    {% if pending_count > 0 %}
+    <span class="pending-badge">{{ pending_count }} pending</span>
+    {% endif %}
+  </h2>
+  <a href="{% url 'admin_student_create' %}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>Add Student
+  </a>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+  <a href="?status=all" class="filter-pill {% if status_filter == 'all' %}active{% endif %}">
+    <i class="bi bi-grid me-1"></i>All
+  </a>
+  <a href="?status=pending" class="filter-pill {% if status_filter == 'pending' %}active{% endif %}">
+    <i class="bi bi-clock me-1"></i>Pending
+    {% if pending_count > 0 %}<span class="pending-badge">{{ pending_count }}</span>{% endif %}
+  </a>
+  <a href="?status=active" class="filter-pill {% if status_filter == 'active' %}active{% endif %}">
+    <i class="bi bi-check-circle me-1"></i>Active
+  </a>
+  <a href="?status=rejected" class="filter-pill {% if status_filter == 'rejected' %}active{% endif %}">
+    <i class="bi bi-x-circle me-1"></i>Rejected
+  </a>
+</div>
+
+{% if students %}
+<form method="POST" id="bulk-action-form" action="{% url 'bulk_approve_users' %}">
+  {% csrf_token %}
+  
+  <!-- Bulk Action Toolbar (hidden by default) -->
+  <div id="bulk-toolbar" class="p-3 bg-light border-bottom d-none justify-content-between align-items-center flex-wrap gap-2" style="border-radius: 20px 20px 0 0;">
+    <div>
+      <span class="fw-bold text-primary" id="selected-count">0</span> students selected
+    </div>
+    <div class="d-flex gap-2">
+      <button type="submit" name="action" value="approve" class="btn btn-sm btn-success">
+        <i class="bi bi-check-lg me-1"></i>Approve Selected
+      </button>
+      <button type="submit" name="action" value="reject" class="btn btn-sm btn-danger">
+        <i class="bi bi-x-lg me-1"></i>Reject Selected
+      </button>
+    </div>
+  </div>
+
+  <div class="card" style="border-top-left-radius: 0; border-top-right-radius: 0;">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th style="width: 40px; padding-left: 1.25rem;"><input type="checkbox" id="select-all" class="form-check-input"></th>
+            <th>Username</th>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Joined</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for student in students %}
+          <tr>
+            <td style="padding-left: 1.25rem;"><input type="checkbox" name="user_ids" value="{{ student.pk }}" class="form-check-input user-checkbox"></td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                {% if student.profile_pic %}
+                <img src="{{ student.profile_pic.url }}" class="rounded-circle" width="32" height="32" style="object-fit:cover" />
+                {% else %}
+                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:32px;height:32px;background:rgba(13,159,140,.1);color:var(--sc-teal);font-weight:700;font-size:.8rem;">
+                  {{ student.username|first|upper }}
+                </div>
+                {% endif %}
+                <strong>{{ student.username }}</strong>
+              </div>
+            </td>
+            <td>{{ student.first_name }} {{ student.last_name }}</td>
+            <td><span class="text-muted">{{ student.email|default:"—" }}</span></td>
+            <td>
+              {% if student.account_status == 'pending' %}
+              <span class="badge bg-warning text-dark">Pending</span>
+              {% elif student.account_status == 'active' %}
+              <span class="badge bg-success">Active</span>
+              {% elif student.account_status == 'rejected' %}
+              <span class="badge bg-danger">Rejected</span>
+              {% endif %}
+            </td>
+            <td><small class="text-muted">{{ student.date_joined|date:"d M Y" }}</small></td>
+            <td>
+              <div class="action-btn-group">
+                {% if student.account_status == 'pending' %}
+                <a href="{% url 'admin_student_approve' student.pk %}" class="btn btn-sm btn-outline-success" title="Approve">
+                  <i class="bi bi-check-lg"></i> Approve
+                </a>
+                <a href="{% url 'admin_student_reject' student.pk %}" class="btn btn-sm btn-outline-danger" title="Reject">
+                  <i class="bi bi-x-lg"></i> Reject
+                </a>
+                {% elif student.account_status == 'active' %}
+                <a href="{% url 'admin_student_enroll' student.pk %}" class="btn btn-sm btn-outline-primary" title="Manage Enrollment">
+                  <i class="bi bi-journal-plus"></i> Enroll
+                </a>
+                <a href="{% url 'admin_student_reject' student.pk %}" class="btn btn-sm btn-outline-danger" title="Deactivate">
+                  <i class="bi bi-slash-circle"></i>
+                </a>
+                {% elif student.account_status == 'rejected' %}
+                <a href="{% url 'admin_student_approve' student.pk %}" class="btn btn-sm btn-outline-success" title="Re-approve">
+                  <i class="bi bi-check-lg"></i> Approve
+                </a>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</form>
+{% else %}
+<div class="empty-state">
+  <i class="bi bi-people"></i>
+  <h5>No students found</h5>
+  <p class="text-muted">{% if status_filter != 'all' %}Try changing the filter or {% endif %}add a new student to get started.</p>
+  <a href="{% url 'admin_student_create' %}" class="btn btn-primary mt-2">
+    <i class="bi bi-plus-lg me-1"></i>Add Student
+  </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('select-all');
+    const userCheckboxes = document.querySelectorAll('.user-checkbox');
+    const bulkToolbar = document.getElementById('bulk-toolbar');
+    const selectedCountSpan = document.getElementById('selected-count');
+
+    function updateToolbar() {
+      const checkedCount = document.querySelectorAll('.user-checkbox:checked').length;
+      if (checkedCount > 0) {
+        bulkToolbar.classList.remove('d-none');
+        bulkToolbar.classList.add('d-flex');
+        selectedCountSpan.textContent = checkedCount;
+      } else {
+        bulkToolbar.classList.remove('d-flex');
+        bulkToolbar.classList.add('d-none');
+      }
+    }
+
+    if (selectAllCheckbox) {
+      selectAllCheckbox.addEventListener('change', function() {
+        userCheckboxes.forEach(cb => {
+          cb.checked = selectAllCheckbox.checked;
+        });
+        updateToolbar();
+      });
+    }
+
+    userCheckboxes.forEach(cb => {
+      cb.addEventListener('change', function() {
+        const allChecked = Array.from(userCheckboxes).every(c => c.checked);
+        if (selectAllCheckbox) {
+          selectAllCheckbox.checked = allChecked;
+        }
+        updateToolbar();
+      });
+    });
+  });
+</script>
+{% endblock %}
+

@@ -3,110 +3,212 @@
 
 {% block extra_css %}
 <style>
-  .pass-badge   { background: rgba(16,185,129,.18); color: #065f46; font-weight:700; padding:3px 10px; border-radius:6px; font-size:.8rem; }
-  .fail-badge   { background: rgba(239,68,68,.15); color: #991b1b; font-weight:700; padding:3px 10px; border-radius:6px; font-size:.8rem; }
-  .pend-badge   { background: rgba(245,158,11,.15); color: #92400e; font-weight:700; padding:3px 10px; border-radius:6px; font-size:.8rem; }
-  [data-bs-theme="dark"] .pass-badge { color: #6ee7b7; }
-  [data-bs-theme="dark"] .fail-badge { color: #fca5a5; }
-  [data-bs-theme="dark"] .pend-badge { color: #fde68a; }
-  .label-assignment { background: rgba(59,130,246,.15); color: #1e40af; }
-  .label-test       { background: rgba(245,158,11,.15); color: #92400e; }
-  .label-quiz       { background: rgba(139,92,246,.15); color: #4c1d95; }
-  .label-project    { background: rgba(16,185,129,.15); color: #065f46; }
-  [data-bs-theme="dark"] .label-assignment { color: #93c5fd; }
-  [data-bs-theme="dark"] .label-test       { color: #fde68a; }
-  [data-bs-theme="dark"] .label-quiz       { color: #c4b5fd; }
-  [data-bs-theme="dark"] .label-project    { color: #6ee7b7; }
-  .label-pill { display:inline-block; padding:2px 10px; border-radius:20px; font-size:.75rem; font-weight:600; }
-  .grand-box { border-radius:12px; padding:18px 28px; background: var(--sc-surface-strong); border: 1.5px solid var(--sc-border); }
-  .tbl thead th { background: var(--sc-primary); color:#fff; font-size:.8rem; text-transform:uppercase; letter-spacing:.5px; }
-  .tbl tbody td { vertical-align:middle; font-size:.88rem; color: var(--sc-ink); }
-  .tbl tbody tr:hover { background: var(--sc-glass-bg); }
-  .course-header { background: var(--sc-glass-bg); border-left:4px solid var(--sc-primary); padding:10px 16px; border-radius:0 8px 8px 0; color: var(--sc-ink); }
+  .pass-badge   { background: rgba(16,185,129,.18); color: #065f46; font-weight:700; padding:4px 12px; border-radius:8px; font-size:.8rem; display: inline-block; }
+  .fail-badge   { background: rgba(239,68,68,.15); color: #991b1b; font-weight:700; padding:4px 12px; border-radius:8px; font-size:.8rem; display: inline-block; }
+  .pend-badge   { background: rgba(245,158,11,.15); color: #92400e; font-weight:700; padding:4px 12px; border-radius:8px; font-size:.8rem; display: inline-block; }
+  [data-bs-theme="dark"] .pass-badge { color: #34d399; background: rgba(52,211,153,.12); }
+  [data-bs-theme="dark"] .fail-badge { color: #f87171; background: rgba(248,113,113,.12); }
+  [data-bs-theme="dark"] .pend-badge { color: #fbbf24; background: rgba(251,191,36,.12); }
+  
+  .label-assignment { background: rgba(59,130,246,.12); color: #2563eb; border: 1px solid rgba(59,130,246,.2); }
+  .label-test       { background: rgba(245,158,11,.12); color: #d97706; border: 1px solid rgba(245,158,11,.2); }
+  .label-quiz       { background: rgba(139,92,246,.12); color: #7c3aed; border: 1px solid rgba(139,92,246,.2); }
+  .label-project    { background: rgba(16,185,129,.12); color: #059669; border: 1px solid rgba(16,185,129,.2); }
+  [data-bs-theme="dark"] .label-assignment { color: #60a5fa; }
+  [data-bs-theme="dark"] .label-test       { color: #fbbf24; }
+  [data-bs-theme="dark"] .label-quiz       { color: #a78bfa; }
+  [data-bs-theme="dark"] .label-project    { color: #34d399; }
+  .label-pill { display:inline-block; padding:3px 12px; border-radius:20px; font-size:.72rem; font-weight:600; text-transform: uppercase; letter-spacing: 0.5px; }
+  
+  .grand-box {
+    border-radius: 16px;
+    padding: 22px;
+    background: var(--sc-surface-strong);
+    border: 1px solid var(--sc-border);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+  }
+  .grand-box:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.05);
+    border-color: var(--sc-primary-subtle);
+  }
+  
+  .tbl thead th {
+    background: var(--sc-primary);
+    color: #ffffff;
+    font-size: .78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    padding: 14px 16px;
+    border: none;
+  }
+  .tbl tbody td {
+    vertical-align: middle;
+    font-size: .88rem;
+    color: var(--sc-ink);
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--sc-border);
+  }
+  .tbl tbody tr:hover {
+    background: var(--sc-glass-bg);
+  }
+  .course-header {
+    border-left: 4px solid var(--sc-primary);
+    padding: 4px 16px;
+    color: var(--sc-ink);
+  }
+  .fs-8 { font-size: 0.75rem; }
+  .fs-7 { font-size: 0.82rem; }
 </style>
 {% endblock %}
 
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <div>
-    <h4 class="fw-bold mb-0">
-      <i class="bi bi-clipboard-data me-2 text-primary"></i>
-      {% if is_own_report %}My Report Card{% else %}{{ student.get_full_name|default:student.username }}'s Report{% endif %}
-    </h4>
-    <p class="text-muted small mb-0">
-      {{ student.get_full_name|default:student.username }} &nbsp;|&nbsp;
-      @{{ student.username }} &nbsp;|&nbsp;
-      {{ student.email }}
-    </p>
+<!-- Student Info Card -->
+<div class="card mb-4 border-0 shadow-sm" style="background: linear-gradient(135deg, var(--sc-surface-strong), var(--sc-glass-bg)); border: 1px solid var(--sc-border) !important; border-radius: 16px; overflow: hidden;">
+  <div class="card-body p-4">
+    <div class="row align-items-center">
+      <div class="col-auto mb-3 mb-md-0">
+        {% if student.profile_pic %}
+          <img src="{{ student.profile_pic.url }}" alt="Profile Pic" class="rounded-circle border border-3 border-primary shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
+        {% else %}
+          <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow-sm" style="width: 80px; height: 80px; font-size: 2.2rem; font-weight: 700;">
+            {{ student.username|slice:":1"|upper }}
+          </div>
+        {% endif %}
+      </div>
+      <div class="col">
+        <div class="d-flex align-items-center flex-wrap gap-2 mb-2">
+          <h4 class="fw-bold mb-0" style="color: var(--sc-primary);">
+            {{ student.get_full_name|default:student.username }}
+          </h4>
+          {% if student.student_id %}
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1 rounded-pill fs-8">
+              <i class="bi bi-person-badge me-1"></i>ID: {{ student.student_id }}
+            </span>
+          {% endif %}
+        </div>
+        <div class="row g-3 text-muted">
+          <div class="col-md-4 col-sm-6">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-building me-2 text-primary fs-5"></i>
+              <div>
+                <span class="text-uppercase text-muted fs-8 d-block fw-semibold">Department</span>
+                <span class="text-dark fw-medium fs-7">{{ student_departments }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 col-sm-6">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-collection me-2 text-primary fs-5"></i>
+              <div>
+                <span class="text-uppercase text-muted fs-8 d-block fw-semibold">Batch / Section</span>
+                <span class="text-dark fw-medium fs-7">{{ student_batches }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 col-sm-12">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-envelope me-2 text-primary fs-5"></i>
+              <div>
+                <span class="text-uppercase text-muted fs-8 d-block fw-semibold">Email Contact</span>
+                <span class="text-dark fw-medium fs-7">{{ student.email|default:"N/A" }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-auto text-md-end mt-3 mt-md-0">
+        <a href="{% url 'download_report_pdf' %}{% if not is_own_report %}?student={{ student.pk }}{% endif %}"
+           class="btn btn-primary d-inline-flex align-items-center px-4 py-2.5"
+           style="border-radius: 12px; font-weight: 600; box-shadow: 0 4px 12px rgba(var(--sc-primary-rgb), 0.25);"
+           target="_blank"
+           rel="noopener">
+          <i class="bi bi-printer me-2"></i>Print / Save PDF
+        </a>
+      </div>
+    </div>
   </div>
-  <a href="{% url 'download_report_pdf' %}{% if not is_own_report %}?student={{ student.pk }}{% endif %}"
-     class="btn btn-danger"
-     target="_blank"
-     rel="noopener">
-    <i class="bi bi-printer me-2"></i>Print Report Card
-  </a>
 </div>
 
 <!-- Overall summary boxes -->
 <div class="row g-3 mb-4">
-  <div class="col-md-3">
-    <div class="grand-box" style="border-color: rgba(59,130,246,.4);">
-      <div class="text-muted small mb-1">Overall Status</div>
-      {% if not grand_results_visible %}
-        <span class="pend-badge fs-6">Locked</span>
-      {% elif grand_pass == 'Pass' %}
-        <span class="pass-badge fs-6">✓ PASS</span>
-      {% elif grand_pass == 'Fail' %}
-        <span class="fail-badge fs-6">✗ FAIL</span>
-      {% else %}
-        <span class="pend-badge fs-6">⏳ PENDING</span>
-      {% endif %}
+  <div class="col-md-3 col-sm-6">
+    <div class="grand-box d-flex flex-column justify-content-between h-100" style="border-left: 4px solid var(--sc-primary);">
+      <div>
+        <div class="text-muted small mb-1 fw-semibold text-uppercase">Overall Status</div>
+        <div class="mt-2">
+          {% if not grand_results_visible %}
+            <span class="pend-badge">Locked</span>
+          {% elif grand_pass == 'Pass' %}
+            <span class="pass-badge">✓ PASS</span>
+          {% elif grand_pass == 'Fail' %}
+            <span class="fail-badge">✗ FAIL</span>
+          {% else %}
+            <span class="pend-badge">⏳ PENDING</span>
+          {% endif %}
+        </div>
+      </div>
     </div>
   </div>
-  <div class="col-md-3">
-    <div class="grand-box" style="border-color: rgba(16,185,129,.4);">
-      <div class="text-muted small mb-1">Overall Grand Average</div>
-      <div class="fw-bold fs-4 text-success">{{ grand_avg }}%</div>
+  <div class="col-md-3 col-sm-6">
+    <div class="grand-box d-flex flex-column justify-content-between h-100" style="border-left: 4px solid #10b981;">
+      <div>
+        <div class="text-muted small mb-1 fw-semibold text-uppercase">Grand Average</div>
+        <div class="fw-bold fs-3 text-success mt-2">{{ grand_avg }}%</div>
+      </div>
     </div>
   </div>
-  <div class="col-md-3">
-    <div class="grand-box" style="border-color: rgba(245,158,11,.4);">
-      <div class="text-muted small mb-1">Total Marks Scored</div>
-      <div class="fw-bold fs-4 text-warning">{{ grand_obtained }} / {{ grand_total_marks }}</div>
+  <div class="col-md-3 col-sm-6">
+    <div class="grand-box d-flex flex-column justify-content-between h-100" style="border-left: 4px solid #f59e0b;">
+      <div>
+        <div class="text-muted small mb-1 fw-semibold text-uppercase">Total Marks Scored</div>
+        <div class="fw-bold fs-3 text-warning mt-2">{{ grand_obtained }} <span class="fs-6 text-muted">/ {{ grand_total_marks }}</span></div>
+      </div>
     </div>
   </div>
-  <div class="col-md-3">
-    <div class="grand-box" style="border-color: rgba(139,92,246,.4);">
-      <div class="text-muted small mb-1">Courses Enrolled</div>
-      <div class="fw-bold fs-4" style="color: var(--sc-primary);">{{ courses_data|length }}</div>
+  <div class="col-md-3 col-sm-6">
+    <div class="grand-box d-flex flex-column justify-content-between h-100" style="border-left: 4px solid #8b5cf6;">
+      <div>
+        <div class="text-muted small mb-1 fw-semibold text-uppercase">Approved Courses</div>
+        <div class="fw-bold fs-3 text-primary mt-2">{{ courses_data|length }}</div>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- Per-course tables -->
 {% for item in courses_data %}
-<div class="card mb-4">
-  <div class="card-header py-3 d-flex justify-content-between align-items-center">
-    <div class="course-header flex-grow-1 me-3">
-      <span class="fw-bold">Subject: {{ item.course.title }}</span>
+<div class="card mb-4 border-0 shadow-sm" style="border: 1px solid var(--sc-border) !important; border-radius: 16px; overflow: hidden;">
+  <div class="card-header py-3 bg-light border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div class="course-header flex-grow-1">
+      <span class="fw-bold fs-5 text-dark">Subject: {{ item.course.title }}</span>
+      {% if item.course.course_code %}
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill ms-2 px-2.5 py-1 fw-bold fs-8">{{ item.course.course_code }}</span>
+      {% endif %}
+      {% if item.course.batch %}
+        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill ms-1 px-2.5 py-1 fs-8">{{ item.course.batch }}</span>
+      {% endif %}
+      <div class="text-muted fs-8 mt-1">Course Teacher: {{ item.teacher.get_full_name|default:item.teacher.username }}</div>
     </div>
-    <div class="d-flex gap-3 align-items-center flex-shrink-0">
-      <div class="text-center">
-        <div class="text-muted" style="font-size:.7rem">Overall Status</div>
+    <div class="d-flex gap-3 align-items-center">
+      <div class="text-center bg-white px-3 py-2 border rounded-3">
+        <div class="text-muted text-uppercase fw-semibold" style="font-size:.65rem">Status</div>
         {% if not item.results_visible %}
-          <span class="pend-badge">Locked</span>
+          <span class="pend-badge py-0.5 px-2 mt-1">Locked</span>
         {% elif item.course_pass == 'Pass' %}
-          <span class="pass-badge">Pass</span>
+          <span class="pass-badge py-0.5 px-2 mt-1">Pass</span>
         {% elif item.course_pass == 'Fail' %}
-          <span class="fail-badge">Fail</span>
+          <span class="fail-badge py-0.5 px-2 mt-1">Fail</span>
         {% else %}
-          <span class="pend-badge">Pending</span>
+          <span class="pend-badge py-0.5 px-2 mt-1">Pending</span>
         {% endif %}
       </div>
-      <div class="text-center">
-        <div class="text-muted" style="font-size:.7rem">Overall Grand Avg</div>
-        <span class="fw-bold text-success">{{ item.course_avg }}%</span>
+      <div class="text-center bg-white px-3 py-2 border rounded-3">
+        <div class="text-muted text-uppercase fw-semibold" style="font-size:.65rem">Average</div>
+        <span class="fw-bold text-success" style="font-size:.9rem">{{ item.course_avg }}%</span>
       </div>
     </div>
   </div>
@@ -117,30 +219,18 @@
       <table class="table tbl mb-0">
         <thead>
           <tr>
-            <th style="width:160px">Source</th>
             <th>Assignment Name</th>
-            <th style="width:160px">Label (Assignment/Test/Quiz)</th>
-            <th class="text-center" style="width:110px">Total Marks</th>
-            <th class="text-center" style="width:80px">Score</th>
-            <th class="text-center" style="width:80px">Avg %</th>
-            <th class="text-center" style="width:130px">Graded/Pending</th>
-            <th class="text-center" style="width:100px">Overall Pass</th>
+            <th style="width:180px">Category</th>
+            <th class="text-center" style="width:120px">Total Marks</th>
+            <th class="text-center" style="width:100px">Score</th>
+            <th class="text-center" style="width:100px">Avg %</th>
+            <th class="text-center" style="width:140px">Graded Status</th>
+            <th class="text-center" style="width:120px">Result</th>
           </tr>
         </thead>
         <tbody>
           {% for row in item.rows %}
           <tr>
-            <td class="text-muted small">
-              {% if row.label == 'Quiz' %}
-                from quiz app
-              {% elif row.label == 'Test' %}
-                from test app
-              {% elif row.label == 'Project' %}
-                subject project
-              {% else %}
-                from assignment app
-              {% endif %}
-            </td>
             <td class="fw-semibold">{{ row.assignment.title }}</td>
             <td>
               <span class="label-pill
@@ -152,7 +242,7 @@
               </span>
             </td>
             <td class="text-center">{{ row.total_marks }}</td>
-            <td class="text-center fw-bold">
+            <td class="text-center fw-bold text-dark">
               {% if row.score is not None %}{{ row.score }}{% else %}—{% endif %}
             </td>
             <td class="text-center">
@@ -193,9 +283,11 @@
   </div>
 </div>
 {% empty %}
-<div class="text-center py-5">
-  <i class="bi bi-clipboard fs-1 text-muted"></i>
-  <p class="text-muted mt-3">No enrolled courses found.</p>
+<div class="text-center py-5 card border-0 shadow-sm" style="border: 1px solid var(--sc-border) !important; border-radius: 16px;">
+  <div class="card-body">
+    <i class="bi bi-clipboard-x fs-1 text-muted"></i>
+    <p class="text-muted mt-3 mb-0">No approved courses found. Check back once your enrollments are approved.</p>
+  </div>
 </div>
 {% endfor %}
 

@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% block title %}{% if is_edit %}Edit Teacher{% else %}Add New Teacher{% endif %} — SmartClass Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+  .teacher-form-page { max-width: 720px; margin: 0 auto; }
+  .hero-card {
+    background: linear-gradient(135deg, #0f2f72, #145af2, #1aa3a3);
+    border-radius: 20px;
+    padding: 2rem 2rem 1.5rem;
+    color: #fff;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 16px 34px rgba(15, 47, 114, 0.22);
+  }
+  .hero-title {
+    font-weight: 800;
+    font-size: 1.5rem;
+    margin-bottom: .4rem;
+  }
+  .hero-copy {
+    opacity: .85;
+    font-size: .9rem;
+    margin: 0;
+  }
+  .form-card {
+    background: var(--sc-surface-strong);
+    border: 1px solid var(--sc-border);
+    border-radius: 20px;
+    box-shadow: var(--sc-shadow-soft);
+    overflow: hidden;
+  }
+  .form-head {
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid var(--sc-border);
+    background: var(--sc-card-header);
+  }
+  .form-head h5 {
+    font-weight: 700;
+    margin: 0;
+  }
+  .form-head p {
+    margin: .3rem 0 0;
+    color: var(--sc-muted);
+    font-size: .85rem;
+  }
+  .form-body {
+    padding: 1.5rem;
+  }
+  .info-banner {
+    background: rgba(13, 159, 140, 0.08);
+    border: 1px solid rgba(13, 159, 140, 0.2);
+    border-radius: 14px;
+    padding: .85rem 1rem;
+    font-size: .85rem;
+    color: var(--sc-teal);
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="teacher-form-page">
+  <div class="hero-card">
+    <div class="hero-title">
+      <i class="bi bi-person-workspace me-2"></i>
+      {% if is_edit %}Edit Teacher{% else %}Add New Teacher{% endif %}
+    </div>
+    <p class="hero-copy">
+      {% if is_edit %}Update teacher account details.{% else %}Create a new teacher account. The teacher will be auto-approved and can login immediately.{% endif %}
+    </p>
+  </div>
+
+  <div class="form-card">
+    <div class="form-head">
+      <h5>Account Details</h5>
+      <p>Fill in the teacher's information below</p>
+    </div>
+    <div class="form-body">
+      <div class="info-banner">
+        <i class="bi bi-info-circle"></i>
+        Teachers created by admin are automatically approved and activated.
+      </div>
+
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Username <span class="text-danger">*</span></label>
+            <input type="text" name="username" class="form-control" required
+                   value="{{ form_data.username|default:'' }}" placeholder="e.g. john_teacher" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Email</label>
+            <input type="email" name="email" class="form-control"
+                   value="{{ form_data.email|default:'' }}" placeholder="teacher@example.com" />
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">First Name</label>
+            <input type="text" name="first_name" class="form-control"
+                   value="{{ form_data.first_name|default:'' }}" placeholder="John" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Last Name</label>
+            <input type="text" name="last_name" class="form-control"
+                   value="{{ form_data.last_name|default:'' }}" placeholder="Doe" />
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Password <span class="text-danger">*</span></label>
+          <input type="password" name="password" class="form-control" required
+                 placeholder="Set a secure password" />
+          <div class="text-muted small mt-1">Must be at least 8 characters.</div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-lg me-1"></i>
+            {% if is_edit %}Update Teacher{% else %}Create Teacher{% endif %}
+          </button>
+          <a href="{% url 'admin_teacher_list' %}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

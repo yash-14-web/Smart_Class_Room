@@ -14,6 +14,9 @@
       <div class="col-md-3"><div class="stat-card bg-warning text-dark p-3"><div class="small opacity-75">Overall Score</div><div class="fs-3 fw-bold">{{ report.overall_score }}</div></div></div>
     </div>
     <p><strong>Course:</strong> {{ report.course.title }}</p>
+    {% if report.course.course_code %}<p><strong>Course ID:</strong> {{ report.course.course_code }}</p>{% endif %}
+    {% if report.course.department %}<p><strong>Department:</strong> {{ report.course.department.name }} ({{ report.course.department.code }})</p>{% endif %}
+    {% if report.course.batch %}<p><strong>Batch:</strong> {{ report.course.batch }}</p>{% endif %}
     <p class="mb-0"><strong>Last updated:</strong> {{ report.updated_at|date:'M d, Y H:i' }}</p>
   </div>
 </div>

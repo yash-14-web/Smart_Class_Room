@@ -42,7 +42,7 @@ class TestCreateForm(BootstrapFormMixin, forms.ModelForm):
         if selected_course:
             from courses.models import Enrollment
             from users.models import CustomUser
-            student_ids = Enrollment.objects.filter(course=selected_course).values_list('student_id', flat=True)
+            student_ids = Enrollment.objects.filter(course=selected_course, status='approved').values_list('student_id', flat=True)
             self.fields['assigned_to'].queryset = CustomUser.objects.filter(id__in=student_ids)
             self.fields['assigned_to'].widget.attrs.update({'class': 'form-check-input'})
         else:
@@ -95,6 +95,7 @@ class QuestionCreateForm(BootstrapFormMixin, forms.ModelForm):
             'question_text',
             'code_cell',
             'starter_code',
+            'reference_solution',
             'expected_function_name',
             'option1',
             'option2',
@@ -107,6 +108,7 @@ class QuestionCreateForm(BootstrapFormMixin, forms.ModelForm):
             'question_text': forms.Textarea(attrs={'rows': 3}),
             'code_cell': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Add extra instructions, dataset notes, or problem explanation'}),
             'starter_code': forms.Textarea(attrs={'rows': 10, 'class': 'font-monospace code-editor', 'placeholder': 'def solve(...):\n    pass'}),
+            'reference_solution': forms.Textarea(attrs={'rows': 10, 'class': 'font-monospace code-editor', 'placeholder': 'def solve(...):\n    # Complete correct solution implementation\n    return ...'}),
         }
         help_texts = {
             'expected_function_name': 'For coding questions, enter the function students must implement. Example: solve or train_model.',

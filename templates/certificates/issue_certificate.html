@@ -20,7 +20,10 @@
         <tbody>
           {% for sp in student_performance %}
           <tr>
-            <td><div class="fw-semibold">{{ sp.student.get_full_name|default:sp.student.username }}</div><div class="text-muted small">@{{ sp.student.username }}</div></td>
+            <td>
+              <div class="fw-semibold">{{ sp.student.get_full_name|default:sp.student.username }}</div>
+              <div class="text-muted small">ID: {{ sp.student.student_id|default:"N/A" }} | @{{ sp.student.username }}</div>
+            </td>
             <td class="text-center">{{ sp.performance.total_marks }}</td>
             <td class="text-center fw-bold">{{ sp.performance.total_scored }}</td>
             <td class="text-center"><span class="fw-bold {% if sp.performance.avg_pct >= 40 %}text-success{% else %}text-danger{% endif %}">{{ sp.performance.avg_pct }}%</span></td>
@@ -57,7 +60,17 @@
   <div class="card-body">
     <form method="post" class="row g-3">
       {% csrf_token %}
-      <div class="col-md-4"><label class="form-label fw-semibold">Student</label><select name="student_id" class="form-select" required><option value="">Select student</option>{% for sp in student_performance %}<option value="{{ sp.student.pk }}">{{ sp.student.get_full_name|default:sp.student.username }} ({{ sp.performance.avg_pct }}% - {{ sp.performance.overall_pass }})</option>{% endfor %}</select></div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">Student</label>
+        <select name="student_id" class="form-select" required>
+          <option value="">Select student</option>
+          {% for sp in student_performance %}
+            <option value="{{ sp.student.pk }}">
+              {{ sp.student.get_full_name|default:sp.student.username }} [{{ sp.student.student_id|default:"N/A" }}] ({{ sp.performance.avg_pct }}% - {{ sp.performance.overall_pass }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
       <div class="col-md-3"><label class="form-label fw-semibold">Badge Type</label><select name="badge_type" class="form-select"><option value="completion">Course Completion</option><option value="excellence">Excellence Award</option><option value="topper">Course Topper</option><option value="participation">Participation</option></select></div>
       <div class="col-md-3"><label class="form-label fw-semibold">Custom Title</label><input type="text" name="title" class="form-control" placeholder="For example: Python Mastery"/></div>
       <div class="col-md-2 d-flex align-items-end"><button type="submit" class="btn btn-warning w-100">Issue</button></div>

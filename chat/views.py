@@ -8,16 +8,55 @@ from users.models import CustomUser
 from courses.models import Course, Enrollment
 
 
+def get_allowed_chat_users(user):
+    """
+    Returns a queryset of CustomUser objects that the given user is allowed to chat with.
+    If the user is an admin or superuser, they can chat with everyone.
+    If the user is a teacher, they can chat with everyone.
+    If the user is a student, they can only chat with:
+      - Teachers of their approved courses.
+      - Peer students enrolled in the same approved courses.
+      - Admins (is_superuser=True, or role='admin').
+    """
+    if user.is_superuser or user.role == 'admin':
+        return CustomUser.objects.all()
+    
+    if user.is_teacher():
+        return CustomUser.objects.all()
+        
+    approved_course_ids = Enrollment.objects.filter(
+        student=user, status='approved'
+    ).values_list('course_id', flat=True)
+    
+    teacher_ids = Course.objects.filter(
+        id__in=approved_course_ids
+    ).values_list('teacher_id', flat=True)
+    
+    peer_student_ids = Enrollment.objects.filter(
+        course_id__in=approved_course_ids, status='approved'
+    ).exclude(student=user).values_list('student_id', flat=True)
+    
+    allowed_ids = set(list(teacher_ids) + list(peer_student_ids))
+    
+    return CustomUser.objects.filter(
+        Q(id__in=allowed_ids) | Q(is_superuser=True) | Q(role='admin')
+    ).distinct()
+
+
 @login_required
 def inbox(request):
     user = request.user
     search_query = request.GET.get('q', '').strip()
 
-    # Get all users who have exchanged messages with current user
+    # Get allowed users first
+    allowed_users = get_allowed_chat_users(user)
+
+    # Get all users who have exchanged messages with current user and are allowed
     sent_to       = Message.objects.filter(sender=user).values_list('receiver', flat=True)
     received_from = Message.objects.filter(receiver=user).values_list('sender', flat=True)
     contact_ids   = set(list(sent_to) + list(received_from))
-    contacts      = CustomUser.objects.filter(id__in=contact_ids).exclude(id=user.id)
+    
+    contacts      = CustomUser.objects.filter(id__in=contact_ids).exclude(id=user.id).filter(id__in=allowed_users)
     
     if search_query:
         contacts = contacts.filter(
@@ -47,8 +86,8 @@ def inbox(request):
         reverse=True
     )
 
-    # Show ALL other users so anyone can start a chat
-    available_users = CustomUser.objects.exclude(
+    # Show allowed users who we haven't chatted with yet
+    available_users = allowed_users.exclude(
         id__in=contact_ids
     ).exclude(id=user.id)
     
@@ -73,6 +112,13 @@ def chat_room(request, user_id):
     if other_user == request.user:
         return redirect('inbox')
 
+    # Security check: verify this chat room is allowed
+    allowed_users = get_allowed_chat_users(request.user)
+    if other_user not in allowed_users:
+        from django.contrib import messages as django_messages
+        django_messages.error(request, "You are not authorized to chat with this user.")
+        return redirect('inbox')
+
     # Mark incoming messages as read
     Message.objects.filter(
         sender=other_user, receiver=request.user, is_read=False
@@ -84,7 +130,7 @@ def chat_room(request, user_id):
         Q(sender=other_user,   receiver=request.user)
     ).order_by('timestamp')
 
-    # Build sidebar contacts — ALL users who have chatted + this user
+    # Build sidebar contacts — allowed users who have chatted + this user
     sent_to       = Message.objects.filter(sender=request.user).values_list('receiver', flat=True)
     received_from = Message.objects.filter(receiver=request.user).values_list('sender', flat=True)
     contact_ids   = set(list(sent_to) + list(received_from))
@@ -92,7 +138,7 @@ def chat_room(request, user_id):
 
     contacts = CustomUser.objects.filter(
         id__in=contact_ids
-    ).exclude(id=request.user.id)
+    ).exclude(id=request.user.id).filter(id__in=allowed_users)
 
     conversations = []
     for contact in contacts:
@@ -123,8 +169,14 @@ def chat_room(request, user_id):
 @login_required
 def send_message(request, user_id):
     """Send a message to another user."""
+    other_user = get_object_or_404(CustomUser, id=user_id)
+    allowed_users = get_allowed_chat_users(request.user)
+    if other_user not in allowed_users:
+        from django.contrib import messages as django_messages
+        django_messages.error(request, "You are not authorized to message this user.")
+        return redirect('inbox')
+
     if request.method == 'POST':
-        other_user = get_object_or_404(CustomUser, id=user_id)
         text       = request.POST.get('message', '').strip()
         attachment = request.FILES.get('attachment')
         if text or attachment:
@@ -141,6 +193,10 @@ def send_message(request, user_id):
 def fetch_messages(request, user_id):
     """AJAX endpoint — returns new messages as JSON for auto-refresh."""
     other_user = get_object_or_404(CustomUser, id=user_id)
+    allowed_users = get_allowed_chat_users(request.user)
+    if other_user not in allowed_users:
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+
     after_id   = request.GET.get('after', 0)
 
     msgs = Message.objects.filter(
@@ -175,7 +231,7 @@ def group_chat(request, course_id):
     # Check access — must be teacher or enrolled student
     is_teacher  = course.teacher == request.user
     is_enrolled = Enrollment.objects.filter(
-        student=request.user, course=course
+        student=request.user, course=course, status='approved'
     ).exists()
 
     if not is_teacher and not is_enrolled:
@@ -196,7 +252,7 @@ def group_chat(request, course_id):
         return redirect('group_chat', course_id=course_id)
 
     group_messages = GroupMessage.objects.filter(course=course).order_by('timestamp')
-    members        = Enrollment.objects.filter(course=course).select_related('student')
+    members        = Enrollment.objects.filter(course=course, status='approved').select_related('student')
 
     return render(request, 'chat/group_chat.html', {
         'course':         course,
@@ -214,7 +270,7 @@ def fetch_group_messages(request, course_id):
     # Check access — must be teacher or enrolled student
     is_teacher  = course.teacher == request.user
     is_enrolled = Enrollment.objects.filter(
-        student=request.user, course=course
+        student=request.user, course=course, status='approved'
     ).exists()
 
     if not is_teacher and not is_enrolled:

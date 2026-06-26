@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% block title %}Enroll {{ student.username }} - SmartClass{% endblock %}
+
+{% block extra_css %}
+<style>
+  .stu-enroll .form-shell {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .stu-enroll .hero-card {
+    background: linear-gradient(135deg, #0f2f72 0%, #145af2 54%, #1aa3a3 100%);
+    color: #fff;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 20px 42px rgba(15, 47, 114, .20);
+    margin-bottom: 1.5rem;
+  }
+  .stu-enroll .hero-kicker {
+    text-transform: uppercase;
+    letter-spacing: .16em;
+    font-size: .74rem;
+    font-weight: 700;
+    opacity: .82;
+    margin-bottom: .75rem;
+  }
+  .stu-enroll .hero-title {
+    font-size: clamp(1.7rem, 3vw, 2.35rem);
+    font-weight: 800;
+    margin-bottom: .55rem;
+  }
+  .stu-enroll .hero-copy {
+    color: rgba(255,255,255,.84);
+    max-width: 620px;
+    margin-bottom: 0;
+  }
+  .stu-enroll .hero-avatar {
+    width: 56px; height: 56px;
+    border-radius: 16px;
+    background: rgba(255,255,255,.16);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,255,255,.22);
+    flex-shrink: 0;
+  }
+  .stu-enroll .enroll-card {
+    background: var(--sc-surface-strong);
+    border: 1px solid var(--sc-border);
+    border-radius: 24px;
+    box-shadow: var(--sc-shadow-soft);
+    overflow: hidden;
+  }
+  .stu-enroll .enroll-head {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--sc-border);
+    background: var(--sc-card-header);
+  }
+  .stu-enroll .enroll-head-title {
+    font-weight: 800;
+    color: var(--sc-ink);
+    margin-bottom: .2rem;
+  }
+  .stu-enroll .enroll-head-copy {
+    color: var(--sc-muted);
+    margin-bottom: 0;
+    font-size: .9rem;
+  }
+  .stu-enroll .enroll-body {
+    padding: 22px;
+  }
+  .stu-enroll .course-check-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: .75rem;
+  }
+  .stu-enroll .check-card {
+    border: 1px solid var(--sc-border);
+    border-radius: 18px;
+    padding: 16px 18px;
+    background: var(--sc-surface);
+    transition: all .2s ease;
+    cursor: pointer;
+    color: var(--sc-ink);
+  }
+  .stu-enroll .check-card:hover {
+    border-color: rgba(20, 90, 242, .30);
+    background: rgba(20, 90, 242, .04);
+  }
+  .stu-enroll .check-card.enrolled {
+    border-color: rgba(13, 159, 140, .30);
+    background: rgba(13, 159, 140, .05);
+  }
+  .stu-enroll .check-card .course-code {
+    font-size: .74rem;
+    font-weight: 700;
+    color: var(--sc-primary);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .stu-enroll .badge-enrolled {
+    background: rgba(13, 159, 140, .12);
+    color: #0b6a60;
+    border-radius: 999px;
+    padding: .3rem .65rem;
+    font-weight: 700;
+    font-size: .72rem;
+  }
+  .stu-enroll .summary-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    margin-bottom: 1.25rem;
+  }
+  .stu-enroll .summary-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    padding: .55rem 1rem;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: .82rem;
+  }
+  .stu-enroll .summary-chip.available {
+    background: rgba(20, 90, 242, .08);
+    color: var(--sc-primary-deep);
+  }
+  .stu-enroll .summary-chip.enrolled-count {
+    background: rgba(13, 159, 140, .10);
+    color: #0b6a60;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="stu-enroll">
+  <div class="form-shell">
+
+    <!-- ── Hero ── -->
+    <div class="hero-card">
+      <div class="hero-kicker">Admin Panel</div>
+      <div class="d-flex align-items-center gap-3 mb-2">
+        <div class="hero-avatar">
+          <i class="bi bi-person-fill"></i>
+        </div>
+        <div>
+          <div class="hero-title mb-0">Enroll {{ student.username }}</div>
+        </div>
+      </div>
+      <p class="hero-copy">Select the courses to enroll <strong>{{ student.first_name }} {{ student.last_name }}</strong> in. Already-enrolled courses are pre-checked.</p>
+    </div>
+
+    <!-- ── Summary ── -->
+    <div class="summary-strip">
+      <span class="summary-chip available">
+        <i class="bi bi-journal-bookmark"></i> {{ courses|length }} courses available
+      </span>
+      <span class="summary-chip enrolled-count">
+        <i class="bi bi-check2-square"></i> {{ enrolled_ids|length }} currently enrolled
+      </span>
+    </div>
+
+    <!-- ── Enrollment Card ── -->
+    <div class="enroll-card">
+      <div class="enroll-head">
+        <div class="enroll-head-title"><i class="bi bi-journal-plus me-2"></i>Course Enrollment</div>
+        <p class="enroll-head-copy">Check or uncheck courses below. Changes are saved when you submit the form.</p>
+      </div>
+      <div class="enroll-body">
+        <form method="post">
+          {% csrf_token %}
+
+          {% if courses %}
+          <div class="course-check-grid mb-4">
+            {% for course in courses %}
+            <label class="check-card d-flex align-items-start gap-3 {% if course.pk in enrolled_ids %}enrolled{% endif %}">
+              <input type="checkbox" name="courses" value="{{ course.pk }}" class="form-check-input mt-1"
+                     {% if course.pk in enrolled_ids %}checked{% endif %}>
+              <div class="flex-grow-1">
+                <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                  <span class="fw-bold" style="font-size:.92rem;">{{ course.title }}</span>
+                  {% if course.pk in enrolled_ids %}
+                  <span class="badge-enrolled"><i class="bi bi-check-circle me-1"></i>Already enrolled</span>
+                  {% endif %}
+                </div>
+                <span class="course-code">{{ course.course_code }}</span>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-4 mb-4" style="background:var(--sc-surface);border-radius:16px;border:1px solid var(--sc-border);">
+            <i class="bi bi-journal-x d-block mb-2" style="font-size:2rem;color:var(--sc-muted);opacity:.5;"></i>
+            <h6 class="fw-bold mb-1" style="color:var(--sc-ink);">No courses available</h6>
+            <span class="text-muted" style="font-size:.88rem;">There are no active courses to enroll this student in.</span>
+          </div>
+          {% endif %}
+
+          <!-- Actions -->
+          <div class="d-flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-save me-1"></i>Save Enrollment
+            </button>
+            <a href="{% url 'admin_student_list' %}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

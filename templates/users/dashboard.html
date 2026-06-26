@@ -92,14 +92,49 @@
   }
   .student-shell .metric-card {
     height: 100%;
-    background: var(--sd-panel);
-    border: 1px solid var(--sd-line);
-    border-radius: 20px;
-    padding: 20px;
-    box-shadow: 0 10px 26px rgba(16, 32, 51, 0.05);
+    border-radius: 24px;
+    padding: 24px 20px;
+    position: relative;
+    overflow: hidden;
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,.15);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   }
+  .student-shell .metric-card::before {
+    content: '';
+    position: absolute;
+    width: 130px;
+    height: 130px;
+    background: rgba(255,255,255,.08);
+    border-radius: 50%;
+    top: -30px;
+    right: -25px;
+    pointer-events: none;
+  }
+  .student-shell .metric-card::after {
+    content: '';
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    background: rgba(255,255,255,.05);
+    border-radius: 50%;
+    bottom: -15px;
+    right: 30px;
+    pointer-events: none;
+  }
+  .student-shell .metric-card:has(.metric-icon.primary) { background: linear-gradient(135deg, hsl(220, 77%, 18%), hsl(220, 90%, 45%)); }
+  .student-shell .metric-card:has(.metric-icon.gold) { background: linear-gradient(135deg, hsl(28, 85%, 20%), hsl(28, 95%, 45%)); }
+  .student-shell .metric-card:has(.metric-icon.green) { background: linear-gradient(135deg, hsl(172, 80%, 16%), hsl(172, 90%, 36%)); }
+  .student-shell .metric-card:has(.metric-icon.cyan) { background: linear-gradient(135deg, hsl(262, 70%, 20%), hsl(262, 90%, 48%)); }
+
+  .student-shell .metric-card:has(.metric-icon.primary):hover { box-shadow: 0 20px 35px -8px hsla(220, 90%, 52%, 0.45); transform: translateY(-6px) scale(1.02); }
+  .student-shell .metric-card:has(.metric-icon.gold):hover { box-shadow: 0 20px 35px -8px hsla(28, 95%, 50%, 0.45); transform: translateY(-6px) scale(1.02); }
+  .student-shell .metric-card:has(.metric-icon.green):hover { box-shadow: 0 20px 35px -8px hsla(172, 90%, 40%, 0.45); transform: translateY(-6px) scale(1.02); }
+  .student-shell .metric-card:has(.metric-icon.cyan):hover { box-shadow: 0 20px 35px -8px hsla(262, 90%, 58%, 0.45); transform: translateY(-6px) scale(1.02); }
+
   .student-shell .metric-label {
-    color: var(--sd-muted);
+    color: rgba(255, 255, 255, 0.82) !important;
     font-size: .82rem;
     text-transform: uppercase;
     letter-spacing: .08em;
@@ -107,14 +142,14 @@
     font-weight: 700;
   }
   .student-shell .metric-value {
-    color: var(--sd-ink);
-    font-size: 2rem;
-    font-weight: 800;
+    color: #ffffff !important;
+    font-size: 2.3rem;
+    font-weight: 855;
     line-height: 1;
     margin-bottom: .6rem;
   }
   .student-shell .metric-note {
-    color: var(--sd-muted);
+    color: rgba(255, 255, 255, 0.75) !important;
     font-size: .9rem;
     margin: 0;
   }
@@ -127,11 +162,10 @@
     justify-content: center;
     font-size: 1.1rem;
     margin-bottom: .9rem;
+    background: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
   }
-  .student-shell .metric-icon.primary { background: rgba(20, 90, 242, .10); color: var(--sd-primary); }
-  .student-shell .metric-icon.gold { background: rgba(216, 154, 29, .12); color: var(--sd-gold); }
-  .student-shell .metric-icon.green { background: rgba(29, 143, 90, .12); color: var(--sd-accent); }
-  .student-shell .metric-icon.cyan { background: rgba(15, 158, 200, .12); color: var(--sd-cyan); }
   .student-shell .analytics-card,
   .student-shell .surface-card {
     background: var(--sd-panel);
@@ -398,11 +432,66 @@
   }
   .teacher-shell .metric-card {
     height: 100%;
-    background: var(--td-panel);
-    border: 1px solid var(--td-line);
-    border-radius: 20px;
-    padding: 20px;
-    box-shadow: 0 10px 26px rgba(16, 32, 51, 0.05);
+    border-radius: 24px;
+    padding: 24px 20px;
+    position: relative;
+    overflow: hidden;
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,.15);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .teacher-shell .metric-card::before {
+    content: '';
+    position: absolute;
+    width: 130px;
+    height: 130px;
+    background: rgba(255,255,255,.08);
+    border-radius: 50%;
+    top: -30px;
+    right: -25px;
+    pointer-events: none;
+  }
+  .teacher-shell .metric-card::after {
+    content: '';
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    background: rgba(255,255,255,.05);
+    border-radius: 50%;
+    bottom: -15px;
+    right: 30px;
+    pointer-events: none;
+  }
+  .teacher-shell .metric-card:has(.metric-icon.primary) { background: linear-gradient(135deg, hsl(220, 77%, 18%), hsl(220, 90%, 45%)); }
+  .teacher-shell .metric-card:has(.metric-icon.teal) { background: linear-gradient(135deg, hsl(172, 80%, 16%), hsl(172, 90%, 36%)); }
+  .teacher-shell .metric-card:has(.metric-icon.gold) { background: linear-gradient(135deg, hsl(28, 85%, 20%), hsl(28, 95%, 45%)); }
+  .teacher-shell .metric-card:has(.metric-icon.rose) { background: linear-gradient(135deg, hsl(340, 75%, 22%), hsl(340, 85%, 48%)); }
+
+  .teacher-shell .metric-card:has(.metric-icon.primary):hover { box-shadow: 0 20px 35px -8px hsla(220, 90%, 52%, 0.45); transform: translateY(-6px) scale(1.02); }
+  .teacher-shell .metric-card:has(.metric-icon.teal):hover { box-shadow: 0 20px 35px -8px hsla(172, 90%, 40%, 0.45); transform: translateY(-6px) scale(1.02); }
+  .teacher-shell .metric-card:has(.metric-icon.gold):hover { box-shadow: 0 20px 35px -8px hsla(28, 95%, 50%, 0.45); transform: translateY(-6px) scale(1.02); }
+  .teacher-shell .metric-card:has(.metric-icon.rose):hover { box-shadow: 0 20px 35px -8px hsla(340, 85%, 58%, 0.45); transform: translateY(-6px) scale(1.02); }
+
+  .teacher-shell .metric-label {
+    color: rgba(255, 255, 255, 0.82) !important;
+    font-size: .82rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: .55rem;
+    font-weight: 700;
+  }
+  .teacher-shell .metric-value {
+    color: #ffffff !important;
+    font-size: 2.3rem;
+    font-weight: 855;
+    line-height: 1;
+    margin-bottom: .6rem;
+  }
+  .teacher-shell .metric-note {
+    color: rgba(255, 255, 255, 0.75) !important;
+    font-size: .9rem;
+    margin: 0;
   }
   .teacher-shell .metric-icon {
     width: 46px;
@@ -413,30 +502,9 @@
     justify-content: center;
     font-size: 1.1rem;
     margin-bottom: .9rem;
-  }
-  .teacher-shell .metric-icon.primary { background: rgba(20, 90, 242, .10); color: var(--td-primary); }
-  .teacher-shell .metric-icon.teal { background: rgba(15, 143, 143, .12); color: var(--td-teal); }
-  .teacher-shell .metric-icon.gold { background: rgba(216, 154, 29, .12); color: var(--td-gold); }
-  .teacher-shell .metric-icon.rose { background: rgba(203, 80, 102, .12); color: var(--td-rose); }
-  .teacher-shell .metric-label {
-    color: var(--td-muted);
-    font-size: .82rem;
-    text-transform: uppercase;
-    letter-spacing: .08em;
-    margin-bottom: .55rem;
-    font-weight: 700;
-  }
-  .teacher-shell .metric-value {
-    color: var(--td-ink);
-    font-size: 2rem;
-    font-weight: 800;
-    line-height: 1;
-    margin-bottom: .6rem;
-  }
-  .teacher-shell .metric-note {
-    color: var(--td-muted);
-    font-size: .9rem;
-    margin: 0;
+    background: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
   }
   .teacher-shell .analytics-card,
   .teacher-shell .surface-card,
@@ -851,7 +919,7 @@
                   <span class="meta-pill"><i class="bi bi-patch-question"></i>{{ course.quiz_total }} quiz{{ course.quiz_total|pluralize }}</span>
                   <span class="meta-pill"><i class="bi bi-hourglass-split"></i>{{ course.pending_review_total }} pending review{{ course.pending_review_total|pluralize }}</span>
                 </div>
-                <p class="course-copy">{{ course.description|truncatechars:105 }}</p>
+                <p class="course-copy">{{ course.description|striptags|truncatechars:105 }}</p>
               </div>
               <div class="course-actions">
                 <span class="badge {% if course.is_active %}bg-success{% else %}bg-secondary{% endif %} rounded-pill align-self-center">

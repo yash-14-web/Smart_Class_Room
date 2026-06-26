@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+{% block title %}Site Administration — SmartClass{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── Hero ── */
+  .site-admin-hero {
+    background: linear-gradient(135deg, #0f2f72 0%, #145af2 55%, #1aa3a3 100%);
+    border-radius: 20px;
+    padding: 2rem 2.2rem 1.8rem;
+    color: #fff;
+    margin-bottom: 1.75rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 16px 40px rgba(15, 47, 114, 0.25);
+  }
+  .site-admin-hero::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.07);
+  }
+  .site-admin-hero::after {
+    content: '\f527';
+    font-family: 'Bootstrap-icons';
+    position: absolute;
+    bottom: -10px; right: 1.5rem;
+    font-size: 6rem;
+    opacity: .08;
+    line-height: 1;
+  }
+  .site-admin-hero h1 {
+    font-weight: 800;
+    font-size: 1.65rem;
+    margin: 0 0 .4rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+  }
+  .site-admin-hero p {
+    margin: 0;
+    opacity: .85;
+    font-size: .9rem;
+  }
+  .hero-meta {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+  .hero-stat {
+    background: rgba(255,255,255,.15);
+    border-radius: 12px;
+    padding: .4rem .9rem;
+    font-size: .82rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+  }
+
+  /* ── App cards grid ── */
+  .app-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.25rem;
+  }
+
+  /* ── App card ── */
+  .app-card {
+    background: var(--sc-surface-strong);
+    border: 1px solid var(--sc-border);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--sc-shadow-soft);
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .app-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 45px rgba(16, 32, 51, 0.12);
+  }
+  .app-card-header {
+    display: flex;
+    align-items: center;
+    gap: .9rem;
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid var(--sc-border);
+    background: var(--sc-card-header);
+  }
+  .app-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .app-name {
+    font-weight: 800;
+    font-size: 1rem;
+    margin: 0;
+    color: var(--sc-ink);
+    flex: 1;
+  }
+  .app-model-count {
+    font-size: .75rem;
+    color: var(--sc-muted);
+    font-weight: 600;
+  }
+
+  /* ── Model rows ── */
+  .model-row {
+    display: flex;
+    align-items: center;
+    padding: .75rem 1.2rem;
+    border-bottom: 1px solid var(--sc-border);
+    gap: .75rem;
+    transition: background .15s ease;
+  }
+  .model-row:last-child {
+    border-bottom: none;
+  }
+  .model-row:hover {
+    background: rgba(20, 90, 242, 0.03);
+  }
+  .model-label {
+    flex: 1;
+    font-weight: 600;
+    font-size: .9rem;
+    color: var(--sc-ink);
+  }
+  .model-count-badge {
+    background: var(--sc-glass-bg);
+    border: 1px solid var(--sc-glass-border);
+    border-radius: 999px;
+    padding: .2rem .65rem;
+    font-size: .75rem;
+    font-weight: 700;
+    color: var(--sc-muted);
+    min-width: 42px;
+    text-align: center;
+  }
+  .model-actions {
+    display: flex;
+    gap: .4rem;
+    align-items: center;
+  }
+  .btn-add {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    padding: .35rem .75rem;
+    border-radius: 999px;
+    font-size: .78rem;
+    font-weight: 700;
+    background: rgba(13, 159, 140, 0.10);
+    color: #0b6a60;
+    border: 1px solid rgba(13, 159, 140, 0.25);
+    text-decoration: none;
+    transition: all .15s ease;
+    white-space: nowrap;
+  }
+  .btn-add:hover {
+    background: rgba(13, 159, 140, 0.18);
+    color: #065f46;
+    border-color: rgba(13, 159, 140, 0.4);
+  }
+  .btn-change {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    padding: .35rem .75rem;
+    border-radius: 999px;
+    font-size: .78rem;
+    font-weight: 700;
+    background: rgba(20, 90, 242, 0.08);
+    color: var(--sc-primary-deep);
+    border: 1px solid rgba(20, 90, 242, 0.20);
+    text-decoration: none;
+    transition: all .15s ease;
+    white-space: nowrap;
+  }
+  .btn-change:hover {
+    background: rgba(20, 90, 242, 0.14);
+    color: var(--sc-primary-deep);
+    border-color: rgba(20, 90, 242, 0.35);
+  }
+
+  /* dark mode */
+  [data-bs-theme="dark"] .btn-add {
+    background: rgba(13, 159, 140, 0.12);
+    color: #2dd4bf;
+    border-color: rgba(13, 159, 140, 0.3);
+  }
+  [data-bs-theme="dark"] .btn-change {
+    background: rgba(59, 130, 246, 0.12);
+    color: #93c5fd;
+    border-color: rgba(59, 130, 246, 0.3);
+  }
+  [data-bs-theme="dark"] .model-row:hover {
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  @media (max-width: 576px) {
+    .app-grid { grid-template-columns: 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<div class="site-admin-hero">
+  <h1><i class="bi bi-grid-3x3-gap-fill"></i> Site Administration</h1>
+  <p>Complete control over all models — add, edit, and manage every record in Smart Classroom.</p>
+  <div class="hero-meta">
+    <div class="hero-stat"><i class="bi bi-layers"></i> {{ app_registry|length }} Applications</div>
+    <div class="hero-stat"><i class="bi bi-table"></i>
+      {% with total=0 %}
+      {% for app in app_registry %}{% for m in app.models %}{% endfor %}{% endfor %}
+      {% endwith %}
+      All Models
+    </div>
+    <div class="hero-stat"><i class="bi bi-shield-check"></i> Superadmin Access</div>
+    <a href="{% url 'admin_create' %}" class="btn btn-light btn-sm rounded-pill fw-bold ms-auto d-flex align-items-center gap-2" style="color: var(--sc-primary-deep);">
+      <i class="bi bi-person-plus-fill"></i> Add Admin
+    </a>
+  </div>
+</div>
+
+<!-- App Grid -->
+<div class="app-grid">
+  {% for app in app_registry %}
+  <div class="app-card">
+
+    <!-- App Header -->
+    <div class="app-card-header">
+      <div class="app-icon" style="background: {{ app.gradient }};">
+        <i class="bi {{ app.icon }}"></i>
+      </div>
+      <div class="app-name">{{ app.name }}</div>
+      <div class="app-model-count">{{ app.models|length }} model{{ app.models|length|pluralize }}</div>
+    </div>
+
+    <!-- Model Rows -->
+    {% for model in app.models %}
+    <div class="model-row">
+      <span class="model-label">{{ model.label }}</span>
+      <span class="model-count-badge" title="{{ model.count }} records">{{ model.count }}</span>
+      <div class="model-actions">
+        <a href="/admin/{{ model.app }}/{{ model.model }}/add/" class="btn-add" title="Add {{ model.label }}">
+          <i class="bi bi-plus-lg"></i> Add
+        </a>
+        <a href="/admin/{{ model.app }}/{{ model.model }}/" class="btn-change" title="View/Change {{ model.label }}">
+          <i class="bi bi-pencil"></i> Change
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

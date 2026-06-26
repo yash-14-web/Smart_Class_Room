@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% block title %}About {{ course.title }} - SmartClass{% endblock %}
+
+{% block extra_css %}
+<style>
+  .course-about-container {
+    max-width: 780px;
+    margin: 2rem auto;
+  }
+  .about-card {
+    background: var(--sc-surface-strong);
+    border: 1px solid var(--sc-border);
+    border-radius: 24px;
+    box-shadow: var(--sc-shadow);
+    overflow: hidden;
+  }
+  .about-header {
+    background: linear-gradient(135deg, #0f2f72 0%, #145af2 54%, #1aa3a3 100%);
+    color: #fff;
+    padding: 2.5rem;
+    text-align: center;
+    position: relative;
+  }
+  .about-body {
+    padding: 2.5rem;
+    text-align: left !important;
+  }
+  .course-cover-fallback {
+    width: 80px;
+    height: 80px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #0f3fae, #145af2 55%, #1aa3a3);
+    color: #fff;
+    font-size: 2.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem auto;
+  }
+  .course-description {
+    word-break: break-word;
+    line-height: 1.7;
+    font-size: 0.98rem;
+    color: var(--sc-ink);
+    text-align: left !important;
+  }
+  .pre-wrap-desc {
+    white-space: pre-wrap;
+  }
+  .course-description p {
+    margin-bottom: 1.25rem;
+    line-height: 1.7;
+  }
+  .course-description p:last-child {
+    margin-bottom: 0;
+  }
+  .course-description h5 {
+    color: var(--sc-ink);
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+  .course-description h5:first-child {
+    margin-top: 0;
+  }
+  .course-description ol, .course-description ul {
+    padding-left: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+  .course-description li {
+    margin-bottom: 0.75rem;
+    color: var(--sc-muted);
+  }
+  .course-description li strong {
+    color: var(--sc-ink);
+  }
+  .info-block {
+    background: var(--sc-surface);
+    border: 1px solid var(--sc-border);
+    border-radius: 16px;
+    padding: 1.25rem;
+    height: 100%;
+    text-align: left !important;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container course-about-container">
+  <!-- Back button -->
+  <div class="mb-4 text-start">
+    <a href="{% url 'course_detail' course.pk %}" class="btn btn-outline-secondary btn-sm rounded-pill px-4">
+      <i class="bi bi-arrow-left me-1"></i> Back to Classroom
+    </a>
+  </div>
+  
+  <div class="about-card">
+    <div class="about-header">
+      <div class="course-cover-fallback">
+        <i class="bi bi-info-circle-fill"></i>
+      </div>
+      <h2 class="fw-bold mb-1">{{ course.title }}</h2>
+      <p class="text-white-50 mb-0">{% if course.course_code %}{{ course.course_code }}{% else %}About this Course{% endif %}</p>
+    </div>
+    
+    <div class="about-body">
+      <div class="mb-4">
+        <h4 class="fw-bold mb-3 text-start" style="color: var(--sc-ink);"><i class="bi bi-file-earmark-text text-primary me-2"></i>Course Details & Description</h4>
+        <div class="p-4 border rounded-3 bg-light bg-opacity-10 mb-4 course-description{% if '<' not in course.description %} pre-wrap-desc{% endif %}">
+          {% if course.description %}
+            {{ course.description|safe }}
+          {% else %}
+            <p class="text-muted mb-0">No description has been provided for this course yet.</p>
+          {% endif %}
+        </div>
+        
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="info-block">
+              <small class="text-muted d-block uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">INSTRUCTOR</small>
+              <span class="fw-bold" style="color: var(--sc-ink); font-size: 1.02rem;">{{ course.teacher.get_full_name|default:course.teacher.username }}</span>
+            </div>
+          </div>
+          
+          <div class="col-md-4">
+            <div class="info-block">
+              <small class="text-muted d-block uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">DURATION</small>
+              <span class="fw-bold" style="color: var(--sc-ink); font-size: 1.02rem;">
+                {% if course.start_date and course.end_date %}
+                  {{ course.start_date|date:"M d, Y" }} &mdash; {{ course.end_date|date:"M d, Y" }}
+                {% elif course.start_date %}
+                  {{ course.start_date|date:"M d, Y" }} &mdash; Ongoing
+                {% elif course.end_date %}
+                  Ongoing &mdash; {{ course.end_date|date:"M d, Y" }}
+                {% else %}
+                  Ongoing / Self-paced
+                {% endif %}
+              </span>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="info-block">
+              <small class="text-muted d-block uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 0.05em; font-weight: 700;">BATCH</small>
+              <span class="fw-bold" style="color: var(--sc-ink); font-size: 1.02rem;">{{ course.batch|default:"General / Open" }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,8 +1,500 @@
 {% extends 'base.html' %}
-{% block title %}Profile - SmartClass{% endblock %}
+{% block title %}Profile - {{ user.get_full_name|default:user.username }} - SmartClass{% endblock %}
 
 {% block extra_css %}
 <style>
+  /* Layout and Styling variables */
+  .profile-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-bottom: 3rem;
+  }
+  
+  .profile-header-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Cover Banner Section */
+  .cover-banner {
+    position: relative;
+    width: 100%;
+    height: 250px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position-x: center;
+    border-radius: 0 0 20px 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s;
+  }
+  
+  .cover-banner.repositioning {
+    cursor: ns-resize;
+  }
+  
+  /* Space/Stars sky animation overlay */
+  .cover-banner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: 
+      radial-gradient(white, rgba(255,255,255,.18) 1px, transparent 30px),
+      radial-gradient(white, rgba(255,255,255,.12) 1.5px, transparent 40px);
+    background-size: 350px 350px, 200px 200px;
+    background-position: 0 0, 80px 120px;
+    opacity: 0.25;
+    pointer-events: none;
+  }
+  
+  /* Cosmos CSS Preset Gradients */
+  .cover-preset-nebula {
+    background-color: #0c0f1d;
+    background-image: 
+      radial-gradient(circle at 20% 30%, rgba(147, 51, 234, 0.2) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.25) 0%, transparent 50%),
+      linear-gradient(135deg, #090b11 0%, #1e1b4b 50%, #030712 100%);
+  }
+  .cover-preset-sunset {
+    background-color: #1a0b05;
+    background-image: 
+      radial-gradient(circle at 30% 30%, rgba(220, 38, 38, 0.18) 0%, transparent 50%),
+      radial-gradient(circle at 80% 60%, rgba(245, 158, 11, 0.15) 0%, transparent 50%),
+      linear-gradient(135deg, #1c0a00 0%, #78350f 50%, #0f172a 100%);
+  }
+  .cover-preset-aurora {
+    background-color: #021a11;
+    background-image: 
+      radial-gradient(circle at 20% 40%, rgba(16, 185, 129, 0.18) 0%, transparent 50%),
+      radial-gradient(circle at 75% 65%, rgba(14, 165, 233, 0.15) 0%, transparent 50%),
+      linear-gradient(135deg, #022c22 0%, #020617 60%, #0f172a 100%);
+  }
+  .cover-preset-ocean {
+    background-color: #041f2c;
+    background-image: 
+      radial-gradient(circle at 15% 25%, rgba(6, 182, 212, 0.2) 0%, transparent 50%),
+      radial-gradient(circle at 85% 75%, rgba(17, 94, 89, 0.2) 0%, transparent 50%),
+      linear-gradient(135deg, #083344 0%, #020617 65%, #0d9f8c 100%);
+  }
+  .cover-preset-midnight {
+    background: linear-gradient(135deg, #090d16 0%, #1e293b 50%, #020617 100%);
+  }
+  
+  /* Floating Cover Actions */
+  .cover-actions {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 10;
+  }
+  
+  .btn-cover {
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 8px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .btn-cover:hover {
+    background: rgba(15, 23, 42, 0.85);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  
+  .reposition-controls {
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 6px;
+    border-radius: 10px;
+    display: inline-flex;
+    gap: 6px;
+  }
+  
+  .btn-cover-save {
+    background: var(--sc-primary);
+    border: none;
+    color: #fff;
+    padding: 5px 12px;
+    font-size: 0.8rem;
+    border-radius: 6px;
+    font-weight: 700;
+    transition: background 0.15s;
+  }
+  .btn-cover-save:hover {
+    background: var(--sc-primary-deep);
+  }
+  
+  .btn-cover-cancel {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: #fff;
+    padding: 5px 12px;
+    font-size: 0.8rem;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: background 0.15s;
+  }
+  .btn-cover-cancel:hover {
+    background: rgba(255, 255, 255, 0.25);
+  }
+  
+  /* Floating Circle Profile Picture */
+  .profile-avatar-row {
+    position: relative;
+    padding: 0 40px;
+    height: 50px;
+  }
+  
+  .avatar-container {
+    position: absolute;
+    top: -95px;
+    left: 40px;
+    width: 140px;
+    height: 140px;
+    z-index: 5;
+  }
+  
+  .profile-avatar {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 6px solid var(--sc-surface-strong);
+    background-color: var(--sc-surface);
+    object-fit: cover;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  }
+  
+  .profile-avatar-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    font-weight: 700;
+    color: var(--sc-muted);
+    background: linear-gradient(135deg, var(--sc-surface) 0%, var(--sc-border) 100%);
+  }
+  
+  .btn-edit-avatar {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--sc-primary);
+    border: 3px solid var(--sc-surface-strong);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .btn-edit-avatar:hover {
+    transform: scale(1.1);
+    background: var(--sc-primary-deep);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  }
+  
+  /* Display Title Section */
+  .profile-title-section {
+    padding: 0 40px;
+    margin-bottom: 2rem;
+  }
+  
+  .profile-display-name {
+    font-size: 2.1rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--sc-ink);
+  }
+  
+  .btn-outline-edit {
+    border: 1px solid var(--sc-border);
+    background: transparent;
+    color: var(--sc-ink);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.88rem;
+    transition: all 0.2s;
+  }
+  
+  .btn-outline-edit:hover {
+    background: rgba(16, 32, 51, 0.04);
+    border-color: var(--sc-muted);
+  }
+  [data-bs-theme="dark"] .btn-outline-edit:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  
+  /* Split layout */
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--sc-muted);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  /* Timeline styling */
+  .timeline-feed {
+    position: relative;
+    border-left: 2px solid var(--sc-border);
+    margin-left: 10px;
+    padding-left: 20px;
+  }
+  
+  .timeline-item {
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+  
+  .timeline-icon {
+    position: absolute;
+    left: -31px;
+    top: 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--sc-surface-strong);
+    border: 2px solid var(--sc-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    color: var(--sc-primary);
+  }
+  
+  .timeline-item.category-quiz .timeline-icon {
+    border-color: var(--sc-teal);
+    color: var(--sc-teal);
+  }
+  .timeline-item.category-test .timeline-icon {
+    border-color: var(--sc-danger);
+    color: var(--sc-danger);
+  }
+  .timeline-item.category-grade .timeline-icon {
+    border-color: #f59e0b;
+    color: #f59e0b;
+  }
+  
+  .timeline-card {
+    background: var(--sc-surface);
+    border: 1px solid var(--sc-border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    transition: all 0.2s;
+  }
+  
+  .timeline-card:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--sc-shadow-soft);
+  }
+  
+  .timeline-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--sc-ink);
+  }
+  
+  .timeline-desc {
+    font-size: 0.82rem;
+    color: var(--sc-muted);
+    margin-top: 2px;
+    margin-bottom: 0;
+  }
+  
+  .timeline-time {
+    font-size: 0.72rem;
+    color: var(--sc-muted);
+    font-weight: 500;
+  }
+  
+  /* Sidebar Pages/Navigation */
+  .page-search-container {
+    position: relative;
+    margin-bottom: 1rem;
+  }
+  
+  .page-search-input {
+    width: 100%;
+    background: var(--sc-surface);
+    border: 1px solid var(--sc-border);
+    color: var(--sc-ink);
+    padding: 8px 12px 8px 36px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+  }
+  
+  .page-search-input:focus {
+    outline: none;
+    border-color: var(--sc-primary);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+  }
+  
+  .page-search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--sc-muted);
+    font-size: 0.9rem;
+  }
+  
+  .page-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .page-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: var(--sc-ink);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 500;
+    transition: background 0.15s;
+  }
+  
+  .page-nav-item:hover {
+    background: rgba(16, 32, 51, 0.04);
+    color: var(--sc-primary);
+  }
+  [data-bs-theme="dark"] .page-nav-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+  
+  .page-nav-icon {
+    color: var(--sc-muted);
+    font-size: 1.1rem;
+  }
+  
+  /* Right column details card */
+  .details-card {
+    background: var(--sc-surface);
+    border: 1px solid var(--sc-border);
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    box-shadow: var(--sc-shadow-soft);
+  }
+  
+  .detail-group-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--sc-muted);
+    margin-bottom: 0.25rem;
+  }
+  
+  .detail-group-value {
+    font-size: 0.9rem;
+    color: var(--sc-ink);
+  }
+  
+  .detail-group-value.bio-text {
+    font-style: normal;
+    white-space: pre-wrap;
+  }
+  
+  .detail-group-value.empty-placeholder {
+    color: var(--sc-muted);
+    cursor: pointer;
+    font-style: italic;
+  }
+  .detail-group-value.empty-placeholder:hover {
+    color: var(--sc-primary);
+  }
+  
+  /* Role tags */
+  .role-tag-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: capitalize;
+  }
+  
+  .role-tag-admin {
+    background: rgba(239, 68, 68, 0.12);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+  }
+  .role-tag-teacher {
+    background: rgba(59, 130, 246, 0.12);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+  }
+  .role-tag-student {
+    background: rgba(16, 185, 129, 0.12);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+  }
+  
+  /* Presets selection grid */
+  .preset-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 12px;
+    margin-bottom: 1rem;
+  }
+  
+  .preset-card {
+    height: 60px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .preset-card:hover {
+    transform: scale(1.05);
+  }
+  
+  .preset-card.active {
+    border-color: var(--sc-primary);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  }
+  
+  /* Modal glassmorphism */
+  .modal-glass {
+    backdrop-filter: blur(12px);
+  }
+  .modal-glass .modal-content {
+    background: var(--sc-surface);
+    border: 1px solid var(--sc-border);
+    border-radius: 20px;
+    box-shadow: var(--sc-shadow);
+  }
+  .modal-glass .modal-header,
+  .modal-glass .modal-footer {
+    border-color: var(--sc-border);
+  }
+  
+  /* Existing Badges Styling */
   .badge-container {
     display: flex;
     flex-wrap: wrap;
@@ -18,28 +510,21 @@
     box-sizing: border-box;
     filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.12));
   }
-  /* Outer Hexagon border and background */
   .digital-badge .badge-hexagon {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0; width: 100%; height: 100%;
     clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
     z-index: 1;
   }
-  /* Inner Hexagon container to create the border outline look */
   .digital-badge .badge-hexagon-inner {
     position: absolute;
-    top: 4px;
-    left: 4px;
+    top: 4px; left: 4px;
     width: calc(100% - 8px);
     height: calc(100% - 8px);
     background: var(--sc-surface-strong);
     clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
     z-index: 2;
   }
-  /* Inner contents */
   .digital-badge .badge-content {
     position: relative;
     z-index: 3;
@@ -89,7 +574,6 @@
     text-overflow: ellipsis;
     margin-bottom: 8px;
   }
-  /* Ribbon styles */
   .digital-badge .badge-ribbon {
     position: absolute;
     bottom: 38px;
@@ -106,7 +590,6 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
     letter-spacing: 0.02em;
   }
-  /* Ribbon folds */
   .digital-badge .badge-ribbon::before,
   .digital-badge .badge-ribbon::after {
     content: '';
@@ -114,15 +597,11 @@
     border-style: solid;
   }
   .digital-badge .badge-ribbon::before {
-    top: 100%;
-    left: 0;
-    border-width: 0 6px 6px 0;
+    top: 100%; left: 0; border-width: 0 6px 6px 0;
     border-color: transparent var(--badge-color-dark, #0f3fae) transparent transparent;
   }
   .digital-badge .badge-ribbon::after {
-    top: 100%;
-    right: 0;
-    border-width: 0 0 6px 6px;
+    top: 100%; right: 0; border-width: 0 0 6px 6px;
     border-color: transparent transparent transparent var(--badge-color-dark, #0f3fae);
   }
   .digital-badge .badge-year {
@@ -148,65 +627,516 @@
 {% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-lg-8">
-    <div class="card">
-      <div class="card-header"><h5 class="fw-bold mb-0">My Profile</h5></div>
-      <div class="card-body">
-        <div class="text-center mb-4">
-          {% if user.profile_pic %}<img src="{{ user.profile_pic.url }}" class="rounded-circle" width="96" height="96" style="object-fit:cover"/>{% else %}<i class="bi bi-person-circle" style="font-size:5rem;color:#ccc;"></i>{% endif %}
-          <div class="fw-semibold mt-2 fs-5">{{ user.get_full_name|default:user.username }}</div>
-          <span class="badge {% if user.is_teacher %}bg-info text-dark{% else %}bg-success{% endif %}">{{ user.role|capfirst }}</span>
+<div class="profile-container">
+  {% csrf_token %}
+  
+  <!-- Cover & Avatar Header Section -->
+  <div class="profile-header-container">
+    <div id="coverBanner" class="cover-banner {% if user.cover_preset != 'custom' %}cover-preset-{{ user.cover_preset }}{% endif %}" 
+         style="{% if user.cover_pic %}background-image: url('{{ user.cover_pic.url }}');{% endif %} background-position-y: {{ user.cover_position }}%;">
+      
+      <!-- Actions inside cover -->
+      <div class="cover-actions">
+        <div class="btn-group">
+          <button class="btn btn-cover" id="changeCoverBtn" data-bs-toggle="modal" data-bs-target="#changeCoverModal">
+            <i class="bi bi-image me-1"></i> Change cover
+          </button>
+          <button class="btn btn-cover ms-2" id="repositionBtn">
+            <i class="bi bi-arrows-move me-1"></i> Reposition
+          </button>
         </div>
-        <form method="post" enctype="multipart/form-data">
-          {% csrf_token %}
-          <div class="row g-3">
-            <div class="col-md-6"><label class="form-label fw-semibold">First Name</label>{{ form.first_name }}</div>
-            <div class="col-md-6"><label class="form-label fw-semibold">Last Name</label>{{ form.last_name }}</div>
-            <div class="col-12"><label class="form-label fw-semibold">Email</label>{{ form.email }}</div>
-            <div class="col-12"><label class="form-label fw-semibold">Bio</label>{{ form.bio }}</div>
-            <div class="col-12">
-              <label class="form-label fw-semibold">Profile Picture</label>
-              {{ form.profile_pic }}
-              {% if user.profile_pic %}
-              <div class="form-check mt-3">
-                {{ form.remove_profile_pic }}
-                <label class="form-check-label text-danger fw-semibold" for="{{ form.remove_profile_pic.id_for_label }}">Delete Photo</label>
-              </div>
-              {% endif %}
-            </div>
-          </div>
-          <div class="d-flex flex-wrap gap-2 mt-4"><button type="submit" class="btn btn-primary">Save Changes</button><a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Cancel</a></div>
-        </form>
+      </div>
+      
+      <!-- Actions while repositioning -->
+      <div class="cover-actions d-none" id="repositionControls">
+        <div class="reposition-controls">
+          <button class="btn btn-cover-save" id="savePositionBtn">Save position</button>
+          <button class="btn btn-cover-cancel" id="cancelPositionBtn">Cancel</button>
+        </div>
       </div>
     </div>
+    
+    <!-- Overlapping profile photo -->
+    <div class="profile-avatar-row">
+      <div class="avatar-container">
+        {% if user.profile_pic %}
+          <img src="{{ user.profile_pic.url }}" alt="Profile Picture" class="profile-avatar">
+        {% else %}
+          <div class="profile-avatar profile-avatar-placeholder">
+            {{ user.username|slice:":1"|upper }}
+          </div>
+        {% endif %}
+        <button class="btn-edit-avatar" data-bs-toggle="modal" data-bs-target="#editProfileModal" title="Update Profile Picture">
+          <i class="bi bi-camera-fill"></i>
+        </button>
+      </div>
+    </div>
+  </div>
 
-    {% if certificates %}
-    <div class="card mt-4">
-      <div class="card-header"><h5 class="fw-bold mb-0"><i class="bi bi-award-fill me-2 text-primary"></i>My Digital Badges</h5></div>
-      <div class="card-body">
-        <p class="text-muted small">Showcase your verified achievements and skills earned inside SmartClass.</p>
-        <div class="badge-container">
-          {% for cert in certificates %}
-            <a href="{% url 'view_certificate' cert.pk %}" class="badge-link" target="_blank" title="Click to view and download certificate">
-              <div class="digital-badge" style="--badge-color: {{ cert.badge_color }}; --badge-color-dark: {{ cert.badge_color_dark }};">
-                <div class="badge-hexagon" style="background: {{ cert.badge_color }};"></div>
-                <div class="badge-hexagon-inner"></div>
-                <div class="badge-content">
-                  <div class="badge-check"><i class="bi bi-patch-check-fill"></i></div>
-                  <div class="badge-title">Certified</div>
-                  <div class="badge-sub">Accredited by SmartClass</div>
-                  <div class="badge-course">{{ cert.course.title }}</div>
-                  <div class="badge-ribbon">{{ cert.get_badge_type_display }}</div>
-                  <div class="badge-year">{{ cert.issued_at|date:"Y" }}</div>
+  <!-- Title section -->
+  <div class="profile-title-section mt-3">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div>
+        <h1 class="profile-display-name mb-0">{{ user.get_full_name|default:user.username }}</h1>
+        <div class="text-muted small mt-1"><i class="bi bi-person-fill me-1"></i>{{ user.role|capfirst }} (You)</div>
+      </div>
+      <div>
+        <button class="btn btn-outline-edit" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+          <i class="bi bi-gear-fill me-1"></i> Settings
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main grid -->
+  <div class="row px-4 g-4 mt-2">
+    <!-- Left Column: Activity Feed & Sidebar Pages -->
+    <div class="col-lg-8">
+      
+      <!-- Activity Timeline -->
+      <div class="section-label">
+        <i class="bi bi-activity"></i> Recent activity
+      </div>
+      
+      {% if recent_activities %}
+        <div class="timeline-feed">
+          {% for act in recent_activities %}
+            <div class="timeline-item category-{{ act.category }}">
+              <div class="timeline-icon" title="{{ act.category|capfirst }}">
+                <i class="{{ act.icon }}"></i>
+              </div>
+              <div class="timeline-card">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="timeline-title">{{ act.title }}</div>
+                  <span class="timeline-time text-muted">{{ act.timestamp|timesince }} ago</span>
                 </div>
+                <p class="timeline-desc">{{ act.description }}</p>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="timeline-card py-4 text-center text-muted">
+          <i class="bi bi-clock-history fs-3 mb-2 d-block"></i>
+          <span class="small">No recent activity found.</span>
+        </div>
+      {% endif %}
+
+      <!-- Pages / Courses Navigation -->
+      <div class="section-label mt-5">
+        <i class="bi bi-journal-bookmark-fill"></i> {{ user.get_full_name|default:user.username }}'s pages
+      </div>
+      <div class="page-search-container">
+        <i class="bi bi-search page-search-icon"></i>
+        <input type="text" id="pageSearch" class="page-search-input" placeholder="Search courses or links...">
+      </div>
+      <div class="page-list" id="pageList">
+        {% if quick_links %}
+          {% for link in quick_links %}
+            <a href="{{ link.url }}" class="page-nav-item">
+              <i class="bi {{ link.icon }} page-nav-icon"></i>
+              <div>
+                <div class="fw-semibold">{{ link.title }}</div>
+                <div class="text-muted small" style="font-size:0.75rem;">{{ link.subtitle }}</div>
               </div>
             </a>
           {% endfor %}
+        {% else %}
+          <div class="timeline-card text-center py-3 text-muted small">
+            No pages or courses available yet.
+          </div>
+        {% endif %}
+      </div>
+      
+    </div>
+
+    <!-- Right Column: Sidebar Meta Info -->
+    <div class="col-lg-4">
+      <div class="details-card">
+        
+        <!-- About / Bio -->
+        <div>
+          <div class="detail-group-title">About</div>
+          {% if user.bio %}
+            <div class="detail-group-value bio-text">{{ user.bio }}</div>
+          {% else %}
+            <div class="detail-group-value empty-placeholder" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+              Empty. Click to add a bio
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Contact Email -->
+        <div>
+          <div class="detail-group-title">Email</div>
+          <div class="detail-group-value">{{ user.email|default:"Not configured" }}</div>
+        </div>
+
+        <!-- Role Badge -->
+        <div>
+          <div class="detail-group-title">Membership Type</div>
+          <div class="mt-1">
+            {% if user.is_superuser or user.role == 'admin' %}
+              <span class="role-tag-badge role-tag-admin">Workspace owner</span>
+            {% elif user.role == 'teacher' %}
+              <span class="role-tag-badge role-tag-teacher">Instructor</span>
+            {% else %}
+              <span class="role-tag-badge role-tag-student">Student</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Cohort/Teamspaces -->
+        <div>
+          <div class="detail-group-title">Teamspaces</div>
+          <div class="detail-group-value">
+            {% if user.role == 'student' %}
+              {% if user.student_id %}
+                <div class="small fw-semibold text-muted mb-1">Student ID: {{ user.student_id }}</div>
+              {% endif %}
+              <span class="badge bg-secondary px-2 py-1">Classroom Cohort</span>
+            {% elif user.role == 'teacher' %}
+              <span class="badge bg-primary px-2 py-1">Faculty Board</span>
+            {% else %}
+              <span class="badge bg-danger px-2 py-1">Management Board</span>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Badges / Certificates Showcase -->
+  {% if certificates %}
+    <div class="row px-4 mt-5">
+      <div class="col-12">
+        <div class="details-card">
+          <div class="detail-group-title"><i class="bi bi-award-fill text-warning me-1"></i>My Digital Badges</div>
+          <p class="text-muted small mb-0">Showcase your verified achievements and skills earned inside SmartClass.</p>
+          <div class="badge-container">
+            {% for cert in certificates %}
+              <a href="{% url 'view_certificate' cert.pk %}" class="badge-link" target="_blank" title="Click to view and download certificate">
+                <div class="digital-badge" style="--badge-color: {{ cert.badge_color }}; --badge-color-dark: {{ cert.badge_color_dark }};">
+                  <div class="badge-hexagon" style="background: {{ cert.badge_color }};"></div>
+                  <div class="badge-hexagon-inner"></div>
+                  <div class="badge-content">
+                    <div class="badge-check"><i class="bi bi-patch-check-fill"></i></div>
+                    <div class="badge-title">Certified</div>
+                    <div class="badge-sub">Accredited by SmartClass</div>
+                    <div class="badge-course">{{ cert.course.title }}</div>
+                    <div class="badge-ribbon">{{ cert.get_badge_type_display }}</div>
+                    <div class="badge-year">{{ cert.issued_at|date:"Y" }}</div>
+                  </div>
+                </div>
+              </a>
+            {% endfor %}
+          </div>
         </div>
       </div>
     </div>
-    {% endif %}
+  {% endif %}
+
+</div>
+
+<!-- Modal: Change Cover -->
+<div class="modal fade modal-glass" id="changeCoverModal" tabindex="-1" aria-labelledby="changeCoverModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="changeCoverModalLabel">Change Cover</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-group-title mb-2">Choose a preset cosmos</div>
+        <div class="preset-grid">
+          <div class="preset-card cover-preset-nebula {% if user.cover_preset == 'nebula' %}active{% endif %}" data-preset="nebula" title="Nebula"></div>
+          <div class="preset-card cover-preset-sunset {% if user.cover_preset == 'sunset' %}active{% endif %}" data-preset="sunset" title="Sunset"></div>
+          <div class="preset-card cover-preset-aurora {% if user.cover_preset == 'aurora' %}active{% endif %}" data-preset="aurora" title="Aurora"></div>
+          <div class="preset-card cover-preset-ocean {% if user.cover_preset == 'ocean' %}active{% endif %}" data-preset="ocean" title="Ocean"></div>
+          <div class="preset-card cover-preset-midnight {% if user.cover_preset == 'midnight' %}active{% endif %}" data-preset="midnight" title="Midnight"></div>
+        </div>
+        
+        <hr class="my-4">
+        
+        <form method="post" enctype="multipart/form-data" action="{% url 'profile' %}">
+          {% csrf_token %}
+          <div class="mb-3">
+            <div class="detail-group-title mb-2">Upload custom banner</div>
+            <input type="file" name="cover_pic" class="form-control" accept="image/*" required>
+            <div class="form-text small text-muted">Upload a horizontal banner image. Large images will be scrollable.</div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 mb-2">Upload and Apply</button>
+        </form>
+        
+        {% if user.cover_pic or user.cover_preset != 'nebula' %}
+          <button class="btn btn-outline-danger w-100 mt-2" id="removeCoverBtn">
+            <i class="bi bi-trash3 me-1"></i> Remove Cover
+          </button>
+        {% endif %}
+      </div>
+    </div>
   </div>
 </div>
+
+<!-- Modal: Profile Settings -->
+<div class="modal fade modal-glass" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" enctype="multipart/form-data" action="{% url 'profile' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="editProfileModalLabel"><i class="bi bi-gear-fill text-primary me-2"></i>Profile Settings</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold small text-muted">First Name</label>
+              {{ form.first_name }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold small text-muted">Last Name</label>
+              {{ form.last_name }}
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-bold small text-muted">Email</label>
+              {{ form.email }}
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-bold small text-muted">Bio</label>
+              {{ form.bio }}
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-bold small text-muted">Avatar Image</label>
+              {{ form.profile_pic }}
+              {% if user.profile_pic %}
+                <div class="form-check mt-2">
+                  {{ form.remove_profile_pic }}
+                  <label class="form-check-label text-danger fw-semibold" for="{{ form.remove_profile_pic.id_for_label }}">Delete Profile Picture</label>
+                </div>
+              {% endif %}
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-bold small text-muted">Cover Banner Image</label>
+              {{ form.cover_pic }}
+              {% if user.cover_pic %}
+                <div class="form-check mt-2">
+                  {{ form.remove_cover_pic }}
+                  <label class="form-check-label text-danger fw-semibold" for="{{ form.remove_cover_pic.id_for_label }}">Delete Custom Cover Banner</label>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="mt-4 pt-3 border-top text-center">
+            <a href="{% url 'change_password' %}" class="btn btn-outline-secondary w-100">
+              <i class="bi bi-key-fill me-1"></i> Change Account Password
+            </a>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const presetCards = document.querySelectorAll('.preset-card');
+    const coverBanner = document.getElementById('coverBanner');
+    const removeCoverBtn = document.getElementById('removeCoverBtn');
+    
+    // Retrieve CSRF token
+    const csrfTokenEl = document.querySelector('[name=csrfmiddlewaretoken]');
+    const csrfToken = csrfTokenEl ? csrfTokenEl.value : '';
+
+    // Change Preset Cover
+    presetCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const preset = card.getAttribute('data-preset');
+            fetch("{% url 'update_cover' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ cover_preset: preset })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    presetCards.forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
+                    coverBanner.style.backgroundImage = '';
+                    coverBanner.className = `cover-banner cover-preset-${preset}`;
+                    coverBanner.style.backgroundPositionY = '50%';
+                    
+                    // Reload to fully sync all components on page
+                    window.location.reload();
+                }
+            });
+        });
+    });
+
+    // Remove custom cover picture
+    if (removeCoverBtn) {
+        removeCoverBtn.addEventListener('click', () => {
+            fetch("{% url 'update_cover' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ remove_cover: true })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.reload();
+                }
+            });
+        });
+    }
+
+    // Vertical drag-to-reposition logic
+    const repositionBtn = document.getElementById('repositionBtn');
+    const savePositionBtn = document.getElementById('savePositionBtn');
+    const cancelPositionBtn = document.getElementById('cancelPositionBtn');
+    const coverActions = document.querySelector('.cover-actions');
+    const repositionControls = document.getElementById('repositionControls');
+
+    let isDragging = false;
+    let startY = 0;
+    let startVal = 50;
+    let currentVal = 50;
+    let originalVal = 50;
+
+    {% if user.cover_position %}
+      originalVal = {{ user.cover_position }};
+    {% endif %}
+    currentVal = originalVal;
+
+    const hasCustomPic = {% if user.cover_pic %}true{% else %}false{% endif %};
+
+    if (repositionBtn) {
+        if (!hasCustomPic) {
+            repositionBtn.disabled = true;
+            repositionBtn.title = "Repositioning is only available for custom uploaded photos";
+            repositionBtn.style.opacity = '0.5';
+            repositionBtn.style.cursor = 'not-allowed';
+        } else {
+            repositionBtn.addEventListener('click', () => {
+                isDragging = false;
+                coverBanner.classList.add('repositioning');
+                coverActions.classList.add('d-none');
+                repositionControls.classList.remove('d-none');
+            });
+        }
+    }
+
+    const startDrag = (clientY) => {
+        isDragging = true;
+        startY = clientY;
+        startVal = currentVal;
+    };
+
+    const doDrag = (clientY) => {
+        if (!isDragging) return;
+        const deltaY = clientY - startY;
+        const bannerHeight = coverBanner.clientHeight || 250;
+        const change = (deltaY / bannerHeight) * 100;
+        let newPercent = startVal - change;
+        newPercent = Math.max(0, Math.min(100, newPercent));
+        currentVal = Math.round(newPercent);
+        coverBanner.style.backgroundPositionY = `${currentVal}%`;
+    };
+
+    const stopDrag = () => {
+        isDragging = false;
+    };
+
+    coverBanner.addEventListener('mousedown', (e) => {
+        if (!coverBanner.classList.contains('repositioning')) return;
+        e.preventDefault();
+        startDrag(e.clientY);
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        doDrag(e.clientY);
+    });
+
+    window.addEventListener('mouseup', () => {
+        stopDrag();
+    });
+
+    coverBanner.addEventListener('touchstart', (e) => {
+        if (!coverBanner.classList.contains('repositioning')) return;
+        startDrag(e.touches[0].clientY);
+    });
+
+    window.addEventListener('touchmove', (e) => {
+        doDrag(e.touches[0].clientY);
+    });
+
+    window.addEventListener('touchend', () => {
+        stopDrag();
+    });
+
+    if (savePositionBtn) {
+        savePositionBtn.addEventListener('click', () => {
+            fetch("{% url 'update_cover' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ cover_position: currentVal })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    originalVal = currentVal;
+                    exitReposition();
+                }
+            });
+        });
+    }
+
+    if (cancelPositionBtn) {
+        cancelPositionBtn.addEventListener('click', () => {
+            currentVal = originalVal;
+            coverBanner.style.backgroundPositionY = `${originalVal}%`;
+            exitReposition();
+        });
+    }
+
+    function exitReposition() {
+        coverBanner.classList.remove('repositioning');
+        coverActions.classList.remove('d-none');
+        repositionControls.classList.add('d-none');
+    }
+
+    // Quick list live filter
+    const searchInput = document.getElementById('pageSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase();
+            const items = document.querySelectorAll('.page-nav-item');
+            items.forEach(item => {
+                const title = item.querySelector('.fw-semibold').textContent.toLowerCase();
+                const subtitle = item.querySelector('.text-muted').textContent.toLowerCase();
+                if (title.includes(query) || subtitle.includes(query)) {
+                    item.style.setProperty('display', 'flex', 'important');
+                } else {
+                    item.style.setProperty('display', 'none', 'important');
+                }
+            });
+        });
+    }
+  });
+</script>
 {% endblock %}

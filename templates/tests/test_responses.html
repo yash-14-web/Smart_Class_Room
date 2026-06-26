@@ -20,18 +20,47 @@
               <th>Coding</th>
               <th>Total</th>
               <th>Submitted</th>
+              <th>Retake Status</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
             {% for response in responses %}
-              <tr>
-                <td>{{ response.student.get_full_name|default:response.student.username }}</td>
+              <tr {% if response.retake_requested %}style="background: rgba(245, 158, 11, 0.05) !important;"{% endif %}>
+                <td>
+                  {{ response.student.get_full_name|default:response.student.username }}
+                  {% if response.retake_requested %}
+                    <span class="badge bg-warning text-dark ms-2"><i class="bi bi-exclamation-triangle-fill me-1"></i> Retake Requested</span>
+                  {% endif %}
+                </td>
                 <td>{{ response.quiz_score }}</td>
                 <td>{{ response.coding_score }}</td>
                 <td class="fw-semibold">{{ response.score }}</td>
                 <td>{{ response.submitted_at|date:'M d, Y H:i' }}</td>
-                <td class="text-end"><a href="{% url 'test_response_detail' test.pk response.pk %}" class="btn btn-sm btn-outline-primary">View</a></td>
+                <td>
+                  {% if response.retake_allowed %}
+                    <span class="badge bg-success text-white"><i class="bi bi-check-circle me-1"></i> Granted (Pending)</span>
+                  {% elif response.retake_requested %}
+                    <span class="badge bg-warning text-dark"><i class="bi bi-clock-history me-1"></i> Requested</span>
+                  {% else %}
+                    <span class="badge bg-secondary"><i class="bi bi-dash-circle me-1"></i> None</span>
+                  {% endif %}
+                </td>
+                <td class="text-end">
+                  <div class="d-inline-flex gap-2">
+                    {% if not response.retake_allowed %}
+                      <a href="{% url 'test_grant_retake' test.pk response.pk %}" class="btn btn-sm btn-outline-warning" onclick="return confirm('Grant retake permission to this student? Previous answers will be overwritable.')">
+                        <i class="bi bi-arrow-repeat me-1"></i> Grant Retake
+                      </a>
+                    {% endif %}
+                    {% if response.retake_requested %}
+                      <a href="{% url 'test_reject_retake' test.pk response.pk %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Reject retake request from this student?')">
+                        <i class="bi bi-x-circle me-1"></i> Reject
+                      </a>
+                    {% endif %}
+                    <a href="{% url 'test_response_detail' test.pk response.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                  </div>
+                </td>
               </tr>
             {% endfor %}
           </tbody>

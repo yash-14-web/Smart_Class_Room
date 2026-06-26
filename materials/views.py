@@ -28,7 +28,7 @@ def material_download(request, pk):
     material = get_object_or_404(Material, pk=pk)
     user = request.user
     is_teacher = material.course.teacher == user
-    is_enrolled = Enrollment.objects.filter(student=user, course=material.course).exists()
+    is_enrolled = Enrollment.objects.filter(student=user, course=material.course, status='approved').exists()
     if not is_teacher and not is_enrolled:
         messages.error(request, 'You do not have access to this file.')
         return redirect('course_list')

@@ -21,7 +21,7 @@ def recorded_class_list_view(request):
         ).distinct().order_by('-uploaded_at')
     else:
         from courses.models import Enrollment
-        enrolled_course_ids = Enrollment.objects.filter(student=request.user).values_list('course_id', flat=True)
+        enrolled_course_ids = Enrollment.objects.filter(student=request.user, status='approved').values_list('course_id', flat=True)
         classes = RecordedClass.objects.filter(
             course_id__in=enrolled_course_ids
         ).distinct().order_by('-uploaded_at')
@@ -110,7 +110,7 @@ def recorded_class_detail_view(request, pk):
             messages.error(request, 'You do not have access to this recorded class.')
             return redirect('recorded_class_list')
         from courses.models import Enrollment
-        is_enrolled = Enrollment.objects.filter(student=request.user, course=recorded_class.course).exists()
+        is_enrolled = Enrollment.objects.filter(student=request.user, course=recorded_class.course, status='approved').exists()
         if not is_enrolled:
             messages.error(request, 'You must be enrolled in the course to view this recording.')
             return redirect('recorded_class_list')

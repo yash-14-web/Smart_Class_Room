@@ -1,17 +1,17 @@
 {% extends 'base.html' %}
-{% block title %}Courses - SmartClass{% endblock %}
+{% block title %}Departments - SmartClass{% endblock %}
 
 {% block extra_css %}
 <style>
-  .course-index .hero-card {
+  .dept-index .hero-card {
     background: linear-gradient(135deg, #0f2f72 0%, #145af2 54%, #1aa3a3 100%);
     color: #fff;
     border-radius: 24px;
     padding: 28px;
     box-shadow: 0 20px 42px rgba(15, 47, 114, .20);
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
   }
-  .course-index .hero-kicker {
+  .dept-index .hero-kicker {
     text-transform: uppercase;
     letter-spacing: .16em;
     font-size: .74rem;
@@ -19,137 +19,142 @@
     opacity: .82;
     margin-bottom: .75rem;
   }
-  .course-index .hero-title {
+  .dept-index .hero-title {
     font-size: clamp(1.8rem, 3vw, 2.5rem);
     font-weight: 800;
     line-height: 1.08;
     margin-bottom: .65rem;
   }
-  .course-index .hero-copy {
+  .dept-index .hero-copy {
     color: rgba(255,255,255,.84);
     max-width: 640px;
     margin-bottom: 0;
   }
-  .course-index .course-card {
+  .dept-index .dept-card {
     height: 100%;
     background: var(--sc-surface-strong);
     border: 1px solid var(--sc-border);
     border-radius: 22px;
     box-shadow: var(--sc-shadow-soft);
     overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
   }
-  .course-index .cover-image,
-  .course-index .cover-fallback {
-    height: 180px;
-    width: 100%;
-    object-fit: cover;
+  .dept-index .dept-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+    border-color: #145af2;
   }
-  .course-index .cover-fallback {
+  .dept-index .dept-header {
+    background: linear-gradient(135deg, #f4f8fc 0%, #eef3fa 100%);
+    padding: 1.5rem;
     display: flex;
     align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #0f3fae, #145af2 55%, #1aa3a3);
-    color: #fff;
-    font-size: 3rem;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--sc-border);
   }
-  .course-index .card-body {
-    padding: 1.35rem;
+  .dept-index .dept-code {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #145af2;
+    background: rgba(20, 90, 242, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
   }
-  .course-index .course-title {
-    font-size: 1.08rem;
+  .dept-index .dept-icon {
+    font-size: 1.8rem;
+    color: #0f2f72;
+  }
+  .dept-index .card-body {
+    padding: 1.5rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .dept-index .dept-title {
+    font-size: 1.25rem;
     font-weight: 800;
     color: var(--sc-ink);
-    margin-bottom: .35rem;
+    margin-bottom: .5rem;
   }
-  .course-index .course-copy {
+  .dept-index .dept-copy {
     color: var(--sc-muted);
-    font-size: .9rem;
-    margin-bottom: .9rem;
-    min-height: 42px;
+    font-size: .95rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
   }
-  .course-index .meta-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .5rem;
-    margin-bottom: 1rem;
-  }
-  .course-index .meta-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: .35rem;
-    border-radius: 999px;
-    padding: .35rem .65rem;
-    background: #f4f8fc;
-    color: #0f3fae;
-    font-size: .76rem;
-    font-weight: 700;
-  }
-  .course-index .status-line {
+  .dept-index .dept-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: .75rem;
-    margin-bottom: 1rem;
+    border-top: 1px solid var(--sc-border);
+    padding-top: 1rem;
+    margin-top: auto;
+  }
+  .dept-index .course-count {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1aa3a3;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .dept-index .enter-btn {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #145af2;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: gap 0.2s ease;
+  }
+  .dept-index .dept-card:hover .enter-btn {
+    gap: 0.5rem;
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="course-index">
+<div class="dept-index">
   <div class="hero-card d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
     <div>
-      <div class="hero-kicker">Course Space</div>
-      <div class="hero-title">{% if user.is_teacher %}Manage your teaching spaces{% else %}Discover your learning spaces{% endif %}</div>
-      <p class="hero-copy">Browse courses with a cleaner layout, clearer status, and faster access to the actions that matter every day.</p>
+      <div class="hero-kicker">Academic Departments</div>
+      <div class="hero-title">Browse Course Spaces by Department</div>
+      <p class="hero-copy">Select a department below to explore available courses, register/enroll, or manage classrooms.</p>
     </div>
-    {% if user.is_teacher %}
-    <a href="{% url 'course_create' %}" class="btn btn-light"><i class="bi bi-plus-circle me-1"></i>New Course</a>
-    {% endif %}
   </div>
 
-  {% if courses %}
+  {% if departments %}
   <div class="row g-4">
-    {% for course in courses %}
+    {% for department in departments %}
     <div class="col-md-6 col-xl-4">
-      <div class="course-card">
-        {% if course.cover_image %}
-          <img src="{{ course.cover_image.url }}" class="cover-image" alt="{{ course.title }}"/>
-        {% else %}
-          <div class="cover-fallback"><i class="bi bi-book-half"></i></div>
-        {% endif %}
+      <div class="dept-card" onclick="window.location='{% url 'department_courses' department.pk %}'">
+        <div class="dept-header" style="{% if department.cover_image %}background: linear-gradient(rgba(15, 47, 114, 0.4), rgba(15, 47, 114, 0.75)), url('{{ department.cover_image.url }}') center/cover no-repeat; min-height: 120px; color: white; border-bottom: none;{% endif %}">
+          <span class="dept-code" style="{% if department.cover_image %}background: rgba(255, 255, 255, 0.2); color: white; backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.3);{% endif %}">{{ department.code }}</span>
+          <span class="dept-icon" style="{% if department.cover_image %}color: white;{% endif %}"><i class="bi bi-building"></i></span>
+        </div>
         <div class="card-body">
-          <div class="course-title">{{ course.title }}</div>
-          <p class="course-copy">{{ course.description|truncatechars:100 }}</p>
-          <div class="meta-row">
-            <span class="meta-pill"><i class="bi bi-person"></i>{{ course.teacher.get_full_name|default:course.teacher.username }}</span>
-            <span class="meta-pill"><i class="bi bi-people"></i>{{ course.student_count }} students</span>
-          </div>
-          <div class="status-line">
-            <span class="badge {% if course.is_active %}bg-success{% else %}bg-secondary{% endif %}">{{ course.status_label }}</span>
-            {% if course.start_date %}<small class="text-muted">Starts {{ course.start_date|date:"M d" }}</small>{% endif %}
-          </div>
-          <div class="d-flex flex-wrap gap-2">
-            {% if user.is_teacher %}
-              <a href="{% url 'course_detail' course.pk %}" class="btn btn-primary btn-sm">Manage</a>
-              <a href="{% url 'course_edit' course.pk %}" class="btn btn-outline-secondary btn-sm">Edit</a>
-            {% else %}
-              {% if course.pk in enrolled_ids %}
-                {% if course.status_label == 'Starts soon' %}
-                  <span class="badge bg-info p-2 align-self-center">Pre-registered</span>
-                {% else %}
-                  <a href="{% url 'course_detail' course.pk %}" class="btn btn-primary btn-sm">Continue</a>
-                {% endif %}
-                <a href="{% url 'unenroll_course' course.pk %}" class="btn btn-outline-danger btn-sm">Unenroll</a>
+          <div>
+            <h3 class="dept-title">{{ department.name }}</h3>
+            <p class="dept-copy">
+              {% if department.description %}
+                {{ department.description|truncatechars:120 }}
               {% else %}
-                <a href="{% url 'enroll_course' course.pk %}" class="btn btn-primary btn-sm">
-                  {% if course.status_label == 'Starts soon' %}
-                    Pre-Register
-                  {% else %}
-                    Enroll
-                  {% endif %}
-                </a>
+                Explore the latest modules, classes, and sessions organized under this department.
               {% endif %}
-            {% endif %}
+            </p>
+          </div>
+          <div class="dept-footer">
+            <span class="course-count">
+              <i class="bi bi-journal-bookmark-fill"></i>
+              {{ department.course_count }} Course{% if department.course_count != 1 %}s{% endif %}
+            </span>
+            <span class="enter-btn">
+              Explore <i class="bi bi-arrow-right"></i>
+            </span>
           </div>
         </div>
       </div>
@@ -159,9 +164,11 @@
   {% else %}
   <div class="card text-center py-5">
     <div class="card-body">
-      <i class="bi bi-journal-bookmark fs-1 text-muted d-block mb-2"></i>
-      <p class="text-muted mb-3">No courses found yet.</p>
-      {% if user.is_teacher %}<a href="{% url 'course_create' %}" class="btn btn-primary">Create Your First Course</a>{% endif %}
+      <i class="bi bi-building fs-1 text-muted d-block mb-2"></i>
+      <p class="text-muted mb-3">No departments found or active yet.</p>
+      {% if user.is_superuser or user.role == 'admin' %}
+        <a href="/admin/courses/department/add/" class="btn btn-primary">Create Your First Department</a>
+      {% endif %}
     </div>
   </div>
   {% endif %}

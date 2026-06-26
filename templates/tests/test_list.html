@@ -2,40 +2,98 @@
 {% block title %}{% if course %}{{ course.title }} Tests{% else %}Tests{% endif %} - SmartClass{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-  <div><h4 class="fw-bold">{% if course %}{{ course.title }} Tests{% else %}Available Tests{% endif %}</h4><p class="text-muted mb-0">{% if course %}View tests created for this course.{% else %}Open tests for practice and assessment.{% endif %}</p></div>
+  <div>
+    <h4 class="fw-bold mb-1">{% if course %}{{ course.title }} Tests{% else %}Available Tests{% endif %}</h4>
+    <p class="text-muted mb-0">{% if course %}View tests created for this course.{% else %}Open tests for practice and assessment.{% endif %}</p>
+  </div>
   {% if user.is_teacher %}
     {% if course %}
-      <a class="btn btn-primary" href="{% url 'test_create' course.pk %}">Create Test</a>
+      <a class="btn btn-primary rounded-pill px-4 shadow-sm" href="{% url 'test_create' course.pk %}"><i class="bi bi-plus-lg me-1"></i> Create Test</a>
     {% else %}
-      <a class="btn btn-primary" href="{% url 'test_create_no_course' %}">Create Test</a>
+      <a class="btn btn-primary rounded-pill px-4 shadow-sm" href="{% url 'test_create_no_course' %}"><i class="bi bi-plus-lg me-1"></i> Create Test</a>
     {% endif %}
   {% endif %}
 </div>
-<div class="row gy-3">
+
+<div class="row g-4">
   {% for test in tests %}
   <div class="col-md-6">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">{{ test.title }}</h5>
-        <p class="card-text text-muted">{{ test.description|truncatechars:120 }}</p>
-        {% if test.course %}<p class="text-muted small mb-2">Course: {{ test.course.title }}</p>{% endif %}
-        <div class="mb-2"><span class="badge bg-info">Marks: {{ test.total_marks }}</span><span class="badge bg-secondary">Time: {{ test.time_limit }} min</span>{% if test.end_date %}<span class="badge bg-warning text-dark">Ends: {{ test.end_date|date:'M d, Y' }}</span>{% endif %}</div>
-        <div class="mb-3 small text-muted"><div>Available from {{ test.available_from|date:'M d, Y' }}</div>{% if test.end_date %}<div>Ends {{ test.end_date|date:'M d, Y H:i' }}</div>{% endif %}<div class="mt-1">Status:
-          {% with s=test.status_label %}
-            {% if s == 'Open' %}<span class="badge bg-success">Active / Open</span>
-            {% elif s == 'Closed' %}<span class="badge bg-danger">Closed — Deadline Passed</span>
-            {% elif s == 'Upcoming' %}<span class="badge bg-warning text-dark">Upcoming</span>
-            {% else %}<span class="badge bg-secondary">Inactive</span>
+    <div class="card border-0 shadow-sm rounded-4 h-100" style="background: var(--sc-surface-strong) !important; border: 1px solid var(--sc-border) !important; color: var(--sc-ink) !important;">
+      <div class="card-body p-4 d-flex flex-column justify-content-between">
+        <div>
+          <h5 class="fw-bold mb-2 text-dark" style="color: var(--sc-ink) !important;">{{ test.title }}</h5>
+          <p class="text-muted small mb-3 whitespace-pre-line" style="overflow-wrap: break-word; word-break: break-word;">
+            {{ test.description|safe|truncatechars:180 }}
+          </p>
+          {% if test.course %}
+            <p class="text-muted small mb-3"><i class="bi bi-journal-bookmark me-1 text-primary"></i> Course: {{ test.course.title }}</p>
+          {% endif %}
+          
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <span class="badge py-2 px-3 rounded-pill" style="background: rgba(59, 130, 246, 0.1) !important; color: #3b82f6 !important; border: 1px solid rgba(59, 130, 246, 0.2) !important;">
+              Marks: {{ test.total_marks }}
+            </span>
+            <span class="badge py-2 px-3 rounded-pill" style="background: rgba(148, 163, 184, 0.1) !important; color: var(--sc-muted) !important; border: 1px solid rgba(148, 163, 184, 0.2) !important;">
+              Time: {{ test.time_limit }} min
+            </span>
+            {% if test.end_date %}
+              <span class="badge py-2 px-3 rounded-pill" style="background: rgba(245, 158, 11, 0.1) !important; color: #f59e0b !important; border: 1px solid rgba(245, 158, 11, 0.2) !important;">
+                Ends: {{ test.end_date|date:'M d, Y' }}
+              </span>
             {% endif %}
-          {% endwith %}
-        </div></div>
-        <a href="{% url 'test_detail' test.pk %}" class="btn btn-outline-primary btn-sm me-2">View</a>
-        {% if user.is_teacher %}<a href="{% url 'test_edit' test.pk %}" class="btn btn-outline-secondary btn-sm me-2">Edit</a><a href="{% url 'test_delete' test.pk %}" class="btn btn-outline-danger btn-sm me-2">Delete</a><a href="{% url 'test_responses' test.pk %}" class="btn btn-secondary btn-sm">Responses</a>{% else %}<a href="{% url 'test_take' test.pk %}" class="btn btn-primary btn-sm">Take Test</a>{% endif %}
+          </div>
+          
+          <div class="small text-muted mb-4 p-3 rounded-3" style="background: rgba(255,255,255,0.02); border: 1px solid var(--sc-border);">
+            <div class="mb-1"><i class="bi bi-calendar-check me-1"></i> Available from: {{ test.available_from|date:'M d, Y H:i' }}</div>
+            {% if test.end_date %}
+              <div class="mb-2"><i class="bi bi-calendar-x me-1"></i> Deadline: {{ test.end_date|date:'M d, Y H:i' }}</div>
+            {% endif %}
+            <div class="d-flex align-items-center gap-2 mt-1">
+              <span>Status:</span>
+              {% with s=test.status_label %}
+                {% if s == 'Open' %}<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2.5">Active / Open</span>
+                {% elif s == 'Closed' %}<span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2.5">Closed</span>
+                {% elif s == 'Upcoming' %}<span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-2.5">Upcoming</span>
+                {% else %}<span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 rounded-pill px-2.5">Inactive</span>
+                {% endif %}
+              {% endwith %}
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <a href="{% url 'test_detail' test.pk %}" class="btn btn-outline-primary btn-sm rounded-pill px-3.5 py-1.5 flex-grow-1">View Details</a>
+          {% if user.is_teacher %}
+            <a href="{% url 'test_edit' test.pk %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-1.5"><i class="bi bi-pencil"></i></a>
+            <a href="{% url 'test_delete' test.pk %}" class="btn btn-outline-danger btn-sm rounded-pill px-3 py-1.5"><i class="bi bi-trash"></i></a>
+            <a href="{% url 'test_responses' test.pk %}" class="btn btn-secondary btn-sm rounded-pill px-3.5 py-1.5">Responses</a>
+          {% else %}
+            {% if test.status_label == 'Open' %}
+              <a href="{% url 'test_take' test.pk %}" class="btn btn-primary btn-sm rounded-pill px-4 py-1.5 flex-grow-1 fw-bold shadow-sm">Take Test</a>
+            {% else %}
+              <button class="btn btn-secondary btn-sm rounded-pill px-4 py-1.5 flex-grow-1" disabled>Unavailable</button>
+            {% endif %}
+          {% endif %}
+        </div>
       </div>
     </div>
   </div>
   {% empty %}
-  <div class="col-12"><div class="card p-4 text-center">{% if user.is_teacher %}{% if course %}<a href="{% url 'test_create' course.pk %}" class="btn btn-primary">Create the first test</a>{% else %}<a href="{% url 'test_create_no_course' %}" class="btn btn-primary">Create the first test</a>{% endif %}{% else %}<p class="mb-0">No tests available yet.</p>{% endif %}</div></div>
+  <div class="col-12">
+    <div class="card p-5 text-center border-0 shadow-sm rounded-4" style="background: var(--sc-surface-strong) !important; border: 1px solid var(--sc-border) !important;">
+      <div class="text-muted mb-3"><i class="bi bi-clipboard-x fs-1 opacity-20"></i></div>
+      {% if user.is_teacher %}
+        <h5 class="fw-bold mb-3">No tests have been created yet</h5>
+        {% if course %}
+          <a href="{% url 'test_create' course.pk %}" class="btn btn-primary rounded-pill px-4">Create the first test</a>
+        {% else %}
+          <a href="{% url 'test_create_no_course' %}" class="btn btn-primary rounded-pill px-4">Create the first test</a>
+        {% endif %}
+      {% else %}
+        <p class="mb-0 text-muted">No tests are currently scheduled or available for you.</p>
+      {% endif %}
+    </div>
+  </div>
   {% endfor %}
 </div>
 {% endblock %}

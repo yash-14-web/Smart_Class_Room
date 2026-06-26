@@ -75,7 +75,7 @@
     <div class="col-md-6 col-xl-4">
       <div class="quiz-card">
         <div class="quiz-title">{{ quiz.title }}</div>
-        {% if quiz.description %}<p class="quiz-copy">{{ quiz.description|truncatechars:90 }}</p>{% endif %}
+        {% if quiz.description %}<p class="quiz-copy">{{ quiz.description|striptags|truncatechars:90 }}</p>{% endif %}
         <div class="meta-row">
           <span class="meta-pill"><i class="bi bi-clock"></i>{{ quiz.duration }} min</span>
           <span class="meta-pill"><i class="bi bi-question-circle"></i>{{ quiz.question_count }} questions</span>
@@ -88,6 +88,7 @@
           {% if user.is_teacher %}
             <a href="{% url 'quiz_edit' quiz.pk %}" class="btn btn-outline-primary btn-sm">Edit</a>
             <a href="{% url 'quiz_attempted_students' quiz.pk %}" class="btn btn-outline-success btn-sm">Students</a>
+            <a href="{% url 'quiz_answer_key' quiz.pk %}" class="btn btn-outline-info btn-sm">Answer Key</a>
             <a href="{% url 'quiz_delete' quiz.pk %}" class="btn btn-outline-danger btn-sm">Delete</a>
           {% else %}
             {% if quiz.pk in attempted_ids %}

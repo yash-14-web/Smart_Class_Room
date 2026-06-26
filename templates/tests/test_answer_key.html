@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{% url 'test_detail' test.pk %}" class="btn btn-sm btn-outline-secondary mb-2">&larr; Back to Test</a>
+            <h2 class="fw-bold mb-0">Answer Key: {{ test.title }}</h2>
+            {% if test.course %}<p class="text-muted mb-0">Course: {{ test.course.title }}</p>{% endif %}
+        </div>
+        <button onclick="window.print()" class="btn btn-primary shadow-sm"><i class="bi bi-printer me-2"></i> Print Answer Key</button>
+    </div>
+
+    <!-- Print styling specifically to hide buttons during print -->
+    <style>
+        @media print {
+            .btn, nav, header, footer { display: none !important; }
+            body { padding: 0; background: white; }
+            .card { border: none !important; box-shadow: none !important; }
+            .container { max-width: 100% !important; padding: 0 !important; }
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+
+    <div class="card shadow-sm border-0" style="background: var(--sc-surface-strong) !important; border: 1px solid var(--sc-border) !important; color: var(--sc-ink) !important;">
+        <div class="card-body p-5">
+            <h4 class="text-center mb-5 border-bottom pb-3">Official Answer Key</h4>
+            
+            {% if questions %}
+                {% for question in questions %}
+                <div class="mb-5 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="fw-bold m-0">
+                            <span class="text-primary me-2">Q{{ forloop.counter }}.</span> 
+                            {{ question.question_text }}
+                        </h5>
+                        <div class="d-flex gap-2">
+                            <span class="badge {% if question.is_coding %}bg-warning text-dark{% else %}bg-primary{% endif %}">
+                                {% if question.is_coding %}Coding{% else %}MCQ{% endif %}
+                            </span>
+                            <span class="badge bg-light text-dark border">{{ question.marks }} Mark{{ question.marks|pluralize }}</span>
+                        </div>
+                    </div>
+
+                    <div class="ms-4">
+                        {% if question.is_mcq %}
+                            <!-- MCQ Choices Layout -->
+                            <div class="row g-2">
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center mb-2 px-3 py-2 rounded {% if question.correct_answer == 'option1' %}bg-success bg-opacity-10 border border-success fw-bold text-success{% else %}text-muted{% endif %}">
+                                        <i class="bi {% if question.correct_answer == 'option1' %}bi-check-circle-fill text-success{% else %}bi-circle{% endif %} me-3"></i>
+                                        <span>A. {{ question.option1 }}</span>
+                                        {% if question.correct_answer == 'option1' %}<span class="ms-auto badge bg-success text-white">CORRECT</span>{% endif %}
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2 px-3 py-2 rounded {% if question.correct_answer == 'option2' %}bg-success bg-opacity-10 border border-success fw-bold text-success{% else %}text-muted{% endif %}">
+                                        <i class="bi {% if question.correct_answer == 'option2' %}bi-check-circle-fill text-success{% else %}bi-circle{% endif %} me-3"></i>
+                                        <span>B. {{ question.option2 }}</span>
+                                        {% if question.correct_answer == 'option2' %}<span class="ms-auto badge bg-success text-white">CORRECT</span>{% endif %}
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2 px-3 py-2 rounded {% if question.correct_answer == 'option3' %}bg-success bg-opacity-10 border border-success fw-bold text-success{% else %}text-muted{% endif %}">
+                                        <i class="bi {% if question.correct_answer == 'option3' %}bi-check-circle-fill text-success{% else %}bi-circle{% endif %} me-3"></i>
+                                        <span>C. {{ question.option3 }}</span>
+                                        {% if question.correct_answer == 'option3' %}<span class="ms-auto badge bg-success text-white">CORRECT</span>{% endif %}
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2 px-3 py-2 rounded {% if question.correct_answer == 'option4' %}bg-success bg-opacity-10 border border-success fw-bold text-success{% else %}text-muted{% endif %}">
+                                        <i class="bi {% if question.correct_answer == 'option4' %}bi-check-circle-fill text-success{% else %}bi-circle{% endif %} me-3"></i>
+                                        <span>D. {{ question.option4 }}</span>
+                                        {% if question.correct_answer == 'option4' %}<span class="ms-auto badge bg-success text-white">CORRECT</span>{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <!-- Coding Answer Key Details -->
+                            <div class="bg-white bg-opacity-5 p-3 rounded border border-light-subtle">
+                                <div class="mb-2"><strong>Required Function Name:</strong> <code>{{ question.expected_function_name }}</code></div>
+                                <div class="mb-3">
+                                    <strong>Starter Code Template:</strong>
+                                    <pre class="bg-dark text-light p-3 rounded font-monospace small mt-1 mb-0"><code>{{ question.starter_code }}</code></pre>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Reference Solution / Correct Answer:</strong>
+                                    <pre class="bg-dark text-success p-3 rounded font-monospace small mt-1 mb-0 border border-success border-opacity-25" style="color: #10b981 !important;"><code>{{ question.reference_solution|default:"# No reference solution provided" }}</code></pre>
+                                </div>
+                                {% if question.test_cases.exists %}
+                                    <div class="mb-1"><strong>Official Test Cases ({{ question.test_cases.count }}):</strong></div>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered align-middle text-white mb-0" style="--bs-table-bg: transparent; border-color: rgba(255,255,255,.08);">
+                                            <thead>
+                                                <tr class="table-dark" style="--bs-table-bg: rgba(255,255,255,.05); border-color: rgba(255,255,255,.08);">
+                                                    <th style="width: 15%">Type</th>
+                                                    <th style="width: 35%">Input Arguments (JSON)</th>
+                                                    <th style="width: 35%">Expected Return Value (JSON)</th>
+                                                    <th style="width: 15%">Weight</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for case in question.test_cases.all %}
+                                                    <tr>
+                                                        <td>
+                                                            <span class="badge {% if case.is_sample %}bg-info text-dark{% else %}bg-secondary{% endif %}">
+                                                                {% if case.is_sample %}Sample{% else %}Hidden{% endif %}
+                                                            </span>
+                                                        </td>
+                                                        <td><code>{{ case.input_data }}</code></td>
+                                                        <td><code>{{ case.expected_output }}</code></td>
+                                                        <td>{{ case.weight }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <div class="text-warning small"><i class="bi bi-exclamation-triangle"></i> No test cases added for this coding question.</div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-exclamation-circle fs-1 mb-3 d-block"></i>
+                    <h5>No questions have been added to this test yet.</h5>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

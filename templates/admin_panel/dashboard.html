@@ -1,0 +1,598 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard — Smart Classroom{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── Hero Banner ─────────────────────────────────────── */
+  .dash-hero {
+    background: linear-gradient(135deg, hsl(220, 77%, 25%) 0%, hsl(220, 90%, 52%) 50%, hsl(180, 72%, 37%) 100%);
+    border-radius: 24px;
+    padding: 3rem 2.5rem;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px -10px hsla(220, 90%, 52%, 0.35);
+  }
+  .dash-hero::before {
+    content: '';
+    position: absolute;
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, rgba(255,255,255,.15) 0%, transparent 70%);
+    top: -80px;
+    right: -60px;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .dash-hero::after {
+    content: '';
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    background: radial-gradient(circle, rgba(255,255,255,.1) 0%, transparent 70%);
+    bottom: -40px;
+    left: 10%;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .dash-hero h1 {
+    font-size: 2.25rem;
+    font-weight: 850;
+    letter-spacing: -.03em;
+    margin-bottom: .5rem;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .dash-hero p {
+    opacity: .92;
+    font-size: 1rem;
+    margin-bottom: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .dash-hero .hero-icon {
+    position: absolute;
+    right: 2.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 6.5rem;
+    opacity: .12;
+    z-index: 0;
+  }
+
+  /* ── Stat Cards ──────────────────────────────────────── */
+  .stat-card-wrap {
+    transition: transform .3s cubic-bezier(.34, 1.56, 0.64, 1);
+  }
+  .stat-card-wrap:hover {
+    transform: translateY(-6px) scale(1.02);
+  }
+  .stat-card-wrap:hover .sc-stat {
+    box-shadow: 0 20px 40px -10px rgba(0,0,0,.15);
+  }
+  .stat-card-wrap:nth-child(1):hover .sc-stat { box-shadow: 0 20px 35px -10px hsla(220, 90%, 52%, 0.4); }
+  .stat-card-wrap:nth-child(2):hover .sc-stat { box-shadow: 0 20px 35px -10px hsla(172, 90%, 40%, 0.4); }
+  .stat-card-wrap:nth-child(3):hover .sc-stat { box-shadow: 0 20px 35px -10px hsla(262, 90%, 58%, 0.4); }
+  .stat-card-wrap:nth-child(4):hover .sc-stat { box-shadow: 0 20px 35px -10px hsla(28, 95%, 50%, 0.4); }
+
+  .sc-stat {
+    border-radius: 24px;
+    padding: 1.75rem 1.5rem;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,.08);
+    transition: box-shadow .3s ease;
+  }
+  .sc-stat::before {
+    content: '';
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    background: rgba(255,255,255,.12);
+    border-radius: 50%;
+    top: -30px;
+    right: -25px;
+    pointer-events: none;
+  }
+  .sc-stat::after {
+    content: '';
+    position: absolute;
+    width: 70px;
+    height: 70px;
+    background: rgba(255,255,255,.08);
+    border-radius: 50%;
+    bottom: -15px;
+    right: 30px;
+    pointer-events: none;
+  }
+  .sc-stat .stat-icon {
+    font-size: 2.25rem;
+    opacity: .9;
+  }
+  .sc-stat .stat-value {
+    font-size: 2.4rem;
+    font-weight: 850;
+    line-height: 1;
+    letter-spacing: -.03em;
+  }
+  .sc-stat .stat-label {
+    font-size: .8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    opacity: .9;
+  }
+  .grad-blue   { background: linear-gradient(135deg, hsl(220, 77%, 25%), hsl(220, 90%, 52%)); }
+  .grad-teal   { background: linear-gradient(135deg, hsl(172, 80%, 23%), hsl(172, 90%, 40%)); }
+  .grad-purple { background: linear-gradient(135deg, hsl(262, 70%, 30%), hsl(262, 90%, 58%)); }
+  .grad-orange { background: linear-gradient(135deg, hsl(28, 85%, 32%), hsl(28, 95%, 50%)); }
+
+  /* ── Info / Quick-Action Cards ───────────────────────── */
+  .pending-card,
+  .quick-card {
+    border-radius: 24px;
+    border: 1px solid var(--sc-border);
+    background: var(--sc-surface-strong);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    overflow: hidden;
+    height: 100%;
+  }
+  .pending-card .card-header,
+  .quick-card .card-header {
+    border-bottom: 1px solid var(--sc-border);
+    background: var(--sc-card-header) !important;
+    padding: 1.25rem 1.5rem !important;
+    font-weight: 800;
+    color: var(--sc-ink);
+  }
+  .pending-card .card-body,
+  .quick-card .card-body {
+    padding: 1.3rem;
+  }
+  .pending-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .9rem 1rem;
+    border-radius: 14px;
+    background: var(--sc-glass-bg);
+    border: 1px solid var(--sc-glass-border);
+    margin-bottom: .65rem;
+    transition: background .2s ease;
+  }
+  .pending-item:hover {
+    background: rgba(20, 90, 242, .06);
+  }
+  .pending-item:last-child {
+    margin-bottom: 0;
+  }
+  .pending-item .pi-left {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+  }
+  .pending-item .pi-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .pending-item .pi-count {
+    font-size: 1.4rem;
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--sc-ink);
+  }
+  .pending-item .pi-label {
+    font-size: .78rem;
+    color: var(--sc-muted);
+    font-weight: 600;
+  }
+  .total-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    background: rgba(211, 71, 103, .10);
+    color: var(--sc-danger);
+    border-radius: 999px;
+    padding: .4rem .9rem;
+    font-weight: 700;
+    font-size: .85rem;
+  }
+
+  /* ── Quick-action buttons ────────────────────────────── */
+  .qa-btn {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    padding: .85rem 1.1rem;
+    border-radius: 14px;
+    border: 1px solid var(--sc-border);
+    background: var(--sc-glass-bg);
+    color: var(--sc-ink);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: .88rem;
+    transition: all .2s ease;
+    width: 100%;
+  }
+  .qa-btn:hover {
+    background: rgba(20, 90, 242, .07);
+    border-color: rgba(20, 90, 242, .25);
+    color: var(--sc-primary-deep);
+    transform: translateX(3px);
+  }
+  .qa-btn .qa-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  /* ── Recent Tables ───────────────────────────────────── */
+  .recent-card {
+    border-radius: 20px;
+    border: 1px solid var(--sc-border);
+    background: var(--sc-surface-strong);
+    box-shadow: var(--sc-shadow-soft);
+    overflow: hidden;
+  }
+  .recent-card .card-header {
+    border-bottom: 1px solid var(--sc-border);
+    background: var(--sc-card-header) !important;
+    padding: 1rem 1.3rem !important;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .recent-card .table {
+    margin-bottom: 0;
+    font-size: .85rem;
+  }
+  .recent-card .table th {
+    font-size: .72rem;
+    padding: .75rem 1rem;
+  }
+  .recent-card .table td {
+    padding: .75rem 1rem;
+  }
+
+  /* ── Status Badges ───────────────────────────────────── */
+  .badge-status-pending {
+    background: rgba(245, 158, 11, .14);
+    color: #b45309;
+    font-weight: 700;
+  }
+  .badge-status-active {
+    background: rgba(16, 185, 129, .14);
+    color: #047857;
+    font-weight: 700;
+  }
+  .badge-status-rejected {
+    background: rgba(239, 68, 68, .14);
+    color: #dc2626;
+    font-weight: 700;
+  }
+  [data-bs-theme="dark"] .badge-status-pending {
+    background: rgba(245, 158, 11, .22);
+    color: #fbbf24;
+  }
+  [data-bs-theme="dark"] .badge-status-active {
+    background: rgba(16, 185, 129, .22);
+    color: #34d399;
+  }
+  [data-bs-theme="dark"] .badge-status-rejected {
+    background: rgba(239, 68, 68, .22);
+    color: #f87171;
+  }
+
+  /* ── Fade-in animation ───────────────────────────────── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .anim-fade-up {
+    animation: fadeUp .5s cubic-bezier(.4,0,.2,1) both;
+  }
+  .anim-delay-1 { animation-delay: .08s; }
+  .anim-delay-2 { animation-delay: .16s; }
+  .anim-delay-3 { animation-delay: .24s; }
+  .anim-delay-4 { animation-delay: .32s; }
+  .anim-delay-5 { animation-delay: .40s; }
+  .anim-delay-6 { animation-delay: .48s; }
+
+  /* ── Empty-state ─────────────────────────────────────── */
+  .empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--sc-muted);
+  }
+  .empty-state i {
+    font-size: 2rem;
+    opacity: .4;
+    margin-bottom: .5rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ═══════════════════ HERO BANNER ═══════════════════ -->
+<div class="dash-hero anim-fade-up">
+  <i class="bi bi-shield-lock-fill hero-icon"></i>
+  <h1><i class="bi bi-speedometer2 me-2"></i>Admin Dashboard</h1>
+  <p>Central management hub for Smart Classroom</p>
+</div>
+
+<!-- ═══════════════════ STAT CARDS ═══════════════════ -->
+<div class="row g-3 mb-4">
+  <!-- Departments -->
+  <div class="col-12 col-sm-6 col-xl-3 stat-card-wrap anim-fade-up anim-delay-1">
+    <a href="{% url 'admin_department_list' %}" class="text-decoration-none">
+      <div class="sc-stat grad-blue">
+        <div class="d-flex align-items-center justify-content-between">
+          <i class="bi bi-building stat-icon"></i>
+          <span class="stat-label">Departments</span>
+        </div>
+        <div class="stat-value">{{ total_departments }}</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Courses -->
+  <div class="col-12 col-sm-6 col-xl-3 stat-card-wrap anim-fade-up anim-delay-2">
+    <a href="{% url 'admin_course_list' %}" class="text-decoration-none">
+      <div class="sc-stat grad-teal">
+        <div class="d-flex align-items-center justify-content-between">
+          <i class="bi bi-journal-bookmark stat-icon"></i>
+          <span class="stat-label">Courses</span>
+        </div>
+        <div class="stat-value">{{ total_courses }}</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Teachers -->
+  <div class="col-12 col-sm-6 col-xl-3 stat-card-wrap anim-fade-up anim-delay-3">
+    <a href="{% url 'admin_teacher_list' %}" class="text-decoration-none">
+      <div class="sc-stat grad-purple">
+        <div class="d-flex align-items-center justify-content-between">
+          <i class="bi bi-person-workspace stat-icon"></i>
+          <span class="stat-label">Teachers</span>
+        </div>
+        <div class="stat-value">{{ total_teachers }}</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Students -->
+  <div class="col-12 col-sm-6 col-xl-3 stat-card-wrap anim-fade-up anim-delay-4">
+    <a href="{% url 'admin_student_list' %}" class="text-decoration-none">
+      <div class="sc-stat grad-orange">
+        <div class="d-flex align-items-center justify-content-between">
+          <i class="bi bi-people stat-icon"></i>
+          <span class="stat-label">Students</span>
+        </div>
+        <div class="stat-value">{{ total_students }}</div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- ═══════════════════ PENDING + QUICK ACTIONS ═══════════════════ -->
+<div class="row g-3 mb-4">
+  <!-- Pending Approvals -->
+  <div class="col-lg-6 anim-fade-up anim-delay-4">
+    <div class="pending-card">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <span><i class="bi bi-clock-history me-2 text-warning"></i>Pending Approvals</span>
+        <span class="total-badge">
+          <i class="bi bi-exclamation-circle"></i> {{ total_pending }} pending
+        </span>
+      </div>
+      <div class="card-body">
+        <!-- Pending Teachers -->
+        <div class="pending-item">
+          <div class="pi-left">
+            <div class="pi-icon grad-purple">
+              <i class="bi bi-person-workspace"></i>
+            </div>
+            <div>
+              <div class="pi-count">{{ pending_teachers }}</div>
+              <div class="pi-label">Pending Teachers</div>
+            </div>
+          </div>
+          <a href="{% url 'admin_teacher_list' %}?status=pending" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-arrow-right me-1"></i>Review
+          </a>
+        </div>
+
+        <!-- Pending Students -->
+        <div class="pending-item">
+          <div class="pi-left">
+            <div class="pi-icon grad-orange">
+              <i class="bi bi-people"></i>
+            </div>
+            <div>
+              <div class="pi-count">{{ pending_students }}</div>
+              <div class="pi-label">Pending Students</div>
+            </div>
+          </div>
+          <a href="{% url 'admin_student_list' %}?status=pending" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-arrow-right me-1"></i>Review
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="col-lg-6 anim-fade-up anim-delay-5">
+    <div class="quick-card">
+      <div class="card-header">
+        <i class="bi bi-lightning-charge me-2" style="color: var(--sc-primary);"></i>Quick Actions
+      </div>
+      <div class="card-body">
+        <div class="row g-2">
+          <div class="col-sm-6">
+            <a href="{% url 'admin_department_create' %}" class="qa-btn">
+              <span class="qa-icon grad-blue"><i class="bi bi-plus-lg"></i></span>
+              Create Department
+            </a>
+          </div>
+          <div class="col-sm-6">
+            <a href="{% url 'admin_course_create' %}" class="qa-btn">
+              <span class="qa-icon grad-teal"><i class="bi bi-plus-lg"></i></span>
+              Create Course
+            </a>
+          </div>
+          <div class="col-sm-6">
+            <a href="{% url 'admin_teacher_create' %}" class="qa-btn">
+              <span class="qa-icon grad-purple"><i class="bi bi-plus-lg"></i></span>
+              Add Teacher
+            </a>
+          </div>
+          <div class="col-sm-6">
+            <a href="{% url 'admin_student_create' %}" class="qa-btn">
+              <span class="qa-icon grad-orange"><i class="bi bi-plus-lg"></i></span>
+              Add Student
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ RECENT TABLES ═══════════════════ -->
+<div class="row g-3 mb-2">
+  <!-- Recent Teachers -->
+  <div class="col-lg-6 anim-fade-up anim-delay-5">
+    <div class="recent-card">
+      <div class="card-header">
+        <span><i class="bi bi-person-workspace me-2" style="color: #8b5cf6;"></i>Recent Teachers</span>
+        <a href="{% url 'admin_teacher_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+      </div>
+      {% if recent_teachers %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Joined</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for t in recent_teachers %}
+            <tr>
+              <td class="fw-semibold">{{ t.username }}</td>
+              <td>{{ t.first_name }} {{ t.last_name }}</td>
+              <td><span class="text-muted">{{ t.email }}</span></td>
+              <td>
+                <span class="badge badge-status-{{ t.account_status }}">
+                  {{ t.account_status|capfirst }}
+                </span>
+              </td>
+              <td class="text-muted" style="white-space:nowrap;">{{ t.date_joined|date:"M d, Y" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="bi bi-person-workspace d-block"></i>
+        <span>No teachers registered yet.</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Recent Students -->
+  <div class="col-lg-6 anim-fade-up anim-delay-6">
+    <div class="recent-card">
+      <div class="card-header">
+        <span><i class="bi bi-people me-2" style="color: #f59e0b;"></i>Recent Students</span>
+        <a href="{% url 'admin_student_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+      </div>
+      {% if recent_students %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Joined</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in recent_students %}
+            <tr>
+              <td class="fw-semibold">{{ s.username }}</td>
+              <td>{{ s.first_name }} {{ s.last_name }}</td>
+              <td><span class="text-muted">{{ s.email }}</span></td>
+              <td>
+                <span class="badge badge-status-{{ s.account_status }}">
+                  {{ s.account_status|capfirst }}
+                </span>
+              </td>
+              <td class="text-muted" style="white-space:nowrap;">{{ s.date_joined|date:"M d, Y" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="bi bi-people d-block"></i>
+        <span>No students registered yet.</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  /* Animate stat numbers counting up */
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.stat-value').forEach(function (el) {
+      const target = parseInt(el.textContent, 10);
+      if (isNaN(target) || target === 0) return;
+      let current = 0;
+      const step = Math.max(1, Math.ceil(target / 40));
+      const interval = setInterval(function () {
+        current += step;
+        if (current >= target) {
+          current = target;
+          clearInterval(interval);
+        }
+        el.textContent = current;
+      }, 25);
+    });
+  });
+</script>
+{% endblock %}

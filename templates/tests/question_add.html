@@ -1,19 +1,85 @@
 {% extends 'base.html' %}
-{% block title %}Add Question - SmartClass{% endblock %}
+{% block title %}Add Questions to {{ test.title }} - SmartClass{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-lg-8">
-    <div class="card shadow-sm border-0 rounded-4">
-      <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
-        <h4 class="mb-0 fw-bold">Add Question to {{ test.title }}</h4>
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+  <div>
+    <h4 class="fw-bold mb-1">Manage Questions for "{{ test.title }}"</h4>
+    <p class="text-muted mb-0">Add, auto-generate, or delete assessment questions.</p>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{% url 'test_detail' test.pk %}" class="btn btn-outline-secondary px-4 rounded-pill">Done / View Test</a>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Left Side: Manual and AI Question Generation Forms -->
+  <div class="col-lg-6">
+    
+    <!-- AI Generator Card -->
+    <div class="card mb-4 border-0 shadow-sm rounded-4" style="background: var(--sc-surface-strong) !important; border: 1px solid var(--sc-border) !important; color: var(--sc-ink) !important;">
+      <div class="card-header bg-transparent border-0 pt-4 pb-0 d-flex align-items-center gap-2">
+        <i class="bi bi-robot fs-4 text-primary animate-pulse"></i>
+        <h5 class="fw-bold mb-0">Generate Questions with AI</h5>
       </div>
       <div class="card-body p-4">
-        <form method="post">
+        <form id="aiGenerateForm">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Topic / Concept</label>
+            <input type="text" id="aiTopic" class="form-control rounded-3 bg-dark text-white border-secondary" placeholder="e.g. Lists, Dictionary operations, Recursion..." required>
+          </div>
+          
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label fw-semibold">Question Type</label>
+              <select id="aiQuestionType" class="form-select rounded-3 bg-dark text-white border-secondary">
+                <option value="mixed" selected>Mixed (MCQ + Coding)</option>
+                <option value="coding">Coding Questions Only</option>
+                <option value="mcq">Quiz / MCQs Only</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold">Difficulty</label>
+              <select id="aiDifficulty" class="form-select rounded-3 bg-dark text-white border-secondary">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row g-2 mb-4">
+            <div class="col-6">
+              <label class="form-label fw-semibold">No. of Questions</label>
+              <input type="number" id="aiCount" class="form-control rounded-3 bg-dark text-white border-secondary" value="3" min="1" max="10">
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold">Marks per Q</label>
+              <input type="number" id="aiMarks" class="form-control rounded-3 bg-dark text-white border-secondary" value="5" min="1" max="100">
+            </div>
+          </div>
+
+          <button type="submit" id="aiSubmitBtn" class="btn btn-primary w-100 py-2.5 rounded-pill shadow-sm d-flex align-items-center justify-content-center gap-2">
+            <span class="spinner-border spinner-border-sm d-none" id="aiSpinner" role="status" aria-hidden="true"></span>
+            <span id="aiBtnText">Generate with AI</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Manual Question Card -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4" style="background: var(--sc-surface-strong) !important; border: 1px solid var(--sc-border) !important; color: var(--sc-ink) !important;">
+      <div class="card-header bg-transparent border-0 pt-4 pb-0">
+        <h5 class="fw-bold mb-0">Add Question Manually</h5>
+      </div>
+      <div class="card-body p-4">
+        <form method="post" id="manualQuestionForm">
           {% csrf_token %}
           
           <div class="row g-3">
             {% for field in form %}
-              <div class="col-12 mb-3">
+              <div class="col-12 mb-2 field-wrapper" data-field-name="{{ field.name }}">
                 {% if field.field.widget.input_type == 'checkbox' %}
                   <div class="form-check">
                     {{ field }}
@@ -27,6 +93,20 @@
                 {% if field.help_text %}
                   <div class="form-text text-muted small mt-1">{{ field.help_text }}</div>
                 {% endif %}
+                
+                <!-- Dynamic Helper Examples for Coding inputs -->
+                {% if field.name == 'starter_code' %}
+                  <div class="form-text text-muted small mt-1" style="background: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px;">
+                    <strong>Starter Template Examples:</strong><br>
+                    <code>def solve(arr):<br>&nbsp;&nbsp;&nbsp;&nbsp;pass</code><br>
+                    <code>def count_vowels(s):<br>&nbsp;&nbsp;&nbsp;&nbsp;return 0</code>
+                  </div>
+                {% elif field.name == 'expected_function_name' %}
+                  <div class="form-text text-muted small mt-1" style="background: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px;">
+                    <strong>Function Name Examples:</strong> <code>solve</code> or <code>count_vowels</code> (must match function name inside starter template).
+                  </div>
+                {% endif %}
+                
                 {% if field.errors %}
                   <div class="invalid-feedback d-block">{{ field.errors|join:", " }}</div>
                 {% endif %}
@@ -34,15 +114,121 @@
             {% endfor %}
           </div>
           
-          <div class="d-flex flex-wrap gap-2 mt-2">
-            <button type="submit" class="btn btn-primary px-4 rounded-pill">Save Question</button>
-            <a href="{% url 'test_detail' test.pk %}" class="btn btn-outline-secondary px-4 rounded-pill">Back to Test</a>
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-outline-primary px-4 py-2 rounded-pill w-100">Save Manual Question</button>
           </div>
         </form>
       </div>
     </div>
+
+  </div>
+
+  <!-- Right Side: List of Questions Currently Added -->
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm rounded-4 h-100" style="background: var(--sc-surface-strong) !important; border: 1px solid var(--sc-border) !important; color: var(--sc-ink) !important;">
+      <div class="card-header bg-transparent border-0 pt-4 pb-0 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0">Questions List</h5>
+        <span class="badge bg-light text-dark px-3 py-2 rounded-pill fw-semibold">{{ questions|length }} questions added</span>
+      </div>
+      <div class="card-body p-4">
+        {% if questions %}
+          <div class="accordion" id="questionsAccordion">
+            {% for question in questions %}
+              <div class="accordion-item border rounded-3 mb-3 overflow-hidden shadow-sm border-light" style="background: var(--sc-surface) !important; border-color: var(--sc-border) !important;">
+                <h2 class="accordion-header" id="heading{{ question.pk }}">
+                  <button class="accordion-button collapsed py-3 bg-transparent text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ question.pk }}" aria-expanded="false" aria-controls="collapse{{ question.pk }}" style="color: var(--sc-ink) !important;">
+                    <div class="d-flex justify-content-between align-items-center w-100 pe-3 flex-wrap gap-2">
+                      <div class="d-flex align-items-center gap-2">
+                        <span class="badge {% if question.is_coding %}bg-warning text-dark{% else %}bg-primary{% endif %} rounded-pill">
+                          {% if question.is_coding %}Coding{% else %}MCQ{% endif %}
+                        </span>
+                        <span class="fw-semibold">Q{{ forloop.counter }}. {{ question.question_text|truncatechars:45 }}</span>
+                      </div>
+                      <span class="badge bg-light text-dark fw-bold">{{ question.marks }} marks</span>
+                    </div>
+                  </button>
+                </h2>
+                <div id="collapse{{ question.pk }}" class="accordion-collapse collapse" aria-labelledby="heading{{ question.pk }}" data-bs-parent="#questionsAccordion">
+                  <div class="accordion-body" style="background: rgba(255,255,255,0.01);">
+                    <p class="mb-3 whitespace-pre-line text-secondary" style="color: var(--sc-muted) !important;"><strong>Question {{ forloop.counter }} Description:</strong><br>{{ question.question_text }}</p>
+                    
+                    {% if question.is_mcq %}
+                      <div class="p-3 rounded border mb-3" style="background: rgba(0,0,0,0.1); border-color: var(--sc-border) !important;">
+                        <div class="fw-semibold mb-2">Options:</div>
+                        <ul class="list-group list-group-flush small">
+                          <li class="list-group-item d-flex gap-2 bg-transparent text-white {% if question.correct_answer == 'option1' %}list-group-item-success fw-bold{% endif %}" style="color: var(--sc-ink) !important; border-bottom: 1px solid var(--sc-border);">
+                            <span>A.</span> <span>{{ question.option1 }}</span>
+                          </li>
+                          <li class="list-group-item d-flex gap-2 bg-transparent text-white {% if question.correct_answer == 'option2' %}list-group-item-success fw-bold{% endif %}" style="color: var(--sc-ink) !important; border-bottom: 1px solid var(--sc-border);">
+                            <span>B.</span> <span>{{ question.option2 }}</span>
+                          </li>
+                          <li class="list-group-item d-flex gap-2 bg-transparent text-white {% if question.correct_answer == 'option3' %}list-group-item-success fw-bold{% endif %}" style="color: var(--sc-ink) !important; border-bottom: 1px solid var(--sc-border);">
+                            <span>C.</span> <span>{{ question.option3 }}</span>
+                          </li>
+                          <li class="list-group-item d-flex gap-2 bg-transparent text-white {% if question.correct_answer == 'option4' %}list-group-item-success fw-bold{% endif %}" style="color: var(--sc-ink) !important;">
+                            <span>D.</span> <span>{{ question.option4 }}</span>
+                          </li>
+                        </ul>
+                      </div>
+                    {% else %}
+                      <div class="p-3 rounded border mb-3" style="background: rgba(0,0,0,0.1); border-color: var(--sc-border) !important;">
+                        <div class="small mb-1"><strong>Required function name:</strong> <code>{{ question.expected_function_name }}</code></div>
+                        <div class="small mb-2"><strong>Starter Template:</strong></div>
+                        <pre class="bg-dark text-light p-2 rounded font-monospace small mb-3"><code>{{ question.starter_code }}</code></pre>
+                        {% if question.reference_solution %}
+                          <div class="small mb-2"><strong>Reference Solution:</strong></div>
+                          <pre class="bg-dark text-success p-2 rounded font-monospace small mb-3" style="color: #10b981 !important;"><code>{{ question.reference_solution }}</code></pre>
+                        {% endif %}
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                          <span class="text-muted small"><i class="bi bi-gear-fill text-warning me-1"></i> {{ question.test_cases.count }} Test Cases</span>
+                          <a href="{% url 'coding_testcase_add' question.pk %}" class="btn btn-xs btn-outline-primary py-1 px-3 rounded-pill text-decoration-none small">Manage Cases</a>
+                        </div>
+                      </div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-end gap-2">
+                      <a href="{% url 'question_delete' question.pk %}" class="btn btn-sm btn-outline-danger px-3 rounded-pill" onclick="return confirm('Are you sure you want to delete this question?')">
+                        <i class="bi bi-trash me-1"></i> Delete
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-5 text-muted">
+            <i class="bi bi-journal-x fs-1 opacity-25"></i>
+            <p class="mt-2 mb-0">No questions added to this test yet.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
   </div>
 </div>
+
+<!-- AI Review Modal -->
+<div class="modal fade" id="aiReviewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content rounded-4 border-0 shadow-lg" style="background: var(--sc-surface-strong) !important; color: var(--sc-ink) !important;">
+      <div class="modal-header bg-primary text-white border-0 py-3">
+        <h5 class="modal-title fw-bold d-flex align-items-center gap-2">
+          <i class="bi bi-stars"></i> Review Generated Questions
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4" id="aiReviewContent" style="background: var(--sc-surface) !important;">
+        <!-- Content will be injected dynamically by JS -->
+      </div>
+      <div class="modal-footer border-top-0 p-3 bg-transparent rounded-bottom-4">
+        <button type="button" class="btn btn-light px-4 rounded-pill fw-semibold" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-success px-4 rounded-pill fw-semibold shadow-sm" id="saveAiQuestionsBtn">Save to Test</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block extra_css %}
@@ -50,16 +236,39 @@
 <style>
   .CodeMirror {
     height: auto;
-    min-height: 200px;
-    border-radius: 14px;
-    border: 1px solid rgba(16, 32, 51, 0.12);
+    min-height: 180px;
+    border-radius: 12px;
+    border: 1px solid var(--sc-border);
     font-family: var(--bs-font-monospace);
     font-size: 14px;
     padding: 10px;
+    background: #0f172a !important;
+    color: #f8fafc !important;
+  }
+  .CodeMirror-gutters {
+    background-color: #0f172a !important;
+    border-right: 1px solid var(--sc-border) !important;
   }
   .CodeMirror-focused {
     border-color: rgba(20, 90, 242, 0.45);
     box-shadow: 0 0 0 .2rem rgba(20, 90, 242, 0.12);
+  }
+  .animate-pulse {
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.9; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  /* Manual form inputs look dark and match theme */
+  #manualQuestionForm input[type="text"], 
+  #manualQuestionForm input[type="number"], 
+  #manualQuestionForm select, 
+  #manualQuestionForm textarea {
+    background-color: #0f172a !important;
+    color: #f8fafc !important;
+    border: 1px solid var(--sc-border) !important;
   }
 </style>
 {% endblock %}
@@ -68,7 +277,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
 <script>
+  let generatedQuestions = [];
+
   document.addEventListener('DOMContentLoaded', function() {
+    // 1. Setup CodeMirror editors for any editor textareas
     var textareas = document.querySelectorAll('.code-editor');
     textareas.forEach(function(tb) {
       CodeMirror.fromTextArea(tb, {
@@ -79,6 +291,195 @@
         viewportMargin: Infinity
       });
     });
+
+    // 2. Setup dynamic manual form field visibility toggling
+    const typeField = document.getElementById('id_question_type');
+    if (typeField) {
+      function toggleFields() {
+        const type = typeField.value;
+        document.querySelectorAll('.field-wrapper').forEach(wrapper => {
+          const name = wrapper.dataset.fieldName;
+          if (['question_type', 'question_text', 'marks'].includes(name)) {
+            wrapper.style.display = 'block';
+          } else if (type === 'mcq') {
+            if (['option1', 'option2', 'option3', 'option4', 'correct_answer'].includes(name)) {
+              wrapper.style.display = 'block';
+            } else {
+              wrapper.style.display = 'none';
+            }
+          } else if (type === 'coding') {
+            if (['code_cell', 'starter_code', 'expected_function_name'].includes(name)) {
+              wrapper.style.display = 'block';
+            } else {
+              wrapper.style.display = 'none';
+            }
+          }
+        });
+      }
+      typeField.addEventListener('change', toggleFields);
+      toggleFields();
+    }
+
+    // 3. AI Generator Request Handling
+    const aiForm = document.getElementById('aiGenerateForm');
+    if (aiForm) {
+      aiForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('aiSubmitBtn');
+        const spinner = document.getElementById('aiSpinner');
+        const btnText = document.getElementById('aiBtnText');
+        
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+        btnText.textContent = "Generating...";
+
+        const formData = new FormData();
+        formData.append('topic', document.getElementById('aiTopic').value);
+        formData.append('question_type', document.getElementById('aiQuestionType').value);
+        formData.append('num_questions', document.getElementById('aiCount').value);
+        formData.append('marks', document.getElementById('aiMarks').value);
+        formData.append('difficulty', document.getElementById('aiDifficulty').value);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        fetch("{% url 'test_generate_ai' test.pk %}", {
+          method: 'POST',
+          body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+          btn.disabled = false;
+          spinner.classList.add('d-none');
+          btnText.textContent = "Generate with AI";
+
+          if (data.success) {
+            generatedQuestions = data.questions;
+            let html = '';
+            generatedQuestions.forEach((q, i) => {
+              const isCoding = q.question_type === 'coding';
+              const badgeClass = isCoding ? 'bg-warning text-dark' : 'bg-primary';
+              const typeLabel = isCoding ? 'Coding Question' : 'MCQ / Quiz';
+
+              html += `
+                <div class="mb-4 border p-3 rounded-3 bg-dark text-white" style="border-color: var(--sc-border) !important;">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge ${badgeClass} rounded-pill">${typeLabel}</span>
+                    <span class="badge bg-secondary">${q.marks} Marks</span>
+                  </div>
+                  <h6 class="fw-bold text-white">Q${i+1}: ${q.question_text}</h6>
+              `;
+
+              if (!isCoding) {
+                // Render MCQ choices
+                html += `<ul class="list-group list-group-flush mt-2 rounded bg-transparent">`;
+                const choices = [
+                  { key: 'option1', text: q.option1 },
+                  { key: 'option2', text: q.option2 },
+                  { key: 'option3', text: q.option3 },
+                  { key: 'option4', text: q.option4 }
+                ];
+                choices.forEach(c => {
+                  const isCorrect = q.correct_answer === c.key;
+                  const icon = isCorrect ? '<i class="bi bi-check-circle-fill text-success"></i>' : '<i class="bi bi-circle text-muted"></i>';
+                  const boldClass = isCorrect ? 'fw-bold text-success' : 'text-white-50';
+                  html += `<li class="list-group-item bg-transparent d-flex gap-2 align-items-center py-2 border-0 text-white">${icon} <span class="${boldClass}">${c.text}</span></li>`;
+                });
+                html += `</ul>`;
+              } else {
+                // Render Coding details
+                html += `
+                  <div class="mt-3">
+                    <div class="small mb-1 text-white-50"><strong>Required function:</strong> <code>${q.expected_function_name}</code></div>
+                    <div class="small mb-1 text-white-50"><strong>Starter template:</strong></div>
+                    <pre class="bg-black text-light border p-2 rounded text-dark font-monospace small mb-2" style="border-color: var(--sc-border) !important;"><code>${q.starter_code}</code></pre>
+                    <div class="small mb-1 text-white-50"><strong>Reference solution:</strong></div>
+                    <pre class="bg-black text-success border p-2 rounded font-monospace small mb-2" style="border-color: var(--sc-border) !important; color: #10b981 !important;"><code>${q.reference_solution || ''}</code></pre>
+                    
+                    <div class="small mb-1 text-white-50"><strong>Generated Test Cases (${q.test_cases ? q.test_cases.length : 0}):</strong></div>
+                    <div class="table-responsive">
+                      <table class="table table-sm table-bordered bg-transparent text-white small mb-0" style="border-color: var(--sc-border) !important;">
+                        <thead>
+                          <tr class="table-dark">
+                            <th>Type</th>
+                            <th>Inputs (JSON)</th>
+                            <th>Expected Output (JSON)</th>
+                            <th>Weight</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                (q.test_cases || []).forEach(tc => {
+                  const caseType = tc.is_sample ? '<span class="badge bg-info text-dark">Sample</span>' : '<span class="badge bg-secondary">Hidden</span>';
+                  html += `
+                    <tr>
+                      <td>${caseType}</td>
+                      <td><code>${tc.input_data}</code></td>
+                      <td><code>${tc.expected_output}</code></td>
+                      <td>${tc.weight}</td>
+                    </tr>
+                  `;
+                });
+                
+                html += `
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                `;
+              }
+
+              html += `</div>`;
+            });
+
+            document.getElementById('aiReviewContent').innerHTML = html;
+            var reviewModal = new bootstrap.Modal(document.getElementById('aiReviewModal'));
+            reviewModal.show();
+          } else {
+            alert("Error generating questions:\n" + data.error);
+          }
+        })
+        .catch(err => {
+          btn.disabled = false;
+          spinner.classList.add('d-none');
+          btnText.textContent = "Generate with AI";
+          alert("Network error.");
+        });
+      });
+    }
+
+    // 4. Save bulk AI questions handler
+    const saveBtn = document.getElementById('saveAiQuestionsBtn');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', function() {
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Saving...";
+
+        fetch("{% url 'test_save_bulk' test.pk %}", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+          },
+          body: JSON.stringify({ questions: generatedQuestions })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            window.location.reload();
+          } else {
+            alert("Failed to save: " + data.error);
+            saveBtn.disabled = false;
+            saveBtn.textContent = "Save to Test";
+          }
+        })
+        .catch(err => {
+          alert("Network error.");
+          saveBtn.disabled = false;
+          saveBtn.textContent = "Save to Test";
+        });
+      });
+    }
+
   });
 </script>
 {% endblock %}

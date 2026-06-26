@@ -155,7 +155,7 @@ def _run_cases(code, function_name, cases, timeout_seconds=15):
     return payload
 
 
-def evaluate_coding_question(question, code, include_hidden=False):
+def evaluate_coding_question(question, code, include_hidden=False, run_all=False):
     from .models import Question
     
     if question.question_type != Question.QUESTION_TYPE_CODING:
@@ -164,13 +164,20 @@ def evaluate_coding_question(question, code, include_hidden=False):
             'total_marks': question.marks,
             'passed_cases': 0,
             'total_cases': 0,
+            'sample_cases_count': 0,
+            'sample_cases_passed': 0,
+            'hidden_cases_count': 0,
+            'hidden_cases_passed': 0,
             'results': [],
             'error': '',
             'stdout': '',
         }
 
     cases_qs = question.test_cases.all()
-    if include_hidden:
+    if run_all:
+        # Run both sample and hidden cases
+        pass
+    elif include_hidden:
         hidden_cases = cases_qs.filter(is_sample=False)
         cases_qs = hidden_cases if hidden_cases.exists() else question.test_cases.filter(is_sample=True)
     else:
@@ -183,6 +190,10 @@ def evaluate_coding_question(question, code, include_hidden=False):
             'total_marks': question.marks,
             'passed_cases': 0,
             'total_cases': 0,
+            'sample_cases_count': 0,
+            'sample_cases_passed': 0,
+            'hidden_cases_count': 0,
+            'hidden_cases_passed': 0,
             'results': [],
             'error': 'No grading test cases are configured for this coding question yet.',
             'stdout': '',
@@ -195,6 +206,10 @@ def evaluate_coding_question(question, code, include_hidden=False):
             'total_marks': question.marks,
             'passed_cases': 0,
             'total_cases': len(cases),
+            'sample_cases_count': sum(1 for c in cases if c['is_sample']),
+            'sample_cases_passed': 0,
+            'hidden_cases_count': sum(1 for c in cases if not c['is_sample']),
+            'hidden_cases_passed': 0,
             'results': payload.get('results', []),
             'error': payload['error'],
             'stdout': payload.get('stdout', ''),
@@ -203,11 +218,21 @@ def evaluate_coding_question(question, code, include_hidden=False):
     total_weight = sum(case['weight'] for case in cases) or len(cases)
     passed_weight = sum(result['weight'] for result in payload['results'] if result['passed'])
     obtained = round((passed_weight / total_weight) * question.marks, 2)
+    
+    sample_cases_count = sum(1 for c in cases if c['is_sample'])
+    sample_cases_passed = sum(1 for r in payload['results'] if r['is_sample'] and r['passed'])
+    hidden_cases_count = sum(1 for c in cases if not c['is_sample'])
+    hidden_cases_passed = sum(1 for r in payload['results'] if not r['is_sample'] and r['passed'])
+    
     return {
         'obtained_marks': obtained,
         'total_marks': question.marks,
         'passed_cases': sum(1 for result in payload['results'] if result['passed']),
         'total_cases': len(payload['results']),
+        'sample_cases_count': sample_cases_count,
+        'sample_cases_passed': sample_cases_passed,
+        'hidden_cases_count': hidden_cases_count,
+        'hidden_cases_passed': hidden_cases_passed,
         'results': payload['results'],
         'error': '',
         'stdout': payload.get('stdout', ''),

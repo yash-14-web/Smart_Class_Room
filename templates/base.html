@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>{% block title %}Smart Classroom{% endblock %}</title>
-  <link rel="icon" type="image/png" href="/media/smart_logo.png"/>
+  <link rel="icon" type="image/png" href="/media/smart_logo.png?v=2"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"/>
   <style>
@@ -73,19 +73,18 @@
     .navbar-brand {
       display: inline-flex;
       align-items: center;
-      gap: .75rem;
+      gap: .45rem;
       font-weight: 800;
       font-size: 1.35rem;
       letter-spacing: -.02em;
     }
     .brand-logo {
-      width: 52px;
-      height: 52px;
-      border-radius: 12px;
-      background: rgba(255,255,255,.16);
-      padding: 4px;
+      height: 54px;
+      width: auto;
+      background: transparent;
+      padding: 0px;
       object-fit: contain;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+      box-shadow: none;
     }
     .app-navbar .nav-link {
       color: rgba(255,255,255,.84);
@@ -121,22 +120,36 @@
       box-shadow: var(--sc-shadow);
       border-radius: 24px;
       padding: 1rem;
+      max-height: calc(100vh - 110px);
+      overflow-y: auto;
+    }
+    .sidebar-panel::-webkit-scrollbar {
+      width: 5px;
+    }
+    .sidebar-panel::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .sidebar-panel::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 99px;
+    }
+    .sidebar-panel::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.25);
     }
     .sidebar-brand {
       display: flex;
       align-items: center;
-      gap: .85rem;
+      gap: .45rem;
       padding: .65rem .7rem 1rem;
       margin-bottom: .5rem;
       border-bottom: 1px solid rgba(16, 32, 51, 0.08);
     }
     .sidebar-brand img {
-      width: 62px;
-      height: 62px;
+      height: 54px;
+      width: auto;
       object-fit: contain;
-      border-radius: 14px;
-      background: rgba(20, 90, 242, 0.10);
-      padding: 4px;
+      background: transparent;
+      padding: 0px;
     }
     .sidebar-brand strong {
       display: block;
@@ -229,6 +242,16 @@
     .badge-student {
       background: rgba(13, 159, 140, 0.12);
       color: #0b6a60;
+    }
+    .badge-admin {
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.15), rgba(109, 40, 217, 0.10));
+      color: #6d28d9;
+      border: 1px solid rgba(109, 40, 217, 0.20);
+    }
+    [data-bs-theme="dark"] .badge-admin {
+      background: linear-gradient(135deg, rgba(167, 139, 250, 0.15), rgba(139, 92, 246, 0.10));
+      color: #a78bfa;
+      border: 1px solid rgba(139, 92, 246, 0.25);
     }
     .badge {
       border-radius: 999px;
@@ -423,10 +446,387 @@
       border: 1px solid var(--sc-border) !important;
       display: inline-block !important;
     }
+
+    /* ── Perfectly Aligned Course Card Styles ── */
+    .course-card-aligned {
+      height: 100%;
+      background: var(--sc-surface-strong);
+      border: 1px solid var(--sc-border);
+      border-radius: 20px;
+      box-shadow: var(--sc-shadow-soft);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      color: inherit;
+      text-decoration: none;
+    }
+    .course-card-aligned:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--sc-shadow);
+      border-color: var(--sc-primary);
+    }
+    .course-card-aligned .cover-image-wrap {
+      position: relative;
+      width: 100%;
+      height: 170px;
+      background: linear-gradient(135deg, #0f3fae 0%, #145af2 55%, #1aa3a3 100%);
+      overflow: hidden;
+    }
+    .course-card-aligned .cover-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    .course-card-aligned:hover .cover-image {
+      transform: scale(1.04);
+    }
+    .course-card-aligned .cover-fallback {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 2.6rem;
+    }
+    .course-card-aligned .card-body {
+      padding: 1.35rem;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .course-card-aligned .course-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--sc-ink);
+      margin-bottom: 0.35rem;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      height: 2.7em; /* Consistent height for 2 lines */
+    }
+    .course-card-aligned .course-copy {
+      color: var(--sc-muted);
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      line-height: 1.45;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      height: 2.9em; /* Consistent height for 2 lines of description */
+    }
+    .course-card-aligned .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .course-card-aligned .meta-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      border-radius: 999px;
+      padding: 0.35rem 0.65rem;
+      background: var(--sc-bg);
+      color: var(--sc-primary-deep);
+      font-size: 0.76rem;
+      font-weight: 700;
+    }
+    .course-card-aligned .status-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      margin-top: auto; /* Push metadata above this line */
+    }
+
+    /* Collapsible Sidebar Styles */
+    .page-frame {
+      display: flex;
+      flex-wrap: nowrap;
+    }
+    body.sidebar-transitioning .page-frame > [class*="col-"] {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* When sidebar is collapsed */
+    body.sidebar-collapsed .col-xl-2.col-lg-3 {
+      flex: 0 0 88px !important;
+      max-width: 88px !important;
+      width: 88px !important;
+    }
+    body.sidebar-collapsed .col-xl-10.col-lg-9 {
+      flex: 0 0 calc(100% - 88px) !important;
+      max-width: calc(100% - 88px) !important;
+      width: calc(100% - 88px) !important;
+    }
+    
+    /* Adjust sidebar panel interior when collapsed */
+    body.sidebar-collapsed .sidebar-panel {
+      padding: 1rem 0.5rem !important;
+    }
+    body.sidebar-collapsed .sidebar-brand {
+      display: none !important;
+    }
+    body.sidebar-collapsed .sidebar .nav-link {
+      padding: 0.78rem 0 !important;
+      text-align: center !important;
+      justify-content: center !important;
+      display: flex !important;
+      align-items: center !important;
+      border-radius: 14px;
+    }
+    body.sidebar-collapsed .sidebar .nav-link span,
+    body.sidebar-collapsed .sidebar .nav-link small,
+    body.sidebar-collapsed .sidebar .nav-link hr {
+      display: none !important;
+    }
+    body.sidebar-collapsed .sidebar .nav-link div {
+      display: contents !important;
+    }
+    body.sidebar-collapsed .sidebar .nav-link .badge {
+      display: none !important;
+    }
+    body.sidebar-collapsed .sidebar .nav-link i {
+      font-size: 1.35rem;
+      margin-right: 0 !important;
+      width: auto !important;
+    }
+    body.sidebar-collapsed .sidebar hr {
+      margin: 0.5rem 0 !important;
+    }
+    body.sidebar-collapsed .sidebar-panel small.text-muted {
+      display: none !important;
+    }
+    body.sidebar-collapsed .sidebar-header-row {
+      justify-content: center !important;
+      margin-bottom: 0.8rem !important;
+    }
+    body.sidebar-collapsed #sidebarToggleBtn {
+      margin-left: auto !important;
+      margin-right: auto !important;
+    }
+
+    /* ── Premium Rich Text Editor (MS Word WYSIWYG style) ── */
+    .sc-editor-container {
+      border: 1px solid var(--sc-border);
+      border-radius: 14px;
+      background: var(--sc-surface-strong);
+      overflow: hidden;
+      margin-top: 0.35rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+    }
+    .sc-editor-container:focus-within {
+      border-color: rgba(20, 90, 242, 0.45);
+      box-shadow: 0 0 0 .2rem rgba(20, 90, 242, 0.12);
+    }
+    .sc-editor-toolbar {
+      background: var(--sc-bg);
+      border-bottom: 1px solid var(--sc-border);
+      padding: 6px 10px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px;
+    }
+    .sc-editor-btn {
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      color: var(--sc-ink);
+      padding: 5px 9px;
+      font-size: 1.05rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, color 0.15s;
+    }
+    .sc-editor-btn:hover {
+      background: rgba(20, 90, 242, 0.1);
+      color: var(--sc-primary);
+    }
+    .sc-editor-btn:active {
+      background: rgba(20, 90, 242, 0.18);
+    }
+    .sc-editor-separator {
+      width: 1px;
+      height: 16px;
+      background: var(--sc-border);
+      margin: 0 4px;
+    }
+    .sc-editor-content {
+      min-height: 180px;
+      max-height: 500px;
+      overflow-y: auto;
+      padding: 12px 16px;
+      color: var(--sc-ink);
+      outline: none;
+      font-family: inherit;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      background: transparent;
+    }
+    .sc-editor-content ul {
+      list-style-type: disc;
+      padding-left: 20px;
+      margin-bottom: 1rem;
+    }
+    .sc-editor-content ol {
+      list-style-type: decimal;
+      padding-left: 20px;
+      margin-bottom: 1rem;
+    }
+    .sc-editor-content p {
+      margin-bottom: 0.75rem;
+    }
+
+    /* ── Professional Dashboard Entrance & Hover Animations ── */
+    @keyframes slideUpFade {
+      from {
+        opacity: 0;
+        transform: translateY(22px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .dash-hero, .metric-card, .analytics-card, .surface-card, .profile-card, .course-card-aligned, .dept-card, .quiz-card {
+      animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .dash-hero { animation-delay: 0.05s; }
+    
+    .row > div:nth-child(1) .metric-card { animation-delay: 0.1s; }
+    .row > div:nth-child(2) .metric-card { animation-delay: 0.14s; }
+    .row > div:nth-child(3) .metric-card { animation-delay: 0.18s; }
+    .row > div:nth-child(4) .metric-card { animation-delay: 0.22s; }
+
+    .row > div:nth-child(1) .analytics-card { animation-delay: 0.26s; }
+    .row > div:nth-child(2) .analytics-card { animation-delay: 0.3s; }
+
+    .course-row {
+      animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .course-row:nth-child(1) { animation-delay: 0.34s; }
+    .course-row:nth-child(2) { animation-delay: 0.38s; }
+    .course-row:nth-child(3) { animation-delay: 0.42s; }
+    .course-row:nth-child(4) { animation-delay: 0.46s; }
+    .course-row:nth-child(n+5) { animation-delay: 0.5s; }
+
+    .metric-card, .analytics-card, .surface-card, .profile-card {
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease;
+    }
+    
+    .metric-card:hover, .analytics-card:hover, .surface-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 32px rgba(20, 90, 242, 0.06);
+    }
+
+    .action-item, .list-group-item {
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s, box-shadow 0.25s;
+    }
+    .action-item:hover, .list-group-item:hover {
+      transform: translateX(4px);
+    }
+
+    /* ── Glowing & Lighting Colorful Animations ── */
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 5px rgba(20, 90, 242, 0.2), inset 0 0 5px rgba(20, 90, 242, 0.1); }
+      50% { box-shadow: 0 0 20px rgba(20, 90, 242, 0.6), inset 0 0 10px rgba(20, 90, 242, 0.3); }
+      100% { box-shadow: 0 0 5px rgba(20, 90, 242, 0.2), inset 0 0 5px rgba(20, 90, 242, 0.1); }
+    }
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    @keyframes subtleLight {
+      0% { filter: hue-rotate(0deg) brightness(1); }
+      50% { filter: hue-rotate(15deg) brightness(1.03); }
+      100% { filter: hue-rotate(0deg) brightness(1); }
+    }
+
+    /* Glowing borders and shadows on hover */
+    .glow-card, .metric-card, .course-card-aligned, .analytics-card, .surface-card, .profile-card {
+      position: relative;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease;
+    }
+    .glow-card:hover, .metric-card:hover, .course-card-aligned:hover, .analytics-card:hover, .surface-card:hover, .profile-card:hover {
+      border-color: var(--sc-primary) !important;
+      box-shadow: 0 0 20px rgba(20, 90, 242, 0.4), 0 10px 30px rgba(20, 90, 242, 0.15) !important;
+      transform: translateY(-5px) scale(1.01);
+    }
+    [data-bs-theme="dark"] .glow-card:hover, 
+    [data-bs-theme="dark"] .metric-card:hover, 
+    [data-bs-theme="dark"] .course-card-aligned:hover,
+    [data-bs-theme="dark"] .analytics-card:hover {
+      box-shadow: 0 0 25px rgba(59, 130, 246, 0.5), 0 10px 30px rgba(59, 130, 246, 0.2) !important;
+    }
+
+    /* Primary buttons glow on hover */
+    .btn-primary {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+      box-shadow: 0 0 15px rgba(20, 90, 242, 0.5), 0 8px 25px rgba(20, 90, 242, 0.25) !important;
+      transform: translateY(-1px);
+    }
+
+    /* Glowing active notification badges */
+    .badge-primary, .bg-primary.badge {
+      animation: pulseGlow 2s infinite ease-in-out;
+    }
+
+    /* Moving gradient for navbar */
+    .app-navbar {
+      background: linear-gradient(-45deg, #0f2f72, #145af2, #0d9f8c, #8b5cf6) !important;
+      background-size: 400% 400% !important;
+      animation: gradientShift 15s ease infinite !important;
+    }
+
+    /* Colorful animated borders for specific tables and lists */
+    .tbl tbody tr:hover td {
+      color: var(--sc-primary-deep) !important;
+      transition: color 0.2s ease;
+    }
+
+    /* Shifting background lighting layout */
+    .lighting-effect {
+      position: relative;
+    }
+    .lighting-effect::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% -20%, rgba(20, 90, 242, 0.08), transparent 60%);
+      pointer-events: none;
+      animation: subtleLight 8s ease-in-out infinite;
+    }
   </style>
   {% block extra_css %}{% endblock %}
 </head>
 <body>
+  <script>
+    (function() {
+      if (localStorage.getItem('sidebarCollapsed') === 'true') {
+        document.body.classList.add('sidebar-collapsed');
+      }
+    })();
+  </script>
   <nav class="navbar navbar-expand-lg navbar-dark app-navbar">
     <div class="container-fluid px-4">
       {% if user.is_authenticated %}
@@ -435,7 +835,7 @@
       </button>
       {% endif %}
       <a class="navbar-brand" href="{% url 'dashboard' %}">
-        <img src="/media/smart_logo.png" alt="SmartClass logo" class="brand-logo"/>
+        <img src="/media/smart_logo.png?v=2" alt="SmartClass logo" class="brand-logo"/>
         <span>SmartClass</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -456,6 +856,14 @@
             <a class="nav-link" href="{% url 'leaderboard' %}"><i class="bi bi-trophy me-1"></i>Leaderboard</a>
           </li>
           <li class="nav-item d-flex align-items-center mx-lg-2 my-2 my-lg-0">
+            <a href="{% url 'notifications_list' %}" class="btn btn-outline-light btn-sm shadow-none position-relative me-2" style="border-radius: 999px;" title="View Notifications">
+              <i class="bi bi-bell"></i>
+              {% if unread_notifications_count > 0 %}
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem; padding: 0.25em 0.5em; border: 1.5px solid #0f2f72;">
+                  {{ unread_notifications_count }}
+                </span>
+              {% endif %}
+            </a>
             <button id="theme-toggle" class="btn btn-outline-light btn-sm shadow-none" style="border-radius: 999px;" title="Toggle Dark/Light Mode">
               <i class="bi bi-moon-stars" id="theme-icon"></i>
             </button>
@@ -471,8 +879,8 @@
             </a>
             <ul class="dropdown-menu dropdown-menu-end">
               <li><span class="dropdown-item-text text-muted small">
-                <span class="badge {% if user.is_teacher %}badge-teacher{% else %}badge-student{% endif %}">
-                  {{ user.role|capfirst }}
+                <span class="badge {% if user.is_superuser or user.role == 'admin' %}badge-admin{% elif user.is_teacher %}badge-teacher{% else %}badge-student{% endif %}">
+                  {% if user.is_superuser or user.role == 'admin' %}Admin{% else %}{{ user.role|capfirst }}{% endif %}
                 </span>
               </span></li>
               <li><hr class="dropdown-divider"></li>
@@ -502,39 +910,58 @@
       {% if user.is_authenticated %}
       <div class="col-xl-2 col-lg-3 d-none d-lg-block">
         <aside class="sidebar-panel sidebar">
+          <div class="sidebar-header-row d-flex align-items-center mb-1">
+            <button id="sidebarToggleBtn" class="btn btn-sm btn-link text-muted p-0 shadow-none ms-auto" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: all 0.2s;" title="Toggle Sidebar">
+              <i class="bi bi-arrow-bar-left"></i>
+            </button>
+          </div>
           <div class="sidebar-brand">
-            <img src="/media/smart_logo.png" alt="SmartClass logo"/>
+            <img src="/media/smart_logo.png?v=2" alt="SmartClass logo"/>
             <div>
               <strong>SmartClass</strong>
-              <small>{{ user.role|capfirst }} workspace</small>
+              <small>{% if user.is_superuser or user.role == 'admin' %}Admin{% else %}{{ user.role|capfirst }}{% endif %} workspace</small>
             </div>
           </div>
           <nav class="nav flex-column">
-            <a class="nav-link" href="{% url 'dashboard' %}"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a>
-            <a class="nav-link" href="{% url 'course_list' %}"><i class="bi bi-book me-2"></i>Courses</a>
-            <a class="nav-link" href="{% url 'project_list' %}"><i class="bi bi-folder2-open me-2"></i>Projects</a>
-            <a class="nav-link" href="{% url 'test_list' %}"><i class="bi bi-journal-check me-2"></i>Tests</a>
-            <a class="nav-link" href="{% url 'recorded_class_list' %}"><i class="bi bi-play-btn me-2"></i>Recorded Classes</a>
+            {% if user.is_superuser or user.role == 'admin' %}
+            {# ── ADMIN NAVIGATION ── #}
+            <a class="nav-link" href="{% url 'admin_dashboard' %}" title="Admin Dashboard"><i class="bi bi-shield-lock me-2"></i><span>Admin Dashboard</span></a>
+            <a class="nav-link" href="{% url 'admin_site_admin' %}" title="Site Administration"><i class="bi bi-grid-3x3-gap me-2"></i><span>Site Administration</span></a>
+            <hr style="margin: .4rem 0; border-color: var(--sc-border);" />
+            <small class="text-muted px-3 py-1 d-block" style="font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;">Manage</small>
+            <a class="nav-link" href="{% url 'admin_department_list' %}" title="Departments"><i class="bi bi-building me-2"></i><span>Departments</span></a>
+            <a class="nav-link" href="{% url 'admin_teacher_list' %}" title="Teachers"><i class="bi bi-person-workspace me-2"></i><span>Teachers</span></a>
+            <a class="nav-link" href="{% url 'admin_student_list' %}" title="Students"><i class="bi bi-people me-2"></i><span>Students</span></a>
+            <a class="nav-link" href="{% url 'admin_course_list' %}" title="Courses"><i class="bi bi-journal-bookmark me-2"></i><span>Courses</span></a>
+            <hr style="margin: .4rem 0; border-color: var(--sc-border);" />
+            <small class="text-muted px-3 py-1 d-block" style="font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;">Account</small>
+            <a class="nav-link" href="{% url 'profile' %}" title="Profile"><i class="bi bi-person me-2"></i><span>Profile</span></a>
+            <a class="nav-link" href="{% url 'change_password' %}" title="Change Password"><i class="bi bi-key me-2"></i><span>Change Password</span></a>
+            <hr/>
+            <a class="nav-link text-danger" href="{% url 'logout' %}" title="Logout"><i class="bi bi-box-arrow-right me-2"></i><span>Logout</span></a>
+            {% else %}
+            {# ── TEACHER / STUDENT NAVIGATION ── #}
+            <a class="nav-link" href="{% url 'dashboard' %}" title="Dashboard"><i class="bi bi-speedometer2 me-2"></i><span>Dashboard</span></a>
+            <a class="nav-link" href="{% url 'course_list' %}" title="Courses"><i class="bi bi-book me-2"></i><span>Courses</span></a>
+            <a class="nav-link" href="{% url 'project_list' %}" title="Projects"><i class="bi bi-folder2-open me-2"></i><span>Projects</span></a>
+            <a class="nav-link" href="{% url 'test_list' %}" title="Tests"><i class="bi bi-journal-check me-2"></i><span>Tests</span></a>
+            <a class="nav-link" href="{% url 'recorded_class_list' %}" title="Recorded Classes"><i class="bi bi-play-btn me-2"></i><span>Recorded Classes</span></a>
             {% if user.is_student %}
-            <a class="nav-link" href="{% url 'report_card' %}"><i class="bi bi-file-earmark-bar-graph me-2"></i>Report Card</a>
+            <a class="nav-link" href="{% url 'report_card' %}" title="Report Card"><i class="bi bi-file-earmark-bar-graph me-2"></i><span>Report Card</span></a>
             {% endif %}
             {% if user.is_teacher %}
-            <a class="nav-link" href="{% url 'course_create' %}"><i class="bi bi-plus-circle me-2"></i>New Course</a>
+            <a class="nav-link" href="{% url 'course_create' %}" title="New Course"><i class="bi bi-plus-circle me-2"></i><span>New Course</span></a>
             {% endif %}
-            <a class="nav-link d-flex align-items-center justify-content-between" href="{% url 'inbox' %}">
-              <div><i class="bi bi-chat-dots me-2"></i>Messages</div>
-              {% if unread_messages_count > 0 %}
-                <span class="badge bg-primary rounded-pill py-1">{{ unread_messages_count }}</span>
-              {% endif %}
-            </a>
-            <a class="nav-link" href="{% url 'leaderboard' %}"><i class="bi bi-trophy me-2"></i>Leaderboard</a>
+            <a class="nav-link d-flex align-items-center" href="{% url 'inbox' %}" title="Messages"><i class="bi bi-chat-dots me-2"></i><span class="me-auto">Messages</span>{% if unread_messages_count > 0 %}<span class="badge bg-primary rounded-pill py-1">{{ unread_messages_count }}</span>{% endif %}</a>
+            <a class="nav-link" href="{% url 'leaderboard' %}" title="Leaderboard"><i class="bi bi-trophy me-2"></i><span>Leaderboard</span></a>
             {% if user.is_student %}
-            <a class="nav-link" href="{% url 'my_certificates' %}"><i class="bi bi-award me-2"></i>Certificates</a>
+            <a class="nav-link" href="{% url 'my_certificates' %}" title="Certificates"><i class="bi bi-award me-2"></i><span>Certificates</span></a>
             {% endif %}
-            <a class="nav-link" href="{% url 'profile' %}"><i class="bi bi-person me-2"></i>Profile</a>
-            <a class="nav-link" href="{% url 'change_password' %}"><i class="bi bi-key me-2"></i>Change Password</a>
+            <a class="nav-link" href="{% url 'profile' %}" title="Profile"><i class="bi bi-person me-2"></i><span>Profile</span></a>
+            <a class="nav-link" href="{% url 'change_password' %}" title="Change Password"><i class="bi bi-key me-2"></i><span>Change Password</span></a>
             <hr/>
-            <a class="nav-link text-danger" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
+            <a class="nav-link text-danger" href="{% url 'logout' %}" title="Logout"><i class="bi bi-box-arrow-right me-2"></i><span>Logout</span></a>
+            {% endif %}
           </nav>
         </aside>
       </div>
@@ -573,16 +1000,34 @@
   <div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="mobileSidebar" aria-labelledby="mobileSidebarLabel" style="background: var(--sc-surface); backdrop-filter: blur(14px); border-right: 1px solid var(--sc-glass-border); width: 280px;">
     <div class="offcanvas-header border-bottom">
       <div class="sidebar-brand mb-0 pb-0 border-0 d-flex align-items-center gap-2">
-        <img src="/media/smart_logo.png" alt="SmartClass logo" style="width: 42px; height: 42px; object-fit: contain; border-radius: 10px; background: rgba(20, 90, 242, 0.10); padding: 2px;"/>
+        <img src="/media/smart_logo.png?v=2" alt="SmartClass logo" style="height: 54px; width: auto; object-fit: contain; background: transparent; padding: 0;"/>
         <div>
           <strong style="font-size: 0.95rem; display: block; line-height: 1.1; color: var(--sc-ink);">SmartClass</strong>
-          <small class="text-muted" style="font-size: 0.75rem;">{{ user.role|capfirst }} workspace</small>
+          <small class="text-muted" style="font-size: 0.75rem;">{% if user.is_superuser or user.role == 'admin' %}Admin{% else %}{{ user.role|capfirst }}{% endif %} workspace</small>
         </div>
       </div>
       <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close" style="filter: var(--bs-theme-dropdown-close-filter);"></button>
     </div>
     <div class="offcanvas-body">
       <nav class="nav flex-column sidebar p-0">
+        {% if user.is_superuser or user.role == 'admin' %}
+        {# ── ADMIN NAVIGATION ── #}
+        <a class="nav-link" href="{% url 'admin_dashboard' %}"><i class="bi bi-shield-lock me-2"></i>Admin Dashboard</a>
+        <a class="nav-link" href="{% url 'admin_site_admin' %}"><i class="bi bi-grid-3x3-gap me-2"></i>Site Administration</a>
+        <hr style="margin: .4rem 0; border-color: var(--sc-border);" />
+        <small class="text-muted px-3 py-1 d-block" style="font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;">Manage</small>
+        <a class="nav-link" href="{% url 'admin_department_list' %}"><i class="bi bi-building me-2"></i>Departments</a>
+        <a class="nav-link" href="{% url 'admin_teacher_list' %}"><i class="bi bi-person-workspace me-2"></i>Teachers</a>
+        <a class="nav-link" href="{% url 'admin_student_list' %}"><i class="bi bi-people me-2"></i>Students</a>
+        <a class="nav-link" href="{% url 'admin_course_list' %}"><i class="bi bi-journal-bookmark me-2"></i>Courses</a>
+        <hr style="margin: .4rem 0; border-color: var(--sc-border);" />
+        <small class="text-muted px-3 py-1 d-block" style="font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;">Account</small>
+        <a class="nav-link" href="{% url 'profile' %}"><i class="bi bi-person me-2"></i>Profile</a>
+        <a class="nav-link" href="{% url 'change_password' %}"><i class="bi bi-key me-2"></i>Change Password</a>
+        <hr/>
+        <a class="nav-link text-danger" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
+        {% else %}
+        {# ── TEACHER / STUDENT NAVIGATION ── #}
         <a class="nav-link" href="{% url 'dashboard' %}"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a>
         <a class="nav-link" href="{% url 'course_list' %}"><i class="bi bi-book me-2"></i>Courses</a>
         <a class="nav-link" href="{% url 'project_list' %}"><i class="bi bi-folder2-open me-2"></i>Projects</a>
@@ -594,8 +1039,9 @@
         {% if user.is_teacher %}
         <a class="nav-link" href="{% url 'course_create' %}"><i class="bi bi-plus-circle me-2"></i>New Course</a>
         {% endif %}
-        <a class="nav-link d-flex align-items-center justify-content-between" href="{% url 'inbox' %}">
-          <div><i class="bi bi-chat-dots me-2"></i>Messages</div>
+        <a class="nav-link d-flex align-items-center" href="{% url 'inbox' %}">
+          <i class="bi bi-chat-dots me-2"></i>
+          <span class="me-auto">Messages</span>
           {% if unread_messages_count > 0 %}
             <span class="badge bg-primary rounded-pill py-1">{{ unread_messages_count }}</span>
           {% endif %}
@@ -608,6 +1054,7 @@
         <a class="nav-link" href="{% url 'change_password' %}"><i class="bi bi-key me-2"></i>Change Password</a>
         <hr/>
         <a class="nav-link text-danger" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
+        {% endif %}
       </nav>
     </div>
   </div>
@@ -657,6 +1104,156 @@
           themeIcon.classList.add('bi-moon-stars');
         }
       }
+
+      // Sidebar collapse functionality
+      const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+      if (sidebarToggleBtn) {
+        sidebarToggleBtn.addEventListener('click', function() {
+          document.body.classList.add('sidebar-transitioning');
+          const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
+          localStorage.setItem('sidebarCollapsed', isCollapsed);
+          updateSidebarToggleIcon(isCollapsed);
+          setTimeout(function() {
+            document.body.classList.remove('sidebar-transitioning');
+          }, 350);
+        });
+        
+        // Restore sidebar collapse state icon
+        const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+        updateSidebarToggleIcon(sidebarCollapsed);
+      }
+
+      function updateSidebarToggleIcon(isCollapsed) {
+        const icon = document.querySelector('#sidebarToggleBtn i');
+        if (icon) {
+          if (isCollapsed) {
+            icon.className = 'bi bi-arrow-bar-right';
+            sidebarToggleBtn.setAttribute('title', 'Expand Sidebar');
+          } else {
+            icon.className = 'bi bi-arrow-bar-left';
+            sidebarToggleBtn.setAttribute('title', 'Collapse Sidebar');
+          }
+        }
+      }
+    });
+  </script>
+
+  <!-- ── Premium Rich Text Editor (MS Word WYSIWYG style) Initializer ── -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Find all textareas related to description/desc
+      const textareas = document.querySelectorAll('textarea[name*="description"], textarea[id*="description"], textarea[id*="desc"]');
+      
+      textareas.forEach(function(textarea) {
+        if (textarea.closest('.no-editor') || textarea.dataset.editorInitialized) return;
+        
+        // Hide the original textarea
+        textarea.style.display = 'none';
+        
+        // Create editor container wrapper
+        const container = document.createElement('div');
+        container.className = 'sc-editor-container';
+        
+        // Create toolbar
+        const toolbar = document.createElement('div');
+        toolbar.className = 'sc-editor-toolbar';
+        
+        // Formatting options
+        const buttons = [
+          { icon: 'bi-type-bold', command: 'bold', title: 'Bold (Ctrl+B)' },
+          { icon: 'bi-type-italic', command: 'italic', title: 'Italic (Ctrl+I)' },
+          { icon: 'bi-type-underline', command: 'underline', title: 'Underline (Ctrl+U)' },
+          { separator: true },
+          { icon: 'bi-list-ul', command: 'insertUnorderedList', title: 'Bullet List' },
+          { icon: 'bi-list-ol', command: 'insertOrderedList', title: 'Numbered List' },
+          { separator: true },
+          { icon: 'bi-arrow-counterclockwise', command: 'undo', title: 'Undo (Ctrl+Z)' },
+          { icon: 'bi-arrow-clockwise', command: 'redo', title: 'Redo' },
+          { icon: 'bi-eraser', command: 'removeFormat', title: 'Clear Formatting' }
+        ];
+        
+        buttons.forEach(btn => {
+          if (btn.separator) {
+            const sep = document.createElement('span');
+            sep.className = 'sc-editor-separator';
+            toolbar.appendChild(sep);
+            return;
+          }
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'sc-editor-btn';
+          button.innerHTML = `<i class="bi ${btn.icon}"></i>`;
+          button.title = btn.title;
+          
+          button.addEventListener('mousedown', function(e) {
+            e.preventDefault(); // Prevents editor from losing focus
+            document.execCommand(btn.command, false, null);
+            editorArea.focus();
+            syncContent();
+          });
+          toolbar.appendChild(button);
+        });
+        
+        // Create contenteditable area
+        const editorArea = document.createElement('div');
+        editorArea.className = 'sc-editor-content';
+        editorArea.contentEditable = true;
+        
+        // Load initial value
+        editorArea.innerHTML = textarea.value;
+        
+        container.appendChild(toolbar);
+        container.appendChild(editorArea);
+        
+        // Insert container after the textarea
+        textarea.parentNode.insertBefore(container, textarea.nextSibling);
+        
+        // Sync content helper
+        function syncContent() {
+          let html = editorArea.innerHTML;
+          // Clean empty paragraphs or break tags if any, to keep it clean
+          if (html === '<p><br></p>' || html === '<br>' || html === '' || html === '<div><br></div>') {
+            textarea.value = '';
+          } else {
+            textarea.value = html;
+          }
+          textarea.dispatchEvent(new Event('input', { bubbles: true }));
+          textarea.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        
+        // Listen to events
+        editorArea.addEventListener('input', syncContent);
+        editorArea.addEventListener('blur', syncContent);
+        
+        // Handle shortcuts (Ctrl+B, Ctrl+I, Ctrl+U)
+        editorArea.addEventListener('keydown', function(e) {
+          if (e.ctrlKey) {
+            if (e.key === 'b' || e.key === 'B') {
+              e.preventDefault();
+              document.execCommand('bold', false, null);
+              syncContent();
+            } else if (e.key === 'i' || e.key === 'I') {
+              e.preventDefault();
+              document.execCommand('italic', false, null);
+              syncContent();
+            } else if (e.key === 'u' || e.key === 'U') {
+              e.preventDefault();
+              document.execCommand('underline', false, null);
+              syncContent();
+            }
+          }
+        });
+        
+        // Final sync on form submit
+        const form = textarea.closest('form');
+        if (form) {
+          form.addEventListener('submit', function() {
+            syncContent();
+          });
+        }
+        
+        textarea.dataset.editorInitialized = "true";
+      });
     });
   </script>
   {% block extra_js %}{% endblock %}

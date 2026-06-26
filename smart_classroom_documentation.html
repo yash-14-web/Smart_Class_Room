@@ -1,0 +1,2459 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎓 Smart Classroom - Complete Project Documentation</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Highlight.js for Code Highlighting -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/styles/tokyo-night-dark.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/highlight.min.js"></script>
+
+    <!-- Custom Premium Styles -->
+    <style>
+        :root {
+            --font-main: 'Inter', sans-serif;
+            --font-title: 'Outfit', sans-serif;
+            --font-code: 'Fira Code', monospace;
+            
+            /* Dark Theme Colors */
+            --bg-primary: #0b0f19;
+            --bg-secondary: #131a2c;
+            --bg-tertiary: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-primary: #6366f1;
+            --accent-secondary: #8b5cf6;
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            --border-color: #334155;
+            --table-header-bg: #1e293b;
+            --table-row-alt: #162032;
+            --blockquote-bg: #1e2942;
+            --blockquote-border: #6366f1;
+            --sidebar-width: 320px;
+            --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            --toast-bg: #1e293b;
+        }
+
+        [data-theme="light"] {
+            /* Light Theme Colors */
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --accent-primary: #4f46e5;
+            --accent-secondary: #7c3aed;
+            --accent-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            --border-color: #e2e8f0;
+            --table-header-bg: #e2e8f0;
+            --table-row-alt: #f1f5f9;
+            --blockquote-bg: #eef2ff;
+            --blockquote-border: #4f46e5;
+            --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+            --toast-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Sidebar Styling */
+        aside {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar-brand {
+            font-family: var(--font-title);
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-search {
+            padding: 16px 24px 8px;
+            position: relative;
+        }
+
+        .sidebar-search input {
+            width: 100%;
+            padding: 10px 16px 10px 36px;
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .sidebar-search input:focus {
+            border-color: var(--accent-primary);
+        }
+
+        .sidebar-search i {
+            position: absolute;
+            left: 36px;
+            top: 28px;
+            color: var(--text-muted);
+        }
+
+        .sidebar-toc {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 24px;
+        }
+
+        .sidebar-toc::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .sidebar-toc::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        .sidebar-toc ul {
+            list-style: none;
+        }
+
+        .sidebar-toc li {
+            margin-bottom: 8px;
+        }
+
+        .sidebar-toc a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sidebar-toc a:hover {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            padding-left: 18px;
+        }
+
+        .sidebar-toc a.active {
+            background-color: var(--accent-primary);
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .sidebar-toc .toc-h2 {
+            padding-left: 12px;
+            font-weight: 500;
+        }
+
+        .sidebar-toc .toc-h3 {
+            padding-left: 24px;
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+
+        .sidebar-footer {
+            padding: 20px 24px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s ease;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        /* Main Content Styling */
+        main {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 60px 80px;
+            max-width: 1200px;
+            transition: margin-left 0.3s ease;
+        }
+
+        /* Hamburger menu for mobile */
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: var(--accent-primary);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 101;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Typography & Content Styles */
+        .markdown-body {
+            line-height: 1.7;
+            font-size: 1.05rem;
+        }
+
+        .markdown-body h1,
+        .markdown-body h2,
+        .markdown-body h3,
+        .markdown-body h4 {
+            font-family: var(--font-title);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            position: relative;
+        }
+
+        .markdown-body h1 {
+            font-size: 2.5rem;
+            margin-top: 0;
+            margin-bottom: 2rem;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        .markdown-body h2 {
+            font-size: 1.8rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-top: 3rem;
+        }
+
+        .markdown-body h3 {
+            font-size: 1.4rem;
+        }
+
+        .markdown-body h4 {
+            font-size: 1.15rem;
+        }
+
+        .markdown-body p {
+            margin-bottom: 1.2rem;
+            color: var(--text-secondary);
+        }
+
+        .markdown-body strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Lists */
+        .markdown-body ul,
+        .markdown-body ol {
+            margin-bottom: 1.5rem;
+            padding-left: 24px;
+            color: var(--text-secondary);
+        }
+
+        .markdown-body li {
+            margin-bottom: 8px;
+        }
+
+        /* Tables */
+        .markdown-body table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+        }
+
+        .markdown-body th {
+            background-color: var(--table-header-bg);
+            color: var(--text-primary);
+            font-weight: 600;
+            text-align: left;
+            padding: 14px 16px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .markdown-body td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            background-color: var(--bg-secondary);
+        }
+
+        .markdown-body tr:nth-child(even) td {
+            background-color: var(--table-row-alt);
+        }
+
+        /* Blockquotes / Alerts */
+        .markdown-body blockquote {
+            background-color: var(--blockquote-bg);
+            border-left: 4px solid var(--blockquote-border);
+            padding: 16px 20px;
+            margin: 24px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .markdown-body blockquote p {
+            margin-bottom: 0;
+            color: var(--text-primary);
+            font-style: italic;
+        }
+
+        /* Code Blocks */
+        .markdown-body pre {
+            background-color: #0d1117 !important;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 24px 0;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--card-shadow);
+        }
+
+        .markdown-body code {
+            font-family: var(--font-code);
+            font-size: 0.9rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background-color: var(--bg-tertiary);
+            color: var(--accent-secondary);
+        }
+
+        .markdown-body pre code {
+            padding: 0;
+            background-color: transparent;
+            color: inherit;
+            font-size: 0.9rem;
+        }
+
+        /* Mermaid Diagrams Container - Static Image Styling */
+        .mermaid-container {
+            background-color: #ffffff; /* White card background makes text readable in both modes */
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 30px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: auto;
+        }
+
+        .mermaid-container::before {
+            content: 'Diagram';
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 0.75rem;
+            font-family: var(--font-title);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .diagram-img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            display: block;
+        }
+
+        /* Custom buttons / interactive styles */
+        .btn-scroll-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: var(--accent-primary);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 99;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .btn-scroll-top:hover {
+            transform: translateY(-5px);
+            background-color: var(--accent-secondary);
+        }
+
+        /* Highlights */
+        .highlight-match {
+            background-color: rgba(99, 102, 241, 0.4);
+            border-bottom: 2px solid var(--accent-primary);
+            color: var(--text-primary);
+        }
+
+        /* Divider */
+        hr {
+            border: 0;
+            height: 1px;
+            background-image: linear-gradient(to right, rgba(0, 0, 0, 0), var(--border-color), rgba(0, 0, 0, 0));
+            margin: 40px 0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            aside {
+                transform: translateX(-100%);
+            }
+
+            aside.open {
+                transform: translateX(0);
+            }
+
+            main {
+                margin-left: 0;
+                padding: 80px 30px 40px;
+            }
+
+            .menu-toggle {
+                display: flex;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            aside, .menu-toggle, .btn-scroll-top {
+                display: none !important;
+            }
+            main {
+                margin-left: 0 !important;
+                padding: 0 !important;
+            }
+            body {
+                background-color: white !important;
+                color: black !important;
+            }
+            .markdown-body h1, .markdown-body h2, .markdown-body h3 {
+                color: black !important;
+                page-break-after: avoid;
+            }
+            .markdown-body table, pre, .mermaid-container {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Hamburger menu toggle -->
+    <button class="menu-toggle" id="menu-toggle" aria-label="Toggle Navigation">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span>Smart Classroom</span>
+            </div>
+        </div>
+        
+        <div class="sidebar-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="search-input" placeholder="Search documentation...">
+        </div>
+
+        <nav class="sidebar-toc" id="toc-nav">
+            <!-- Table of contents will be generated dynamically -->
+            <ul id="toc-list"></ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <span style="font-size: 0.8rem; color: var(--text-muted);">v1.0.0</span>
+            <button class="theme-toggle" id="theme-toggle" title="Toggle Theme">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main>
+        <div class="markdown-body" id="doc-content">
+            <h1>🎓 Smart Classroom — Complete Project Documentation</h1>
+<blockquote>
+<p><strong>Prepared for</strong>: Project Demonstration Meeting<br />
+<strong>Date</strong>: June 14, 2026<br />
+<strong>Project Type</strong>: Web-Based Learning Management System (LMS)<br />
+<strong>Tech Stack</strong>: Django · Python · SQLite · Bootstrap 5 · Gemini AI · WebSockets</p>
+</blockquote>
+<hr />
+<h2>📋 Table of Contents</h2>
+<ol>
+<li><a href="#-1-project-overview">Project Overview</a></li>
+<li><a href="#-2-technology-requirements">Technology Requirements</a></li>
+<li><a href="#-3-system-architecture">System Architecture</a></li>
+<li><a href="#-4-user-roles--permissions">User Roles &amp; Permissions</a></li>
+<li><a href="#-5-approval-workflows">Approval Workflows</a></li>
+<li><a href="#-6-complete-database-schema">Complete Database Schema</a></li>
+<li><a href="#-61-complete-database-schema-erd">6.1 Complete Database Schema (ERD)</a></li>
+<li><a href="#-62-entity-relationship-diagram-partitioned-by-module">6.2 Entity Relationship Diagram (Partitioned by Module)</a></li>
+<li><a href="#-63-unique-constraints">6.3 Unique Constraints</a></li>
+<li><a href="#-64-summary-statistics">6.4 Summary Statistics</a></li>
+<li><a href="#-7-application-flow--screen-by-screen">Application Flow — Screen by Screen</a></li>
+<li><a href="#-8-step-by-step-how-to-create-a-course-example">Step-by-Step: How to Create a Course (Example)</a></li>
+<li><a href="#-9-ai-integration">AI Integration</a></li>
+<li><a href="#-10-admin-panel">Admin Panel</a></li>
+<li><a href="#-11-setup--installation">Setup &amp; Installation</a></li>
+<li><a href="#-12-default-test-accounts">Default Test Accounts</a></li>
+<li><a href="#-13-complete-url-reference-map">Complete URL Reference Map</a></li>
+</ol>
+<hr />
+<h2>🎯 1. Project Overview</h2>
+<p>Smart Classroom is a <strong>comprehensive web-based Learning Management System (LMS)</strong> built with Django that connects admins, teachers, and students in a digital classroom environment. It includes <strong>12 Django apps</strong> and <strong>24 database models</strong>.</p>
+<h3>Feature Summary</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Feature</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>User Management</strong></td>
+<td>3 roles (Admin, Teacher, Student) with approval workflows</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Department &amp; Course Management</strong></td>
+<td>Departments → Courses with unique codes, approval system</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Enrollment System</strong></td>
+<td>Students request enrollment → Teacher/Admin approves</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Assignments</strong></td>
+<td>Create, submit (file/GitHub), grade with marks &amp; feedback</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Quizzes</strong></td>
+<td>MCQ-based quizzes with auto-scoring, time limits, date windows</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>Online Coding Tests</strong></td>
+<td>In-browser coding IDE with sample/hidden test cases, auto-evaluation</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>Attendance</strong></td>
+<td>Teacher marks or student self-marks (with deadlines)</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>Study Materials</strong></td>
+<td>Upload PDF, DOC, PPT, ZIP, PY files for download</td>
+</tr>
+<tr>
+<td>9</td>
+<td><strong>Recorded Classes</strong></td>
+<td>Video uploads (file or URL) with streaming player</td>
+</tr>
+<tr>
+<td>10</td>
+<td><strong>Team Projects</strong></td>
+<td>Project submissions with GitHub links, ZIP uploads, grading</td>
+</tr>
+<tr>
+<td>11</td>
+<td><strong>Chat System</strong></td>
+<td>1-on-1 direct messages + per-course group chat (AJAX real-time)</td>
+</tr>
+<tr>
+<td>12</td>
+<td><strong>AI Tutor</strong></td>
+<td>Per-course AI chatbot powered by Google Gemini</td>
+</tr>
+<tr>
+<td>13</td>
+<td><strong>Virtual Sessions</strong></td>
+<td>Schedule online meeting links with auto-attendance</td>
+</tr>
+<tr>
+<td>14</td>
+<td><strong>Certificates</strong></td>
+<td>Issue badges (Completion, Excellence, Topper, Participation)</td>
+</tr>
+<tr>
+<td>15</td>
+<td><strong>Reports &amp; Leaderboard</strong></td>
+<td>Report cards, grade exports (CSV/Excel), rankings</td>
+</tr>
+<tr>
+<td>16</td>
+<td><strong>Notification System</strong></td>
+<td>In-app notifications for all key events</td>
+</tr>
+<tr>
+<td>17</td>
+<td><strong>Admin Panel</strong></td>
+<td>Custom admin dashboard for managing everything</td>
+</tr>
+<tr>
+<td>18</td>
+<td><strong>Light/Dark Mode</strong></td>
+<td>CSS variable-based theme toggle</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>🔧 2. Technology Requirements</h2>
+<h3>Software Dependencies</h3>
+<table>
+<thead>
+<tr>
+<th>Technology</th>
+<th>Purpose</th>
+<th>Version</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Python</strong></td>
+<td>Backend programming language</td>
+<td>3.10+</td>
+</tr>
+<tr>
+<td><strong>Django</strong></td>
+<td>Web framework</td>
+<td>≥4.2, &lt;5.0</td>
+</tr>
+<tr>
+<td><strong>SQLite3</strong></td>
+<td>Database (built into Django)</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Pillow</strong></td>
+<td>Image processing (profile pics, banners)</td>
+<td>≥9.0</td>
+</tr>
+<tr>
+<td><strong>WhiteNoise</strong></td>
+<td>Static file serving</td>
+<td>≥6.0</td>
+</tr>
+<tr>
+<td><strong>Gunicorn</strong></td>
+<td>Production WSGI server</td>
+<td>≥20.0</td>
+</tr>
+<tr>
+<td><strong>WeasyPrint</strong></td>
+<td>PDF generation for certificates/reports</td>
+<td>≥59.0</td>
+</tr>
+<tr>
+<td><strong>openpyxl</strong></td>
+<td>Excel export for marks/reports</td>
+<td>≥3.1</td>
+</tr>
+<tr>
+<td><strong>Google Generative AI</strong></td>
+<td>Gemini AI integration (AI Tutor)</td>
+<td>Latest</td>
+</tr>
+<tr>
+<td><strong>Bootstrap 5</strong></td>
+<td>Frontend CSS framework (via CDN)</td>
+<td>5.x</td>
+</tr>
+</tbody>
+</table>
+<h3><code>requirements.txt</code></h3>
+<pre><code>Django&gt;=4.2,&lt;5.0
+Pillow&gt;=9.0
+whitenoise&gt;=6.0
+gunicorn&gt;=20.0
+WeasyPrint&gt;=59.0
+openpyxl&gt;=3.1
+</code></pre>
+<h3>Key Configuration (<code>settings.py</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Database</td>
+<td>SQLite3 (<code>db.sqlite3</code>)</td>
+</tr>
+<tr>
+<td>User Model</td>
+<td><code>users.CustomUser</code></td>
+</tr>
+<tr>
+<td>Time Zone</td>
+<td><code>Asia/Kolkata</code></td>
+</tr>
+<tr>
+<td>Login Redirect</td>
+<td><code>/users/dashboard/</code></td>
+</tr>
+<tr>
+<td>Logout Redirect</td>
+<td><code>/users/login/</code></td>
+</tr>
+<tr>
+<td>Media Root</td>
+<td><code>BASE_DIR / 'media'</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>🏗 3. System Architecture</h2>
+<div class="mermaid-container"><img class="diagram-img" src="images/diagram_1.png" alt="Diagram 1"></div>
+
+<h3>Request Lifecycle</h3>
+<pre><code>Browser → HTTP Request → Django URL Router → View Function
+                                                  ↓
+                                           Permission Check (Role + Enrollment + Assignment)
+                                                  ↓
+                                           Database Query (ORM)
+                                                  ↓
+                                           [Optional] Gemini AI Call
+                                                  ↓
+                                           Template Rendering → HTML Response → Browser
+</code></pre>
+<hr />
+<h2>👥 4. User Roles &amp; Permissions</h2>
+<p>The system has <strong>3 roles</strong> with a hierarchical permission structure:</p>
+<h3>Role Comparison Matrix</h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th style="text-align: center;">👑 Admin</th>
+<th style="text-align: center;">🧑‍🏫 Teacher</th>
+<th style="text-align: center;">🎓 Student</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Account</strong></td>
+<td style="text-align: center;">Auto-active</td>
+<td style="text-align: center;">Needs approval</td>
+<td style="text-align: center;">Needs approval</td>
+</tr>
+<tr>
+<td><strong>Dashboard</strong></td>
+<td style="text-align: center;">Admin panel</td>
+<td style="text-align: center;">Course overview</td>
+<td style="text-align: center;">Learning overview</td>
+</tr>
+<tr>
+<td><strong>Departments</strong></td>
+<td style="text-align: center;">Create/Edit/List</td>
+<td style="text-align: center;">View only</td>
+<td style="text-align: center;">View only</td>
+</tr>
+<tr>
+<td><strong>Courses</strong></td>
+<td style="text-align: center;">Create/Edit/Approve</td>
+<td style="text-align: center;">Create (needs approval)</td>
+<td style="text-align: center;">View &amp; enroll</td>
+</tr>
+<tr>
+<td><strong>Enrollment</strong></td>
+<td style="text-align: center;">Approve/Reject</td>
+<td style="text-align: center;">Approve/Reject (own courses)</td>
+<td style="text-align: center;">Request enrollment</td>
+</tr>
+<tr>
+<td><strong>Assignments</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">Create/Edit/Delete/Grade</td>
+<td style="text-align: center;">View/Submit</td>
+</tr>
+<tr>
+<td><strong>Quizzes</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">Create/Edit/Add Questions</td>
+<td style="text-align: center;">Take quiz (once)</td>
+</tr>
+<tr>
+<td><strong>Online Tests</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">Create/Edit/Add Questions</td>
+<td style="text-align: center;">Take test (once)</td>
+</tr>
+<tr>
+<td><strong>Attendance</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">Create session/Mark</td>
+<td style="text-align: center;">Self-mark (if allowed)</td>
+</tr>
+<tr>
+<td><strong>Materials</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">Upload/Delete</td>
+<td style="text-align: center;">Download</td>
+</tr>
+<tr>
+<td><strong>Recorded Classes</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">Upload/Edit/Delete</td>
+<td style="text-align: center;">View/Watch</td>
+</tr>
+<tr>
+<td><strong>Projects</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">Grade</td>
+<td style="text-align: center;">Submit/Delete own</td>
+</tr>
+<tr>
+<td><strong>Chat (DM)</strong></td>
+<td style="text-align: center;">Chat with anyone</td>
+<td style="text-align: center;">Chat with anyone</td>
+<td style="text-align: center;">Chat with teachers &amp; peers</td>
+</tr>
+<tr>
+<td><strong>Group Chat</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">Course group chat</td>
+<td style="text-align: center;">Course group chat</td>
+</tr>
+<tr>
+<td><strong>AI Tutor</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">Access per course</td>
+<td style="text-align: center;">Access per course</td>
+</tr>
+<tr>
+<td><strong>Certificates</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">Issue to students</td>
+<td style="text-align: center;">View/Download own</td>
+</tr>
+<tr>
+<td><strong>Reports</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">View all/Edit/Export</td>
+<td style="text-align: center;">View own report card</td>
+</tr>
+<tr>
+<td><strong>Leaderboard</strong></td>
+<td style="text-align: center;">View</td>
+<td style="text-align: center;">View</td>
+<td style="text-align: center;">View</td>
+</tr>
+<tr>
+<td><strong>Notifications</strong></td>
+<td style="text-align: center;">Receive</td>
+<td style="text-align: center;">Receive</td>
+<td style="text-align: center;">Receive</td>
+</tr>
+<tr>
+<td><strong>Admin Panel</strong></td>
+<td style="text-align: center;">✅ Full access</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>🔄 5. Approval Workflows</h2>
+<p>The system has <strong>3 approval workflows</strong> to maintain quality control:</p>
+<h3>Workflow 1: User Registration Approval</h3>
+<div class="mermaid-container"><img class="diagram-img" src="images/diagram_2.png" alt="Diagram 2"></div>
+
+<h3>Workflow 2: Course Creation Approval</h3>
+<div class="mermaid-container"><img class="diagram-img" src="images/diagram_3.png" alt="Diagram 3"></div>
+
+<h3>Workflow 3: Student Enrollment Approval</h3>
+<div class="mermaid-container"><img class="diagram-img" src="images/diagram_4.png" alt="Diagram 4"></div>
+
+<hr />
+<h2>🗄 6. Complete Database Schema</h2>
+<h3>6.1 Complete Database Schema (ERD)</h3>
+<p>Here is the complete entity relationship diagram for the entire database. </p>
+<blockquote>
+<p>[!TIP]
+Since this diagram contains all 24 models and 29 relationships, it is extremely wide. 
+To view it in full crisp vector resolution where you can zoom in infinitely, click the link below:</p>
+<p>🔍 <strong><a href="images/complete_database_schema.svg">Open Complete Database Schema in Full Screen (Vector SVG)</a></strong></p>
+</blockquote>
+<div class="mermaid-container">
+    <a href="images/complete_database_schema.svg" target="_blank" title="Click to open full size vector image">
+        <img class="diagram-img" src="images/complete_database_schema.svg" alt="Complete Database Schema Diagram" style="max-height: 500px; width: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.15); border-radius: 8px;">
+    </a>
+</div>
+
+<h3>6.2 Entity Relationship Diagram (Partitioned by Module)</h3>
+<p>To ensure readability and clarity, the massive 24-model database schema has been divided into <strong>7 logical modules</strong>.</p>
+<h4>6.1.1 Module 1: User Profiles &amp; Direct Messages</h4>
+<p>Manages registration status, authentication roles, in-app notifications, and direct messaging between users.</p>
+<div class="mermaid-container"><img class="diagram-img" src="images/diagram_5.png" alt="Diagram 5"></div>
+
+<h4>6.1.2 Module 2: Course &amp; Enrollment Structure</h4>
+<p>Handles departments, courses, student enrollment requests, virtual live sessions, per-course group chats, and AI Tutor logs.</p>
+<div class="mermaid-container"><img class="diagram-img" src="images/diagram_6.png" alt="Diagram 6"></div>
+
+<h4>6.1.3 Module 3: Study Materials &amp; Recorded Classes</h4>
+<p>Stores uploaded files (PDFs, PPTs, code files) and recorded video links/files for course materials.</p>
+<div class="mermaid-container"><img class="diagram-img" src="images/diagram_7.png" alt="Diagram 7"></div>
+
+<h4>6.1.4 Module 4: Assignments &amp; Project Management</h4>
+<p>Organizes standard assignments (with grade + feedback) and capstone team project submissions.</p>
+<div class="mermaid-container"><img class="diagram-img" src="images/diagram_8.png" alt="Diagram 8"></div>
+
+<h4>6.1.5 Module 5: Quiz Assessment System</h4>
+<p>Represents MCQ-based quizzes, questions, options (choices), attempts, and student answers.</p>
+<div class="mermaid-container"><img class="diagram-img" src="images/diagram_9.png" alt="Diagram 9"></div>
+
+<h4>6.1.6 Module 6: Online Coding Tests</h4>
+<p>Details the coding exam engine, including questions, test cases (sample/hidden), and execution evaluation scores.</p>
+<div class="mermaid-container"><img class="diagram-img" src="images/diagram_10.png" alt="Diagram 10"></div>
+
+<h4>6.1.7 Module 7: Attendance, Grading &amp; Certificates</h4>
+<p>Manages student attendance tracking, issued completion/excellence badges, and aggregated report cards.</p>
+<div class="mermaid-container"><img class="diagram-img" src="images/diagram_11.png" alt="Diagram 11"></div>
+
+<h3>6.3 Unique Constraints</h3>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Constraint</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Enrollment</code></td>
+<td><code>(student, course)</code></td>
+<td>One enrollment per student per course</td>
+</tr>
+<tr>
+<td><code>Submission</code></td>
+<td><code>(assignment, student)</code></td>
+<td>One submission per assignment</td>
+</tr>
+<tr>
+<td><code>AttendanceSession</code></td>
+<td><code>(course, date)</code></td>
+<td>One session per day per course</td>
+</tr>
+<tr>
+<td><code>AttendanceRecord</code></td>
+<td><code>(session, student)</code></td>
+<td>One record per student per session</td>
+</tr>
+<tr>
+<td><code>QuizAttempt</code></td>
+<td><code>(quiz, student)</code></td>
+<td>One attempt per student per quiz</td>
+</tr>
+<tr>
+<td><code>StudentAnswer</code></td>
+<td><code>(attempt, question)</code></td>
+<td>One answer per question</td>
+</tr>
+<tr>
+<td><code>StudentResponse</code></td>
+<td><code>(student, test)</code></td>
+<td>One response per test</td>
+</tr>
+<tr>
+<td><code>Certificate</code></td>
+<td><code>(student, course, badge_type)</code></td>
+<td>One badge type per student per course</td>
+</tr>
+<tr>
+<td><code>ReportCard</code></td>
+<td><code>(student, course)</code></td>
+<td>One report per student per course</td>
+</tr>
+</tbody>
+</table>
+<h3>6.4 Summary Statistics</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Total Django Apps</strong></td>
+<td>12</td>
+</tr>
+<tr>
+<td><strong>Total Database Models</strong></td>
+<td>24</td>
+</tr>
+<tr>
+<td><strong>Foreign Key Relationships</strong></td>
+<td>29</td>
+</tr>
+<tr>
+<td><strong>Many-to-Many Relationships</strong></td>
+<td>3</td>
+</tr>
+<tr>
+<td><strong>Central Model</strong></td>
+<td><code>Course</code> (referenced by 15 FKs)</td>
+</tr>
+<tr>
+<td><strong>User Model</strong></td>
+<td><code>CustomUser</code> (referenced by 17 FKs + 3 M2M)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>🔄 7. Application Flow — Screen by Screen</h2>
+<h3>Flow 1: Registration → Approval → Dashboard</h3>
+<div class="mermaid-container"><img class="diagram-img" src="images/diagram_12.png" alt="Diagram 12"></div>
+
+<h3>Flow 2: Teacher Dashboard — What You See</h3>
+<table>
+<thead>
+<tr>
+<th>Dashboard Section</th>
+<th>Data Displayed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>My Courses</strong></td>
+<td>All courses taught with student/assignment/quiz/pending counts</td>
+</tr>
+<tr>
+<td><strong>Total Students</strong></td>
+<td>Sum across all courses</td>
+</tr>
+<tr>
+<td><strong>Total Assignments</strong></td>
+<td>All assignments created</td>
+</tr>
+<tr>
+<td><strong>Total Quizzes</strong></td>
+<td>All quizzes created</td>
+</tr>
+<tr>
+<td><strong>Pending vs Graded</strong></td>
+<td>Submission breakdown (assignments + projects)</td>
+</tr>
+<tr>
+<td><strong>Attendance Rate</strong></td>
+<td>Overall present/absent percentages</td>
+</tr>
+<tr>
+<td><strong>Course Status</strong></td>
+<td>Active / Inactive / Results Released counts</td>
+</tr>
+<tr>
+<td><strong>Pending Reviews</strong></td>
+<td>Top 5 ungraded submissions</td>
+</tr>
+<tr>
+<td><strong>Charts</strong></td>
+<td>Student counts, assignment counts, submission breakdown, attendance (JSON)</td>
+</tr>
+</tbody>
+</table>
+<h3>Flow 3: Student Dashboard — What You See</h3>
+<table>
+<thead>
+<tr>
+<th>Dashboard Section</th>
+<th>Data Displayed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Enrolled Courses</strong></td>
+<td>Courses with approved enrollment</td>
+</tr>
+<tr>
+<td><strong>Pending Work</strong></td>
+<td>Unsubmitted assignments + unattempted quizzes + tests + projects</td>
+</tr>
+<tr>
+<td><strong>Overall Performance</strong></td>
+<td>Average % across all graded work</td>
+</tr>
+<tr>
+<td><strong>Attendance %</strong></td>
+<td>Overall attendance across all courses</td>
+</tr>
+<tr>
+<td><strong>Student Rank</strong></td>
+<td>Ranking among all students</td>
+</tr>
+<tr>
+<td><strong>Upcoming Items</strong></td>
+<td>Next 4 deadlines (assignments, quizzes, tests, projects)</td>
+</tr>
+<tr>
+<td><strong>Charts</strong></td>
+<td>Weekly activity (7-day), course performance, workload breakdown</td>
+</tr>
+</tbody>
+</table>
+<h3>Flow 4: Course Creation → Enrollment</h3>
+<div class="mermaid-container"><img class="diagram-img" src="images/diagram_13.png" alt="Diagram 13"></div>
+
+<h3>Flow 5: Assignment Lifecycle</h3>
+<div class="mermaid-container"><img class="diagram-img" src="images/diagram_14.png" alt="Diagram 14"></div>
+
+<h3>Flow 6: Quiz Lifecycle</h3>
+<div class="mermaid-container"><img class="diagram-img" src="images/diagram_15.png" alt="Diagram 15"></div>
+
+<h3>Flow 7: Online Coding Test (Unique Feature!)</h3>
+<div class="mermaid-container"><img class="diagram-img" src="images/diagram_16.png" alt="Diagram 16"></div>
+
+<h3>Flow 8: Attendance Flow</h3>
+<div class="mermaid-container"><img class="diagram-img" src="images/diagram_17.png" alt="Diagram 17"></div>
+
+<h3>Flow 9: Chat System</h3>
+<div class="mermaid-container"><img class="diagram-img" src="images/diagram_18.png" alt="Diagram 18"></div>
+
+<blockquote>
+<p>[!NOTE]
+<strong>Access Control</strong>: Students can only DM teachers of their enrolled courses, peer students in same courses, and admins. Teachers and admins can DM anyone.</p>
+</blockquote>
+<h3>Flow 10: Certificate Issuance</h3>
+<div class="mermaid-container"><img class="diagram-img" src="images/diagram_19.png" alt="Diagram 19"></div>
+
+<h3>Flow 11: Reports &amp; Grading</h3>
+<div class="mermaid-container"><img class="diagram-img" src="images/diagram_20.png" alt="Diagram 20"></div>
+
+<h3>Flow 12: Data Export</h3>
+<div class="mermaid-container"><img class="diagram-img" src="images/diagram_21.png" alt="Diagram 21"></div>
+
+<hr />
+<h2>📝 8. Step-by-Step: How to Create a Course (Example)</h2>
+<h3>Scenario</h3>
+<blockquote>
+<p><strong>Teacher "Dr. Sharma"</strong> wants to create a course called <strong>"Machine Learning Fundamentals"</strong> under the <strong>Computer Science</strong> department and invite students.</p>
+</blockquote>
+<hr />
+<h3>Step 1: Login as Teacher</h3>
+<ol>
+<li>Open browser → Go to <code>http://localhost:8000</code></li>
+<li>Redirected to <code>/users/login/</code></li>
+<li>Enter credentials: <code>teacher1</code> / <code>pass123</code></li>
+<li>Click <strong>Login</strong> → Redirected to <strong>Teacher Dashboard</strong></li>
+</ol>
+<h3>Step 2: Create the Course</h3>
+<ol>
+<li>Click <strong>"Create Course"</strong> on the dashboard</li>
+<li>Navigate to <code>/courses/create/</code></li>
+<li>Fill in the form:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Example Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Title</strong></td>
+<td>Machine Learning Fundamentals</td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>Learn the basics of ML including regression, classification, clustering, and neural networks.</td>
+</tr>
+<tr>
+<td><strong>Department</strong></td>
+<td>Computer Science</td>
+</tr>
+<tr>
+<td><strong>Max Students</strong></td>
+<td>50</td>
+</tr>
+<tr>
+<td><strong>Start Date</strong></td>
+<td>2026-06-15</td>
+</tr>
+<tr>
+<td><strong>End Date</strong></td>
+<td>2026-09-15</td>
+</tr>
+<tr>
+<td><strong>Project Start</strong></td>
+<td>2026-08-01</td>
+</tr>
+<tr>
+<td><strong>Project End</strong></td>
+<td>2026-09-10</td>
+</tr>
+<tr>
+<td><strong>Cover Image</strong></td>
+<td>Upload a banner image</td>
+</tr>
+</tbody>
+</table>
+<ol>
+<li>Click <strong>Submit</strong></li>
+</ol>
+<blockquote>
+<p>[!IMPORTANT]
+The course is created with <code>approval_status = pending</code>. An Admin must approve it before students can see it. The system auto-generates a unique <code>course_code</code> (e.g., <code>CS-ML2026</code>) and <code>batch</code> identifier.</p>
+</blockquote>
+<h3>Step 3: Admin Approves the Course</h3>
+<ol>
+<li>Admin logs in → Goes to <strong>Admin Panel</strong> → <strong>Courses</strong></li>
+<li>Sees the pending course → Clicks <strong>Approve</strong></li>
+<li>Course is now visible to students</li>
+</ol>
+<h3>Step 4: Students Enroll</h3>
+<ol>
+<li>Student logs in → Browses <strong>Departments</strong> → Clicks <strong>Computer Science</strong></li>
+<li>Sees <strong>"Machine Learning Fundamentals"</strong> in the course list</li>
+<li>Clicks the course → Sees the <strong>About page</strong></li>
+<li>Clicks <strong>"Enroll"</strong> → Enrollment request created (<code>status = pending</code>)</li>
+<li><strong>Teacher gets notification</strong>: "Student X requested enrollment"</li>
+<li>Teacher clicks <strong>Approve</strong> → Student now has full access</li>
+</ol>
+<h3>Step 5: Add Content to the Course</h3>
+<p>After enrollment, the teacher adds content from the <strong>Course Detail</strong> page:</p>
+<table>
+<thead>
+<tr>
+<th>Action</th>
+<th>What Teacher Does</th>
+<th>What Students See</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Create Assignment</strong></td>
+<td>Title: "Linear Regression", Due: June 25, Marks: 100, Attach PDF</td>
+<td>Assignment appears in course + dashboard "Pending"</td>
+</tr>
+<tr>
+<td><strong>Upload Material</strong></td>
+<td>Upload "ML_Notes.pdf" (type: pdf)</td>
+<td>Material available for download</td>
+</tr>
+<tr>
+<td><strong>Create Quiz</strong></td>
+<td>Title: "ML Basics Quiz", Duration: 30 min, Add 10 MCQs</td>
+<td>Quiz appears in dashboard "Upcoming"</td>
+</tr>
+<tr>
+<td><strong>Create Coding Test</strong></td>
+<td>Title: "Implement KNN", Time: 60 min, Add coding question + test cases</td>
+<td>Test appears in course detail</td>
+</tr>
+<tr>
+<td><strong>Upload Recording</strong></td>
+<td>Upload lecture video file or paste YouTube URL</td>
+<td>Recording available in course</td>
+</tr>
+<tr>
+<td><strong>Schedule Virtual Session</strong></td>
+<td>Set meeting link + date/time</td>
+<td>Session listed, auto-attendance created</td>
+</tr>
+<tr>
+<td><strong>Open AI Tutor</strong></td>
+<td>Available immediately per course</td>
+<td>Students can chat with AI about course topics</td>
+</tr>
+</tbody>
+</table>
+<h3>Step 6: Student Submits Assignment</h3>
+<ol>
+<li>Student opens <strong>Assignment Detail</strong> → Clicks <strong>Submit</strong></li>
+<li>Uploads a <code>.py</code> file <strong>OR</strong> pastes a GitHub link</li>
+<li>System enforces hard deadline (server-side check)</li>
+<li>Submission saved with timestamp</li>
+</ol>
+<h3>Step 7: Teacher Grades</h3>
+<ol>
+<li>Teacher opens <strong>Assignment Detail</strong> → Sees all submissions</li>
+<li>For each student, enters:</li>
+<li><strong>Grade</strong>: 85 (out of 100)</li>
+<li><strong>Feedback</strong>: "Good implementation, but missing edge case handling."</li>
+<li>Clicks <strong>Save</strong> → Student gets notification: "Your assignment scored 85/100"</li>
+</ol>
+<h3>Step 8: End of Course</h3>
+<table>
+<thead>
+<tr>
+<th>Action</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Generate Report Cards</strong></td>
+<td>Score summary per student (assignments + quizzes + tests)</td>
+</tr>
+<tr>
+<td><strong>Export to Excel</strong></td>
+<td>Color-coded spreadsheet with all marks + weekly analysis</td>
+</tr>
+<tr>
+<td><strong>Issue Certificates</strong></td>
+<td>Select badge type per student (Completion/Excellence/Topper)</td>
+</tr>
+<tr>
+<td><strong>Release Results</strong></td>
+<td>Toggle <code>results_released</code> → students can see all scores</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>🤖 9. AI Integration</h2>
+<h3>AI Tutor (Per-Course Chatbot)</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Model</strong></td>
+<td>Google Gemini (via <code>google-generativeai</code> library)</td>
+</tr>
+<tr>
+<td><strong>URL</strong></td>
+<td><code>/courses/&lt;course_pk&gt;/ai-tutor/</code></td>
+</tr>
+<tr>
+<td><strong>How it works</strong></td>
+<td>AJAX-based chat. Conversation history saved in <code>AITutorMessage</code> model. Supports different actions (general, topic-specific).</td>
+</tr>
+<tr>
+<td><strong>Persistence</strong></td>
+<td>Full conversation saved per user per course</td>
+</tr>
+<tr>
+<td><strong>Fallback</strong></td>
+<td>If API key missing, shows demo mode</td>
+</tr>
+</tbody>
+</table>
+<h3>Coding Test Evaluation Engine</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Function</strong></td>
+<td><code>evaluate_coding_question()</code> in tests app</td>
+</tr>
+<tr>
+<td><strong>Process</strong></td>
+<td>Takes student code → runs against hidden test cases → compares output</td>
+</tr>
+<tr>
+<td><strong>Scoring</strong></td>
+<td>Weighted test cases, partial credit possible</td>
+</tr>
+<tr>
+<td><strong>Security</strong></td>
+<td>Server-side execution only</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>👑 10. Admin Panel</h2>
+<p>The Admin Panel (<code>/users/admin-panel/</code>) provides a complete management interface:</p>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Capabilities</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Dashboard</strong></td>
+<td>Total counts (departments, courses, teachers, students, pending approvals)</td>
+</tr>
+<tr>
+<td><strong>Site Admin</strong></td>
+<td>Django-admin-style model browser with live counts for all 12 apps</td>
+</tr>
+<tr>
+<td><strong>Departments</strong></td>
+<td>Create, edit, list departments</td>
+</tr>
+<tr>
+<td><strong>Teachers</strong></td>
+<td>Create, approve/reject/deactivate, list with status filter</td>
+</tr>
+<tr>
+<td><strong>Students</strong></td>
+<td>Create, approve/reject, enroll in courses, list with status filter</td>
+</tr>
+<tr>
+<td><strong>Courses</strong></td>
+<td>Create (auto-approved), edit, approve/reject teacher-created courses</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>⚙ 11. Setup &amp; Installation</h2>
+<pre><code class="language-bash"># 1. Navigate to project
+cd &quot;c:\Data Science and Gen Ai projects\smart_classroom&quot;
+
+# 2. Create &amp; activate virtual environment
+python -m venv .venv
+.venv\Scripts\activate        # Windows
+# source .venv/bin/activate   # Linux/Mac
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Run database migrations
+python manage.py migrate
+
+# 5. Create sample data (teachers, students, courses, etc.)
+python setup.py
+
+# 6. Start the development server
+python manage.py runserver
+
+# 7. Open browser → http://localhost:8000
+</code></pre>
+<hr />
+<h2>🔑 12. Default Test Accounts</h2>
+<p>After running <code>python setup.py</code>:</p>
+<h3>Teachers</h3>
+<table>
+<thead>
+<tr>
+<th>Username</th>
+<th>Password</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>teacher1</code></td>
+<td><code>pass123</code></td>
+<td>Teacher</td>
+</tr>
+<tr>
+<td><code>teacher2</code></td>
+<td><code>pass123</code></td>
+<td>Teacher</td>
+</tr>
+</tbody>
+</table>
+<h3>Students</h3>
+<table>
+<thead>
+<tr>
+<th>Username</th>
+<th>Password</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>student1</code></td>
+<td><code>pass123</code></td>
+<td>Student</td>
+</tr>
+<tr>
+<td><code>student2</code></td>
+<td><code>pass123</code></td>
+<td>Student</td>
+</tr>
+<tr>
+<td><code>student3</code></td>
+<td><code>pass123</code></td>
+<td>Student</td>
+</tr>
+<tr>
+<td><code>student4</code></td>
+<td><code>pass123</code></td>
+<td>Student</td>
+</tr>
+<tr>
+<td><code>student5</code></td>
+<td><code>pass123</code></td>
+<td>Student</td>
+</tr>
+</tbody>
+</table>
+<h3>Pre-Created Data</h3>
+<table>
+<thead>
+<tr>
+<th>Data Type</th>
+<th>Count</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Courses</td>
+<td>3</td>
+<td>Python Programming, Web Development, Data Science</td>
+</tr>
+<tr>
+<td>Assignments</td>
+<td>2 per course</td>
+<td>With attachments</td>
+</tr>
+<tr>
+<td>Quizzes</td>
+<td>1 per course</td>
+<td>With MCQ questions</td>
+</tr>
+<tr>
+<td>Materials</td>
+<td>2 per course</td>
+<td>Document + link types</td>
+</tr>
+<tr>
+<td>Recorded Classes</td>
+<td>1 per course</td>
+<td>Video files</td>
+</tr>
+<tr>
+<td>Projects</td>
+<td>1 per course</td>
+<td>With descriptions</td>
+</tr>
+<tr>
+<td>Certificates</td>
+<td>Generated</td>
+<td>For enrolled students</td>
+</tr>
+<tr>
+<td>Report Cards</td>
+<td>Generated</td>
+<td>With scores</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>🗺 13. Complete URL Reference Map</h2>
+<h3>Users (11 URLs)</h3>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/users/register/</code></td>
+<td>Registration page</td>
+</tr>
+<tr>
+<td><code>/users/login/</code></td>
+<td>Login page</td>
+</tr>
+<tr>
+<td><code>/users/logout/</code></td>
+<td>Logout</td>
+</tr>
+<tr>
+<td><code>/users/dashboard/</code></td>
+<td>Role-based dashboard</td>
+</tr>
+<tr>
+<td><code>/users/profile/</code></td>
+<td>Edit profile</td>
+</tr>
+<tr>
+<td><code>/users/change-password/</code></td>
+<td>Change password</td>
+</tr>
+<tr>
+<td><code>/users/leaderboard/</code></td>
+<td>Global/course leaderboard</td>
+</tr>
+<tr>
+<td><code>/users/report-card/</code></td>
+<td>Student report card</td>
+</tr>
+<tr>
+<td><code>/users/report-card/download/</code></td>
+<td>Download report PDF</td>
+</tr>
+<tr>
+<td><code>/users/approval-status/</code></td>
+<td>Pending approval page</td>
+</tr>
+<tr>
+<td><code>/users/notifications/</code></td>
+<td>Notification list</td>
+</tr>
+</tbody>
+</table>
+<h3>Admin Panel (16 URLs)</h3>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/users/admin-panel/</code></td>
+<td>Admin dashboard</td>
+</tr>
+<tr>
+<td><code>/users/admin-panel/site-admin/</code></td>
+<td>Model browser</td>
+</tr>
+<tr>
+<td><code>/users/admin-panel/departments/</code></td>
+<td>Department list</td>
+</tr>
+<tr>
+<td><code>/users/admin-panel/departments/create/</code></td>
+<td>Create department</td>
+</tr>
+<tr>
+<td><code>/users/admin-panel/departments/&lt;pk&gt;/edit/</code></td>
+<td>Edit department</td>
+</tr>
+<tr>
+<td><code>/users/admin-panel/teachers/</code></td>
+<td>Teacher list</td>
+</tr>
+<tr>
+<td><code>/users/admin-panel/teachers/create/</code></td>
+<td>Create teacher</td>
+</tr>
+<tr>
+<td><code>/users/admin-panel/teachers/&lt;pk&gt;/approve/</code></td>
+<td>Approve teacher</td>
+</tr>
+<tr>
+<td><code>/users/admin-panel/teachers/&lt;pk&gt;/reject/</code></td>
+<td>Reject teacher</td>
+</tr>
+<tr>
+<td><code>/users/admin-panel/teachers/&lt;pk&gt;/deactivate/</code></td>
+<td>Deactivate teacher</td>
+</tr>
+<tr>
+<td><code>/users/admin-panel/students/</code></td>
+<td>Student list</td>
+</tr>
+<tr>
+<td><code>/users/admin-panel/students/create/</code></td>
+<td>Create student</td>
+</tr>
+<tr>
+<td><code>/users/admin-panel/students/&lt;pk&gt;/approve/</code></td>
+<td>Approve student</td>
+</tr>
+<tr>
+<td><code>/users/admin-panel/students/&lt;pk&gt;/reject/</code></td>
+<td>Reject student</td>
+</tr>
+<tr>
+<td><code>/users/admin-panel/students/&lt;pk&gt;/enroll/</code></td>
+<td>Enroll student</td>
+</tr>
+<tr>
+<td><code>/users/admin-panel/courses/</code></td>
+<td>Course list</td>
+</tr>
+</tbody>
+</table>
+<h3>Courses (14 URLs)</h3>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/courses/</code></td>
+<td>Department list (course browser)</td>
+</tr>
+<tr>
+<td><code>/courses/create/</code></td>
+<td>Create course</td>
+</tr>
+<tr>
+<td><code>/courses/department/&lt;dept_pk&gt;/</code></td>
+<td>Courses in department</td>
+</tr>
+<tr>
+<td><code>/courses/&lt;pk&gt;/</code></td>
+<td>Course detail</td>
+</tr>
+<tr>
+<td><code>/courses/&lt;pk&gt;/about/</code></td>
+<td>Course about page</td>
+</tr>
+<tr>
+<td><code>/courses/&lt;pk&gt;/edit/</code></td>
+<td>Edit course</td>
+</tr>
+<tr>
+<td><code>/courses/&lt;pk&gt;/delete/</code></td>
+<td>Delete course</td>
+</tr>
+<tr>
+<td><code>/courses/&lt;pk&gt;/enroll/</code></td>
+<td>Request enrollment</td>
+</tr>
+<tr>
+<td><code>/courses/&lt;pk&gt;/unenroll/</code></td>
+<td>Cancel enrollment</td>
+</tr>
+<tr>
+<td><code>/courses/enrollment/&lt;pk&gt;/approve/</code></td>
+<td>Approve enrollment</td>
+</tr>
+<tr>
+<td><code>/courses/enrollment/&lt;pk&gt;/reject/</code></td>
+<td>Reject enrollment</td>
+</tr>
+<tr>
+<td><code>/courses/&lt;id&gt;/students/</code></td>
+<td>Get students (JSON API)</td>
+</tr>
+<tr>
+<td><code>/courses/&lt;pk&gt;/sessions/create/</code></td>
+<td>Create virtual session</td>
+</tr>
+<tr>
+<td><code>/courses/&lt;pk&gt;/ai-tutor/</code></td>
+<td>AI Tutor chatbot</td>
+</tr>
+</tbody>
+</table>
+<h3>Assignments (7 URLs)</h3>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/assignments/course/&lt;course_pk&gt;/create/</code></td>
+<td>Create assignment</td>
+</tr>
+<tr>
+<td><code>/assignments/&lt;pk&gt;/</code></td>
+<td>Assignment detail</td>
+</tr>
+<tr>
+<td><code>/assignments/&lt;pk&gt;/edit/</code></td>
+<td>Edit assignment</td>
+</tr>
+<tr>
+<td><code>/assignments/&lt;pk&gt;/submit/</code></td>
+<td>Submit assignment</td>
+</tr>
+<tr>
+<td><code>/assignments/&lt;pk&gt;/delete/</code></td>
+<td>Delete assignment</td>
+</tr>
+<tr>
+<td><code>/assignments/submission/&lt;pk&gt;/grade/</code></td>
+<td>Grade submission</td>
+</tr>
+<tr>
+<td><code>/assignments/submission/&lt;pk&gt;/delete/</code></td>
+<td>Delete submission</td>
+</tr>
+</tbody>
+</table>
+<h3>Export (2 URLs)</h3>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/assignments/course/&lt;pk&gt;/export/csv/</code></td>
+<td>Export marks as CSV</td>
+</tr>
+<tr>
+<td><code>/assignments/course/&lt;pk&gt;/export/excel/</code></td>
+<td>Export marks as Excel</td>
+</tr>
+</tbody>
+</table>
+<h3>Attendance (5 URLs)</h3>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/attendance/course/&lt;pk&gt;/</code></td>
+<td>Attendance list</td>
+</tr>
+<tr>
+<td><code>/attendance/course/&lt;pk&gt;/create/</code></td>
+<td>Create session</td>
+</tr>
+<tr>
+<td><code>/attendance/session/&lt;pk&gt;/</code></td>
+<td>Take attendance</td>
+</tr>
+<tr>
+<td><code>/attendance/session/&lt;pk&gt;/mark/</code></td>
+<td>Self-mark attendance</td>
+</tr>
+<tr>
+<td><code>/attendance/course/&lt;pk&gt;/student/</code></td>
+<td>Student attendance view</td>
+</tr>
+</tbody>
+</table>
+<h3>Materials (3 URLs)</h3>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/materials/course/&lt;pk&gt;/upload/</code></td>
+<td>Upload material</td>
+</tr>
+<tr>
+<td><code>/materials/&lt;pk&gt;/download/</code></td>
+<td>Download material</td>
+</tr>
+<tr>
+<td><code>/materials/&lt;pk&gt;/delete/</code></td>
+<td>Delete material</td>
+</tr>
+</tbody>
+</table>
+<h3>Quizzes (10 URLs)</h3>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/quiz/course/&lt;pk&gt;/</code></td>
+<td>Quiz list</td>
+</tr>
+<tr>
+<td><code>/quiz/course/&lt;pk&gt;/create/</code></td>
+<td>Create quiz</td>
+</tr>
+<tr>
+<td><code>/quiz/&lt;pk&gt;/edit/</code></td>
+<td>Edit quiz</td>
+</tr>
+<tr>
+<td><code>/quiz/&lt;pk&gt;/questions/</code></td>
+<td>Add questions</td>
+</tr>
+<tr>
+<td><code>/quiz/&lt;pk&gt;/attempt/</code></td>
+<td>Take quiz</td>
+</tr>
+<tr>
+<td><code>/quiz/result/&lt;pk&gt;/</code></td>
+<td>View result</td>
+</tr>
+<tr>
+<td><code>/quiz/&lt;pk&gt;/submissions/</code></td>
+<td>All submissions</td>
+</tr>
+<tr>
+<td><code>/quiz/&lt;pk&gt;/students/</code></td>
+<td>Attempted students</td>
+</tr>
+<tr>
+<td><code>/quiz/&lt;pk&gt;/delete/</code></td>
+<td>Delete quiz</td>
+</tr>
+<tr>
+<td><code>/quiz/question/&lt;pk&gt;/delete/</code></td>
+<td>Delete question</td>
+</tr>
+</tbody>
+</table>
+<h3>Online Tests (12 URLs)</h3>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/tests/</code></td>
+<td>Test list</td>
+</tr>
+<tr>
+<td><code>/tests/course/&lt;pk&gt;/</code></td>
+<td>Tests by course</td>
+</tr>
+<tr>
+<td><code>/tests/create/</code></td>
+<td>Create test (no course)</td>
+</tr>
+<tr>
+<td><code>/tests/course/&lt;pk&gt;/create/</code></td>
+<td>Create test for course</td>
+</tr>
+<tr>
+<td><code>/tests/&lt;id&gt;/</code></td>
+<td>Test detail</td>
+</tr>
+<tr>
+<td><code>/tests/&lt;id&gt;/edit/</code></td>
+<td>Edit test</td>
+</tr>
+<tr>
+<td><code>/tests/&lt;id&gt;/delete/</code></td>
+<td>Delete test</td>
+</tr>
+<tr>
+<td><code>/tests/&lt;id&gt;/take/</code></td>
+<td>Take test (IDE)</td>
+</tr>
+<tr>
+<td><code>/tests/&lt;id&gt;/question/add/</code></td>
+<td>Add question</td>
+</tr>
+<tr>
+<td><code>/tests/question/&lt;id&gt;/cases/add/</code></td>
+<td>Add test cases</td>
+</tr>
+<tr>
+<td><code>/tests/&lt;id&gt;/responses/</code></td>
+<td>All responses</td>
+</tr>
+<tr>
+<td><code>/tests/&lt;id&gt;/responses/&lt;id&gt;/</code></td>
+<td>Response detail</td>
+</tr>
+</tbody>
+</table>
+<h3>Projects (4 URLs)</h3>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/projects/</code></td>
+<td>Project list</td>
+</tr>
+<tr>
+<td><code>/projects/submit/</code></td>
+<td>Submit project</td>
+</tr>
+<tr>
+<td><code>/projects/&lt;pk&gt;/</code></td>
+<td>Project detail + grade</td>
+</tr>
+<tr>
+<td><code>/projects/&lt;pk&gt;/delete/</code></td>
+<td>Delete project</td>
+</tr>
+</tbody>
+</table>
+<h3>Chat (6 URLs)</h3>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/chat/</code></td>
+<td>Inbox</td>
+</tr>
+<tr>
+<td><code>/chat/&lt;user_id&gt;/</code></td>
+<td>DM chat room</td>
+</tr>
+<tr>
+<td><code>/chat/send/&lt;user_id&gt;/</code></td>
+<td>Send message</td>
+</tr>
+<tr>
+<td><code>/chat/fetch/&lt;user_id&gt;/</code></td>
+<td>Fetch new messages (AJAX)</td>
+</tr>
+<tr>
+<td><code>/chat/group/&lt;course_id&gt;/</code></td>
+<td>Group chat</td>
+</tr>
+<tr>
+<td><code>/chat/group/fetch/&lt;course_id&gt;/</code></td>
+<td>Fetch group messages (AJAX)</td>
+</tr>
+</tbody>
+</table>
+<h3>Certificates (6 URLs)</h3>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/certificates/course/&lt;pk&gt;/issue/</code></td>
+<td>Issue certificates</td>
+</tr>
+<tr>
+<td><code>/certificates/my/</code></td>
+<td>My certificates</td>
+</tr>
+<tr>
+<td><code>/certificates/&lt;pk&gt;/view/</code></td>
+<td>View certificate</td>
+</tr>
+<tr>
+<td><code>/certificates/&lt;pk&gt;/exact/</code></td>
+<td>Detailed certificate</td>
+</tr>
+<tr>
+<td><code>/certificates/&lt;pk&gt;/download/</code></td>
+<td>Download PDF</td>
+</tr>
+<tr>
+<td><code>/certificates/&lt;pk&gt;/exact/download/</code></td>
+<td>Download detailed PDF</td>
+</tr>
+</tbody>
+</table>
+<h3>Reports (4 URLs)</h3>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/reports/</code></td>
+<td>Reports home</td>
+</tr>
+<tr>
+<td><code>/reports/manage/</code></td>
+<td>Report list (teacher)</td>
+</tr>
+<tr>
+<td><code>/reports/&lt;pk&gt;/</code></td>
+<td>Report detail</td>
+</tr>
+<tr>
+<td><code>/reports/&lt;pk&gt;/edit/</code></td>
+<td>Edit report</td>
+</tr>
+</tbody>
+</table>
+<h3>Recorded Classes (5 URLs)</h3>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/recorded-classes/</code></td>
+<td>Class list</td>
+</tr>
+<tr>
+<td><code>/recorded-classes/upload/</code></td>
+<td>Upload recording</td>
+</tr>
+<tr>
+<td><code>/recorded-classes/&lt;pk&gt;/edit/</code></td>
+<td>Edit recording</td>
+</tr>
+<tr>
+<td><code>/recorded-classes/&lt;pk&gt;/delete/</code></td>
+<td>Delete recording</td>
+</tr>
+<tr>
+<td><code>/recorded-classes/&lt;pk&gt;/</code></td>
+<td>Watch recording</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3>📊 Final Summary</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Django Apps</strong></td>
+<td>12</td>
+</tr>
+<tr>
+<td><strong>Database Models</strong></td>
+<td>24</td>
+</tr>
+<tr>
+<td><strong>URL Endpoints</strong></td>
+<td>105+</td>
+</tr>
+<tr>
+<td><strong>Templates</strong></td>
+<td>50+</td>
+</tr>
+<tr>
+<td><strong>User Roles</strong></td>
+<td>3 (Admin, Teacher, Student)</td>
+</tr>
+<tr>
+<td><strong>Approval Workflows</strong></td>
+<td>3 (User, Course, Enrollment)</td>
+</tr>
+<tr>
+<td><strong>AI Integration Points</strong></td>
+<td>2 (AI Tutor, Coding Evaluation)</td>
+</tr>
+<tr>
+<td><strong>Export Formats</strong></td>
+<td>3 (CSV, Excel, PDF)</td>
+</tr>
+<tr>
+<td><strong>Chat Types</strong></td>
+<td>2 (DM + Group)</td>
+</tr>
+<tr>
+<td><strong>Assessment Types</strong></td>
+<td>4 (Assignment, Quiz, Coding Test, Project)</td>
+</tr>
+<tr>
+<td><strong>Certificate Types</strong></td>
+<td>4 (Completion, Excellence, Topper, Participation)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<blockquote>
+<p><strong>Document prepared by</strong>: AI Assistant (Antigravity)<br />
+<strong>Project</strong>: Smart Classroom LMS<br />
+<strong>Last Updated</strong>: June 14, 2026</p>
+</blockquote>
+        </div>
+    </main>
+
+    <!-- Scroll to Top Button -->
+    <button class="btn-scroll-top" id="btn-scroll-top" title="Scroll to top">
+        <i class="fa-solid fa-arrow-up"></i>
+    </button>
+
+    <!-- Script to render everything client-side -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const contentContainer = document.getElementById('doc-content');
+            const themeToggle = document.getElementById('theme-toggle');
+            const menuToggle = document.getElementById('menu-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const scrollTopBtn = document.getElementById('btn-scroll-top');
+            const searchInput = document.getElementById('search-input');
+
+            // 1. Initialize Code Syntax Highlighting (if hljs is loaded)
+            if (typeof hljs !== 'undefined') {
+                hljs.highlightAll();
+            }
+
+            // 2. Dynamically Generate Sidebar Table of Contents
+            generateTOC();
+
+            // 3. Setup Active TOC Navigation based on Scroll position
+            setupScrollSpy();
+
+            // Dynamic TOC Generation Function
+            function generateTOC() {
+                const tocList = document.getElementById('toc-list');
+                tocList.innerHTML = '';
+                
+                // Select all headings in the rendered document
+                const headings = contentContainer.querySelectorAll('h1, h2, h3');
+                
+                headings.forEach((heading, idx) => {
+                    // Ensure the heading has an ID for linking
+                    if (!heading.id) {
+                        // Create URL-friendly ID
+                        heading.id = heading.textContent
+                            .toLowerCase()
+                            .replace(/[^a-z0-9\s-]/g, '')
+                            .replace(/\s+/g, '-');
+                    }
+                    
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.href = `#${heading.id}`;
+                    a.textContent = heading.textContent.replace(/^[\d.]+\s+/, ''); // strip numbers for sidebar view if any
+                    
+                    // Add hierarchical class
+                    if (heading.tagName === 'H1') {
+                        a.classList.add('toc-h1');
+                        a.style.fontWeight = 'bold';
+                    } else if (heading.tagName === 'H2') {
+                        a.classList.add('toc-h2');
+                    } else if (heading.tagName === 'H3') {
+                        a.classList.add('toc-h3');
+                    }
+                    
+                    li.appendChild(a);
+                    tocList.appendChild(li);
+                });
+            }
+
+            // Scrollspy Implementation
+            function setupScrollSpy() {
+                const headings = Array.from(contentContainer.querySelectorAll('h1, h2, h3'));
+                const tocLinks = Array.from(document.querySelectorAll('#toc-list a'));
+                
+                const observerOptions = {
+                    root: null,
+                    rootMargin: '-50px 0px -70% 0px', // Trigger when section is in top ~30% of viewport
+                    threshold: 0
+                };
+                
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const id = entry.target.id;
+                            
+                            // Remove active class from all links
+                            tocLinks.forEach(link => link.classList.remove('active'));
+                            
+                            // Find and add active class to matching link
+                            const activeLink = tocLinks.find(link => link.getAttribute('href') === `#${id}`);
+                            if (activeLink) {
+                                activeLink.classList.add('active');
+                                // Scroll TOC item into view inside sidebar if overflowed
+                                activeLink.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                            }
+                        }
+                    });
+                }, observerOptions);
+                
+                headings.forEach(heading => observer.observe(heading));
+            }
+
+            // 4. Setup Theme Switcher
+            themeToggle.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                document.documentElement.setAttribute('data-theme', newTheme);
+                
+                // Toggle moon/sun icon
+                const icon = themeToggle.querySelector('i');
+                if (newTheme === 'light') {
+                    icon.className = 'fa-solid fa-sun';
+                } else {
+                    icon.className = 'fa-solid fa-moon';
+                }
+            });
+
+            // 5. Toggle Mobile Menu
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+                const icon = menuToggle.querySelector('i');
+                if (sidebar.classList.contains('open')) {
+                    icon.className = 'fa-solid fa-xmark';
+                } else {
+                    icon.className = 'fa-solid fa-bars';
+                }
+            });
+
+            // Close sidebar when clicking links on mobile
+            document.querySelectorAll('#toc-list a').forEach(link => {
+                link.addEventListener('click', () => {
+                    sidebar.classList.remove('open');
+                    const icon = menuToggle.querySelector('i');
+                    icon.className = 'fa-solid fa-bars';
+                });
+            });
+
+            // 6. Scroll to Top Button Visibility
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) {
+                    scrollTopBtn.style.display = 'flex';
+                } else {
+                    scrollTopBtn.style.display = 'none';
+                }
+            });
+            
+            scrollTopBtn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            // 7. Documentation Search Functionality
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                const elements = contentContainer.querySelectorAll('p, li, td, h1, h2, h3, h4');
+                
+                // Clean past search highlights
+                removeHighlights();
+                
+                if (!query) return;
+                
+                elements.forEach(el => {
+                    if (el.closest('.mermaid') || el.closest('pre') || el.closest('.sidebar-brand')) return;
+                    
+                    const text = el.textContent;
+                    const index = text.toLowerCase().indexOf(query);
+                    
+                    if (index >= 0) {
+                        const innerHTML = el.innerHTML;
+                        const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
+                        el.innerHTML = innerHTML.replace(regex, '<span class="highlight-match">$1</span>');
+                    }
+                });
+            });
+
+            function escapeRegExp(string) {
+                return string.replace(/[.*+?^${}()|[\]\]/g, '\\$&');
+            }
+
+            function removeHighlights() {
+                const highlights = contentContainer.querySelectorAll('.highlight-match');
+                highlights.forEach(span => {
+                    const parent = span.parentNode;
+                    parent.replaceChild(document.createTextNode(span.textContent), span);
+                    parent.normalize(); // merge adjacent text nodes
+                });
+            }
+        });
+    </script>
+</body>
+</html>

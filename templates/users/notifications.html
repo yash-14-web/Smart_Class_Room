@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}Notifications - SmartClass{% endblock %}
+
+{% block extra_css %}
+<style>
+  .notification-page .noti-card {
+    background: var(--sc-surface-strong);
+    border: 1px solid var(--sc-border);
+    border-radius: 20px;
+    box-shadow: var(--sc-shadow-soft);
+    overflow: hidden;
+  }
+  .notification-page .noti-item {
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--sc-border);
+    transition: background-color 0.2s;
+  }
+  .notification-page .noti-item:last-child {
+    border-bottom: 0;
+  }
+  .notification-page .noti-item.unread {
+    background-color: rgba(20, 90, 242, 0.03);
+    border-left: 4px solid var(--sc-primary);
+  }
+  .notification-page .noti-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+  .notification-page .icon-assignment {
+    background: rgba(255, 193, 7, 0.15);
+    color: #ffc107;
+  }
+  .notification-page .icon-quiz {
+    background: rgba(26, 163, 163, 0.15);
+    color: #1aa3a3;
+  }
+  .notification-page .icon-test {
+    background: rgba(111, 66, 193, 0.15);
+    color: #6f42c1;
+  }
+  .notification-page .icon-enrollment {
+    background: rgba(20, 90, 242, 0.15);
+    color: #145af2;
+  }
+  .notification-page .icon-grade {
+    background: rgba(13, 159, 140, 0.15);
+    color: #0d9f8c;
+  }
+  .notification-page .icon-default {
+    background: rgba(99, 115, 137, 0.15);
+    color: #637389;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="notification-page py-2">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-0 h4 font-weight-bold text-dark">Notifications</h2>
+      <p class="text-muted small mb-0">Stay updated on your coursework, live sessions, and results.</p>
+    </div>
+    {% if notifications %}
+      <a href="{% url 'clear_notifications' %}" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+        <i class="bi bi-trash me-1"></i> Clear all
+      </a>
+    {% endif %}
+  </div>
+
+  <div class="noti-card">
+    {% if notifications %}
+      <div class="d-flex flex-column">
+        {% for noti in notifications %}
+          <div class="noti-item d-flex gap-3 {% if not noti.is_read %}unread{% endif %}">
+            <div class="noti-icon 
+              {% if noti.notification_type == 'assignment' %}icon-assignment
+              {% elif noti.notification_type == 'quiz' %}icon-quiz
+              {% elif noti.notification_type == 'test' %}icon-test
+              {% elif noti.notification_type == 'enrollment' %}icon-enrollment
+              {% elif noti.notification_type == 'grade' %}icon-grade
+              {% else %}icon-default{% endif %}">
+              {% if noti.notification_type == 'assignment' %}<i class="bi bi-journal-text"></i>
+              {% elif noti.notification_type == 'quiz' %}<i class="bi bi-patch-question"></i>
+              {% elif noti.notification_type == 'test' %}<i class="bi bi-journal-check"></i>
+              {% elif noti.notification_type == 'enrollment' %}<i class="bi bi-person-check"></i>
+              {% elif noti.notification_type == 'grade' %}<i class="bi bi-award"></i>
+              {% else %}<i class="bi bi-bell"></i>{% endif %}
+            </div>
+            <div class="flex-grow-1">
+              <div class="d-flex justify-content-between align-items-start gap-2">
+                <h6 class="fw-bold mb-1 text-dark" style="font-size: 0.95rem;">{{ noti.title }}</h6>
+                <small class="text-muted" style="font-size: 0.75rem;">{{ noti.created_at|date:"M d, H:i" }}</small>
+              </div>
+              <p class="mb-0 text-muted" style="font-size: 0.88rem; line-height: 1.4;">{{ noti.message }}</p>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-center py-5">
+        <i class="bi bi-bell-slash fs-1 text-muted d-block mb-3" style="opacity: 0.5;"></i>
+        <p class="text-muted mb-0">No notifications.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

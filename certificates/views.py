@@ -66,7 +66,7 @@ def _get_student_performance(student, course):
 @login_required
 def issue_certificate(request, course_pk):
     course      = get_object_or_404(Course, pk=course_pk, teacher=request.user)
-    enrollments = Enrollment.objects.filter(course=course).select_related('student')
+    enrollments = Enrollment.objects.filter(course=course, status='approved').select_related('student')
 
     if request.method == 'POST':
         student_id  = request.POST.get('student_id')
@@ -174,16 +174,31 @@ def _build_cert_context(certificate):
     }
 
 
+from django.conf import settings
+import base64
+
 @login_required
 def download_certificate_pdf(request, cert_pk):
     certificate = _get_accessible_certificate(request, cert_pk)
     if certificate is None:
         return redirect('dashboard')
 
+    logo_base64 = ""
+    try:
+        logo_path = settings.MEDIA_ROOT / 'smart_logo.png'
+        with open(logo_path, 'rb') as f:
+            logo_base64 = base64.b64encode(f.read()).decode('utf-8')
+    except Exception:
+        pass
+
     return render(
         request,
         'certificates/certificate_print.html',
-        {'certificate': certificate, 'auto_print': True}
+        {
+            'certificate': certificate,
+            'auto_print': True,
+            'logo_base64': logo_base64
+        }
     )
 
 
@@ -193,8 +208,20 @@ def download_certificate_exact_pdf(request, cert_pk):
     if certificate is None:
         return redirect('dashboard')
 
+    logo_base64 = ""
+    try:
+        logo_path = settings.MEDIA_ROOT / 'smart_logo.png'
+        with open(logo_path, 'rb') as f:
+            logo_base64 = base64.b64encode(f.read()).decode('utf-8')
+    except Exception:
+        pass
+
     return render(
         request,
         'certificates/certificate_print.html',
-        {'certificate': certificate, 'auto_print': True}
+        {
+            'certificate': certificate,
+            'auto_print': True,
+            'logo_base64': logo_base64
+        }
     )

@@ -51,7 +51,7 @@ def create_session(request, course_pk):
             return redirect('take_attendance', session_pk=session.pk)
 
         # Auto-create absent records for all enrolled students
-        enrollments = Enrollment.objects.filter(course=course)
+        enrollments = Enrollment.objects.filter(course=course, status='approved')
         for enrollment in enrollments:
             AttendanceRecord.objects.get_or_create(
                 session=session,
@@ -115,9 +115,20 @@ def take_attendance(request, session_pk):
 def mark_self_attendance(request, session_pk):
     session = get_object_or_404(AttendanceSession, pk=session_pk, is_open=True)
 
+    # Enforce IST 11:59 PM deadline
+    from datetime import datetime, time, timedelta, timezone as dt_timezone
+    ist_tz = dt_timezone(timedelta(hours=5, minutes=30))
+    now_ist = datetime.now(ist_tz)
+    session_date = session.date
+    if now_ist.date() > session_date or (now_ist.date() == session_date and now_ist.time() > time(23, 59, 0)):
+        session.is_open = False
+        session.save()
+        messages.error(request, 'The deadline (11:59 PM IST) to mark your own attendance for this session has passed.')
+        return redirect('student_attendance', course_pk=session.course.pk)
+
     # Must be enrolled
     if not Enrollment.objects.filter(
-        student=request.user, course=session.course
+        student=request.user, course=session.course, status='approved'
     ).exists():
         messages.error(request, 'You are not enrolled in this course.')
         return redirect('course_list')
@@ -155,7 +166,7 @@ def student_attendance(request, course_pk):
 
     # Check enrollment
     if not Enrollment.objects.filter(
-        student=request.user, course=course
+        student=request.user, course=course, status='approved'
     ).exists() and course.teacher != request.user:
         messages.error(request, 'Access denied.')
         return redirect('course_list')
@@ -181,10 +192,20 @@ def student_attendance(request, course_pk):
     # Open sessions student hasn't marked yet
     open_sessions = []
     if student == request.user and request.user.is_student():
+        from datetime import datetime, time, timedelta, timezone as dt_timezone
+        ist_tz = dt_timezone(timedelta(hours=5, minutes=30))
+        now_ist = datetime.now(ist_tz)
         for session in sessions.filter(is_open=True):
+            # Enforce IST 11:59 PM deadline
+            session_date = session.date
+            if now_ist.date() > session_date or (now_ist.date() == session_date and now_ist.time() > time(23, 59, 0)):
+                session.is_open = False
+                session.save()
+                continue
             rec = records.filter(session=session).first()
             if not rec or (rec.status == 'absent' and rec.marked_by == 'teacher'):
                 open_sessions.append(session)
+
 
     return render(request, 'attendance/student_attendance.html', {
         'course':         course,

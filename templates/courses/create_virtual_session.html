@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Schedule Virtual Session - SmartClass{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+    <div class="card shadow-sm border-0 rounded-4 p-4 mt-4">
+      <div class="d-flex align-items-center mb-4">
+        <a href="{% url 'course_detail' course.pk %}" class="btn btn-outline-secondary btn-sm me-3">
+          <i class="bi bi-arrow-left"></i>
+        </a>
+        <h2 class="mb-0 h4 font-weight-bold">Schedule Virtual Session</h2>
+      </div>
+
+      <div class="alert alert-info py-2 px-3 mb-4 rounded-3" style="font-size: 0.9rem;">
+        <i class="bi bi-info-circle-fill me-2 text-info"></i>
+        Scheduling a virtual session will automatically create an **Attendance Session** for the course on the scheduled date, open for self-marking until **11:59 PM IST**.
+      </div>
+
+      <form method="POST">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+          <label for="id_title" class="form-label font-weight-bold">Session Title</label>
+          {{ form.title }}
+          {% if form.title.errors %}
+            <div class="text-danger small mt-1">{{ form.title.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="mb-3">
+          <label for="id_description" class="form-label font-weight-bold">Description (Optional)</label>
+          {{ form.description }}
+          {% if form.description.errors %}
+            <div class="text-danger small mt-1">{{ form.description.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="mb-3">
+          <label for="id_meeting_link" class="form-label font-weight-bold">Meeting Link URL</label>
+          {{ form.meeting_link }}
+          <div class="form-text small text-muted">Enter a valid URL (Google Meet, Zoom, MS Teams, etc.)</div>
+          {% if form.meeting_link.errors %}
+            <div class="text-danger small mt-1">{{ form.meeting_link.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="id_scheduled_at" class="form-label font-weight-bold">Scheduled At</label>
+            {{ form.scheduled_at }}
+            {% if form.scheduled_at.errors %}
+              <div class="text-danger small mt-1">{{ form.scheduled_at.errors }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="id_duration_minutes" class="form-label font-weight-bold">Duration (Minutes)</label>
+            {{ form.duration_minutes }}
+            {% if form.duration_minutes.errors %}
+              <div class="text-danger small mt-1">{{ form.duration_minutes.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="d-grid gap-2 mt-4">
+          <button type="submit" class="btn btn-primary rounded-3 py-2">
+            <i class="bi bi-calendar-plus me-1"></i> Schedule Session
+          </button>
+          <a href="{% url 'course_detail' course.pk %}" class="btn btn-light rounded-3 py-2">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

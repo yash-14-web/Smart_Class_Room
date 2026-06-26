@@ -16,9 +16,12 @@
           <a href="{{ submission.github_link }}" class="btn btn-sm btn-outline-secondary mt-2" target="_blank"><i class="bi bi-github me-1"></i>View on GitHub</a>
           {% endif %}
         </div>
-        <form method="post">
+        <form method="post" id="grade-form">
           {% csrf_token %}
-          <div class="mb-3"><label class="form-label fw-semibold">Grade (out of {{ submission.assignment.total_marks }})</label>{{ form.grade }}</div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Grade (out of {{ submission.assignment.total_marks }})</label>
+            {{ form.grade }}
+          </div>
           <div class="mb-4"><label class="form-label fw-semibold">Feedback</label>{{ form.feedback }}</div>
           <div class="d-flex flex-wrap gap-2"><button type="submit" class="btn btn-success">Save Grade</button><a href="{% url 'assignment_detail' submission.assignment.pk %}" class="btn btn-outline-secondary">Cancel</a></div>
         </form>

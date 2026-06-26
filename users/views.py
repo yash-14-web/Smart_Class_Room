@@ -55,6 +55,9 @@ def logout_view(request):
 @login_required
 def dashboard_view(request):
     user = request.user
+    # Admin/superusers go directly to the admin panel dashboard
+    if user.is_superuser or user.role == 'admin':
+        return redirect('admin_dashboard')
     if user.is_teacher():
         from attendance.models import AttendanceRecord
         from quiz.models import Quiz
@@ -207,7 +210,7 @@ def dashboard_view(request):
         from tests.models import Test, StudentResponse
         from django.db.models import Q
 
-        enrollments = Enrollment.objects.filter(student=user).select_related(
+        enrollments = Enrollment.objects.filter(student=user, status='approved').select_related(
             'course', 'course__teacher'
         )
         courses = [e.course for e in enrollments]
@@ -541,6 +544,17 @@ def profile_view(request):
             if form.cleaned_data.get('remove_profile_pic') and user.profile_pic:
                 user.profile_pic.delete(save=False)
                 user.profile_pic = None
+            if form.cleaned_data.get('remove_cover_pic') and user.cover_pic:
+                user.cover_pic.delete(save=False)
+                user.cover_pic = None
+                user.cover_preset = 'nebula'
+                user.cover_position = 50
+            
+            # If cover_pic was changed/uploaded
+            if 'cover_pic' in form.changed_data and user.cover_pic:
+                user.cover_preset = 'custom'
+                user.cover_position = 50
+
             user.save()
             messages.success(request, 'Profile updated.')
             return redirect('profile')
@@ -552,10 +566,218 @@ def profile_view(request):
         from certificates.models import Certificate
         certificates = Certificate.objects.filter(student=request.user).select_related('course')
 
+    # Gather recent activity timeline
+    from users.models import Notification
+    from quiz.models import QuizAttempt
+    from tests.models import StudentResponse
+
+    actions = []
+
+    # Get notifications
+    for n in Notification.objects.filter(user=request.user).order_by('-created_at')[:12]:
+        icon = 'bi-bell-fill'
+        category = 'info'
+        n_type = n.notification_type.lower() if n.notification_type else ''
+        if 'assignment' in n_type:
+            icon = 'bi-file-earmark-text-fill'
+            category = 'assignment'
+        elif 'quiz' in n_type:
+            icon = 'bi-patch-question-fill'
+            category = 'quiz'
+        elif 'test' in n_type:
+            icon = 'bi-lightning-charge-fill'
+            category = 'test'
+        elif 'enroll' in n_type:
+            icon = 'bi-person-check-fill'
+            category = 'enrollment'
+        elif 'grade' in n_type:
+            icon = 'bi-award-fill'
+            category = 'grade'
+
+        actions.append({
+            'title': n.title,
+            'description': n.message,
+            'timestamp': n.created_at,
+            'icon': icon,
+            'category': category
+        })
+
+    # Query actual records for fallback/detail
+    if request.user.is_student():
+        # Enrollments
+        for en in Enrollment.objects.filter(student=request.user).select_related('course').order_by('-enrolled_at')[:5]:
+            actions.append({
+                'title': 'Joined course',
+                'description': f"Enrolled in '{en.course.title}'",
+                'timestamp': en.enrolled_at,
+                'icon': 'bi-book-fill',
+                'category': 'enrollment'
+            })
+        # Quiz attempts
+        for qa in QuizAttempt.objects.filter(student=request.user).select_related('quiz', 'quiz__course').order_by('-finished_at')[:5]:
+            if qa.is_complete and qa.finished_at:
+                actions.append({
+                    'title': 'Completed Quiz',
+                    'description': f"Finished quiz '{qa.quiz.title}' (Score: {qa.score}/{qa.quiz.total_marks})",
+                    'timestamp': qa.finished_at,
+                    'icon': 'bi-patch-check-fill',
+                    'category': 'quiz'
+                })
+        # Assignment submissions
+        for sub in Submission.objects.filter(student=request.user).select_related('assignment', 'assignment__course').order_by('-submitted_at')[:5]:
+            actions.append({
+                'title': 'Submitted Assignment',
+                'description': f"Submitted assignment '{sub.assignment.title}'",
+                'timestamp': sub.submitted_at,
+                'icon': 'bi-file-earmark-arrow-up-fill',
+                'category': 'assignment'
+            })
+        # Test responses
+        for resp in StudentResponse.objects.filter(student=request.user).select_related('test', 'test__course').order_by('-submitted_at')[:5]:
+            actions.append({
+                'title': 'Submitted Test',
+                'description': f"Completed exam '{resp.test.title}'",
+                'timestamp': resp.submitted_at,
+                'icon': 'bi-code-square',
+                'category': 'test'
+            })
+    elif request.user.is_teacher():
+        # Courses created
+        for c in Course.objects.filter(teacher=request.user).order_by('-created_at')[:5]:
+            actions.append({
+                'title': 'Created Course',
+                'description': f"Created course '{c.title}'",
+                'timestamp': c.created_at,
+                'icon': 'bi-journal-plus',
+                'category': 'course'
+            })
+        # Submissions graded
+        for sub in Submission.objects.filter(assignment__course__teacher=request.user, grade__isnull=False).select_related('student', 'assignment').order_by('-submitted_at')[:5]:
+            actions.append({
+                'title': 'Graded Assignment',
+                'description': f"Graded {sub.student.get_full_name() or sub.student.username}'s submission for '{sub.assignment.title}'",
+                'timestamp': sub.submitted_at,
+                'icon': 'bi-check2-all',
+                'category': 'grade'
+            })
+    else:  # Admin
+        # Approved users
+        from users.models import CustomUser
+        for u in CustomUser.objects.filter(account_status='active').order_by('-date_joined')[:5]:
+            actions.append({
+                'title': 'User Activated',
+                'description': f"Approved account for {u.username} ({u.get_role_display()})",
+                'timestamp': u.date_joined,
+                'icon': 'bi-person-check-fill',
+                'category': 'user'
+            })
+        # Approved courses
+        for c in Course.objects.filter(approval_status='approved').order_by('-created_at')[:5]:
+            actions.append({
+                'title': 'Course Approved',
+                'description': f"Approved course '{c.title}' taught by {c.teacher.username}",
+                'timestamp': c.created_at,
+                'icon': 'bi-journal-check',
+                'category': 'course'
+            })
+
+    # Deduplicate actions based on description and keep the newest, then sort
+    seen_descriptions = set()
+    deduped_actions = []
+    for act in sorted(actions, key=lambda x: x['timestamp'], reverse=True):
+        desc = act['description']
+        if desc not in seen_descriptions:
+            seen_descriptions.add(desc)
+            deduped_actions.append(act)
+
+    recent_activities = deduped_actions[:8]
+
+    # Gather quick access links (Notion sidebar pages style)
+    quick_links = []
+    if request.user.is_student():
+        enrolls = Enrollment.objects.filter(student=request.user, status='approved').select_related('course')
+        for en in enrolls:
+            quick_links.append({
+                'title': en.course.title,
+                'url': f"/courses/{en.course.pk}/",
+                'subtitle': en.course.course_code or 'Course',
+                'icon': 'bi-file-earmark-text'
+            })
+    elif request.user.is_teacher():
+        courses = Course.objects.filter(teacher=request.user)
+        for c in courses:
+            quick_links.append({
+                'title': c.title,
+                'url': f"/courses/{c.pk}/",
+                'subtitle': c.course_code or 'Course',
+                'icon': 'bi-file-earmark-text'
+            })
+    else:  # Admin
+        quick_links = [
+            {'title': 'Site Administration', 'url': '/users/admin-panel/site-admin/', 'subtitle': 'Control Panel', 'icon': 'bi-shield-lock-fill'},
+            {'title': 'Departments Registry', 'url': '/users/admin-panel/departments/', 'subtitle': 'Manage Fields', 'icon': 'bi-building-fill'},
+            {'title': 'Teachers Registry', 'url': '/users/admin-panel/teachers/', 'subtitle': 'Manage Instructors', 'icon': 'bi-people-fill'},
+            {'title': 'Students Registry', 'url': '/users/admin-panel/students/', 'subtitle': 'Manage Enrollees', 'icon': 'bi-person-workspace'},
+            {'title': 'Courses Manager', 'url': '/users/admin-panel/courses/', 'subtitle': 'Review Classes', 'icon': 'bi-journal-bookmark-fill'},
+        ]
+
     return render(request, 'users/profile.html', {
         'form': form,
         'certificates': certificates,
+        'recent_activities': recent_activities,
+        'quick_links': quick_links,
     })
+
+
+@login_required
+def update_cover_view(request):
+    from django.http import JsonResponse
+    from django.views.decorators.http import require_POST
+    
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'POST request required'}, status=405)
+
+    user = request.user
+    
+    # Try parsing json body, fall back to POST params
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        data = request.POST
+
+    preset = data.get('cover_preset')
+    position = data.get('cover_position')
+    remove = data.get('remove_cover')
+
+    if remove:
+        if user.cover_pic:
+            user.cover_pic.delete(save=False)
+            user.cover_pic = None
+        user.cover_preset = 'nebula'
+        user.cover_position = 50
+        user.save()
+        return JsonResponse({'status': 'success', 'message': 'Cover removed'})
+
+    if preset:
+        if user.cover_pic:
+            user.cover_pic.delete(save=False)
+            user.cover_pic = None
+        user.cover_preset = preset
+        user.cover_position = 50
+        user.save()
+        return JsonResponse({'status': 'success', 'preset': preset})
+
+    if position is not None:
+        try:
+            pos = int(position)
+            if 0 <= pos <= 100:
+                user.cover_position = pos
+                user.save()
+                return JsonResponse({'status': 'success', 'position': pos})
+        except ValueError:
+            pass
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid cover parameters'}, status=400)
 
 
 @login_required
@@ -709,11 +931,23 @@ def _build_report(student, viewer=None):
     from tests.models import Test, StudentResponse
 
     enrollments  = Enrollment.objects.filter(
-        student=student
-    ).select_related('course', 'course__teacher')
+        student=student,
+        status='approved'
+    ).select_related('course', 'course__teacher', 'course__department')
     joined_at = enrollments.order_by('enrolled_at').values_list(
         'enrolled_at', flat=True
     ).first()
+
+    unique_depts = []
+    unique_batches = []
+    for enroll in enrollments:
+        if enroll.course.department and enroll.course.department.name not in unique_depts:
+            unique_depts.append(enroll.course.department.name)
+        if enroll.course.batch and enroll.course.batch not in unique_batches:
+            unique_batches.append(enroll.course.batch)
+            
+    student_departments = ", ".join(unique_depts) if unique_depts else "N/A"
+    student_batches = ", ".join(unique_batches) if unique_batches else "N/A"
 
     courses_data      = []
     grand_total_marks = 0
@@ -929,6 +1163,8 @@ def _build_report(student, viewer=None):
         'grand_results_visible': grand_results_visible,
         'rank':                  _get_student_rank(student),
         'joined_at':             joined_at,
+        'student_departments':   student_departments,
+        'student_batches':       student_batches,
     }
 
 
@@ -964,3 +1200,30 @@ def download_report_pdf(request):
         'is_print': True,
         'auto_print': True,
     })
+
+
+@login_required
+def approval_status_view(request):
+    if request.user.is_superuser or request.user.account_status == 'active':
+        return redirect('dashboard')
+    return render(request, 'users/approval_status.html')
+
+
+@login_required
+def notifications_list(request):
+    notifications = request.user.notifications.all()
+    # Mark all unread notifications as read upon viewing the list
+    unread = notifications.filter(is_read=False)
+    if unread.exists():
+        unread.update(is_read=True)
+    return render(request, 'users/notifications.html', {
+        'notifications': notifications,
+    })
+
+
+@login_required
+def clear_notifications(request):
+    request.user.notifications.all().delete()
+    messages.success(request, 'All notifications cleared.')
+    return redirect('notifications_list')
+

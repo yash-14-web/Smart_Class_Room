@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Certificate - {{ certificate.student.get_full_name|default:certificate.student.username }}</title>
-  <link rel="icon" type="image/png" href="/media/smart_logo.png"/>
+  <link rel="icon" type="image/png" href="/media/smart_logo.png?v=2"/>
   <style>
     @page {
       size: A4 landscape;
@@ -109,22 +109,21 @@
     .brand-box {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 8px;
     }
     .logo-wrap {
-      width: 82px;
-      height: 82px;
-      border-radius: 22px;
-      overflow: hidden;
-      background: var(--sc-surface);
-      border: 1px solid var(--line);
-      box-shadow: 0 10px 18px rgba(63, 95, 73, 0.08);
+      height: 100px;
+      width: auto;
+      overflow: visible;
+      background: transparent;
+      border: none;
+      box-shadow: none;
       flex-shrink: 0;
     }
     .logo-wrap img {
-      width: 100%;
       height: 100%;
-      object-fit: cover;
+      width: auto;
+      object-fit: contain;
     }
     .brand-eyebrow {
       font-family: "Segoe UI", Arial, sans-serif;
@@ -181,7 +180,7 @@
       border-radius: 50%;
       background:
         radial-gradient(circle at center, rgba(255,255,255,0.98) 0 34%, transparent 35%),
-        conic-gradient(from 0deg, var(--gold), #f0d79a, var(--gold), #e7c979, var(--gold));
+        var(--gold);
       box-shadow: 0 10px 20px rgba(199, 154, 59, 0.24);
       display: flex;
       align-items: center;
@@ -332,28 +331,99 @@
       margin-bottom: 2px;
     }
     @media print {
-      body {
-        margin: 0;
-        background: var(--sc-surface-strong);
+      html, body {
+        width: 297mm;
+        height: 210mm;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
       }
       .print-actions {
-        display: none;
+        display: none !important;
       }
       .page {
-        width: 100%;
-        min-height: auto;
-        margin: 0;
-        padding: 0;
-        border: none;
-        border-radius: 0;
-        box-shadow: none;
+        width: 297mm !important;
+        height: 210mm !important;
+        margin: 0 !important;
+        padding: 8mm !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        box-sizing: border-box !important;
+        page-break-inside: avoid !important;
+        page-break-after: avoid !important;
       }
       .cert {
-        min-height: 100vh;
-        border-radius: 0;
+        height: calc(210mm - 16mm) !important;
+        min-height: calc(210mm - 16mm) !important;
+        padding: 10mm 15mm !important;
+        border-radius: 12px !important;
+        box-sizing: border-box !important;
+        background: #ffffff !important;
+      }
+      /* Scale down vertical spacing to fit everything */
+      .logo-wrap {
+        height: 76px !important;
+        width: auto !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+      .brand-name {
+        font-size: 18px !important;
+      }
+      .seal {
+        width: 70px !important;
+        height: 70px !important;
+        margin: 0 auto 8px !important;
+      }
+      .seal::before {
+        width: 50px !important;
+        height: 50px !important;
+      }
+      .seal-text {
+        font-size: 8px !important;
+      }
+      .cert-title {
+        margin-bottom: 8px !important;
+      }
+      .main-title {
+        font-size: 32px !important;
+        margin: 0 0 6px !important;
+      }
+      .present {
+        margin-bottom: 8px !important;
+        font-size: 11px !important;
+      }
+      .name {
+        font-size: 32px !important;
+        padding: 0 20px 6px !important;
+        margin-bottom: 10px !important;
+      }
+      .course {
+        font-size: 16px !important;
+      }
+      .course strong {
+        font-size: 22px !important;
+      }
+      .achievement {
+        margin-top: 10px !important;
+        padding: 6px 12px !important;
+        font-size: 11px !important;
+      }
+      .footer {
+        margin-top: 12px !important;
+        padding-top: 10px !important;
+      }
+      .sig-line {
+        width: 140px !important;
       }
     }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 <div class="print-actions">
@@ -366,7 +436,11 @@
     <div class="header">
       <div class="brand-box">
         <div class="logo-wrap">
-          <img src="/media/smart_logo.png" alt="Academy Logo"/>
+          {% if logo_base64 %}
+            <img src="data:image/png;base64,{{ logo_base64 }}" alt="Academy Logo"/>
+          {% else %}
+            <img src="/media/smart_logo.png?v=2" alt="Academy Logo"/>
+          {% endif %}
         </div>
         <div>
           <div class="brand-eyebrow">Smart Class Academy</div>
@@ -389,13 +463,19 @@
       <h1 class="main-title">Certificate</h1>
       <div class="present">This is proudly presented to</div>
       <div class="name">{{ certificate.student.get_full_name|default:certificate.student.username }}</div>
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; font-size: 15px; color: var(--muted); margin-bottom: 18px; letter-spacing: 0.05em;">
+        Student ID: <strong style="color: var(--ink);">{{ certificate.student.student_id|default:certificate.student.username }}</strong>
+      </div>
       <div class="course">
-        for successfully completing the course
+        has successfully completed the course
         <br/>
-        <strong>{{ certificate.course.title }}</strong>
+        <strong style="font-size: 28px; display: block; margin: 8px 0;">{{ certificate.course.title }}</strong>
+        <span style="font-size: 14px; color: var(--muted); font-family: 'Segoe UI', Arial, sans-serif; display: block; margin-top: 4px;">
+          Course ID: <strong>{{ certificate.course.course_code|default:"N/A" }}</strong> &nbsp;|&nbsp; Batch: <strong>{{ certificate.course.batch|default:"N/A" }}</strong>
+        </span>
       </div>
       {% if certificate.description %}
-      <div class="desc">{{ certificate.description }}</div>
+      <div class="desc">{{ certificate.description|safe }}</div>
       {% endif %}
       <div class="achievement">
         Recognized under the {{ certificate.get_badge_type_display }} category

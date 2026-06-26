@@ -41,9 +41,9 @@
 <div class="card mt-4">
   <div class="card-body">
     <p><strong>Course:</strong> {{ report.course.title }}</p>
-    <p><strong>Last updated:</strong> {{ report.updated_at|date:'M d, Y H:i' }}</p>
-    <p class="text-muted">Your report card is updated automatically when assignment, quiz, and test score
-    <p><strong>Course:</strong> {{ report.course.title }}</p>
+    {% if report.course.course_code %}<p><strong>Course ID:</strong> {{ report.course.course_code }}</p>{% endif %}
+    {% if report.course.department %}<p><strong>Department:</strong> {{ report.course.department.name }} ({{ report.course.department.code }})</p>{% endif %}
+    {% if report.course.batch %}<p><strong>Batch:</strong> {{ report.course.batch }}</p>{% endif %}
     <p><strong>Last updated:</strong> {{ report.updated_at|date:'M d, Y H:i' }}</p>
     <p class="text-muted">Your report card is updated automatically when assignment, quiz, and test scores are recorded.</p>
   </div>

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}Create Admin - SmartClass{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+    <div class="card border-0 shadow-sm rounded-4 mt-4">
+      <div class="card-header bg-white border-bottom-0 pt-4 pb-0 text-center">
+        <div class="mb-3">
+          <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle" style="width: 64px; height: 64px;">
+            <i class="bi bi-shield-lock fs-2"></i>
+          </div>
+        </div>
+        <h3 class="fw-bold mb-1">Create Admin Account</h3>
+        <p class="text-muted">Set up a new administrator for SmartClass</p>
+      </div>
+      <div class="card-body p-4">
+        <form method="POST">
+          {% csrf_token %}
+          
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">First Name</label>
+              <input type="text" name="first_name" class="form-control" required>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Last Name</label>
+              <input type="text" name="last_name" class="form-control" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Username</label>
+            <input type="text" name="username" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Email Address</label>
+            <input type="email" name="email" class="form-control" required>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Password</label>
+            <input type="password" name="password" class="form-control" required>
+          </div>
+
+          <div class="mb-4 p-3 rounded-3 bg-light border">
+            <div class="form-check form-switch d-flex align-items-center justify-content-between p-0 m-0">
+              <div>
+                <label class="form-check-label fw-bold d-block" for="isFullAccess">Full Access (Superuser)</label>
+                <small class="text-muted">Grants complete control, including deleting users and adding other admins.</small>
+              </div>
+              <input class="form-check-input ms-3 fs-4" type="checkbox" role="switch" id="isFullAccess" name="is_full_access">
+            </div>
+          </div>
+
+          <div class="d-flex gap-2">
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-light rounded-pill px-4 flex-grow-1">Cancel</a>
+            <button type="submit" class="btn btn-primary rounded-pill px-4 flex-grow-1">Create Admin</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

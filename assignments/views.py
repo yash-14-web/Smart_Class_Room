@@ -25,6 +25,14 @@ def assignment_create(request, course_pk):
             assignment.course = course
             assignment.save()
             form.save_m2m()
+            
+            # Notify approved students
+            from users.models import notify_user
+            due_str = assignment.due_date.strftime('%b %d, %Y %H:%M') if assignment.due_date else 'N/A'
+            enrolled = Enrollment.objects.filter(course=course, status='approved')
+            for e in enrolled:
+                notify_user(e.student, "New Assignment Released", f"A new assignment '{assignment.title}' has been released for course '{course.title}'. Due by {due_str}.", "assignment")
+                
             messages.success(request, 'Assignment created successfully!')
             return redirect('course_detail', pk=course_pk)
     else:
@@ -70,7 +78,7 @@ def assignment_detail(request, pk):
     # Access control: only assigned students can view
     if request.user.is_student():
         # Check if student is enrolled in course first
-        is_enrolled = Enrollment.objects.filter(student=request.user, course=assignment.course).exists()
+        is_enrolled = Enrollment.objects.filter(student=request.user, course=assignment.course, status='approved').exists()
         if not is_enrolled:
             messages.error(request, 'You are not enrolled in this course.')
             return redirect('course_list')
@@ -162,6 +170,8 @@ def grade_submission(request, pk):
         form = GradeForm(request.POST, instance=submission)
         if form.is_valid():
             form.save()
+            from users.models import notify_user
+            notify_user(submission.student, "Assignment Graded", f"Your submission for assignment '{submission.assignment.title}' has been graded. Score: {submission.grade}/{submission.assignment.total_marks}.", "grade")
             messages.success(request, 'Grade saved successfully!')
             return redirect('assignment_detail', pk=submission.assignment.pk)
     else:
@@ -207,7 +217,7 @@ def delete_submission(request, pk):
 @login_required
 def export_marks_csv(request, course_pk):
     course = get_object_or_404(Course, pk=course_pk, teacher=request.user)
-    enrollments = Enrollment.objects.filter(course=course).select_related('student').order_by('student__username')
+    enrollments = Enrollment.objects.filter(course=course, status='approved').select_related('student').order_by('student__username')
     
     assignments = list(Assignment.objects.filter(course=course).order_by('created_at'))
     quizzes = list(Quiz.objects.filter(course=course).order_by('created_at'))
@@ -218,7 +228,8 @@ def export_marks_csv(request, course_pk):
     
     writer = csv.writer(response)
     writer.writerow([
-        'Student Name', 'Username', 'Email',
+        'Department', 'Batch', 'Course Name', 'Course ID',
+        'Student Name', 'Username', 'Student ID', 'Email',
         'Type', 'Title', 'Total Marks', 'Obtained Marks',
         'Percentage', 'Status'
     ])
@@ -233,8 +244,13 @@ def export_marks_csv(request, course_pk):
             pct = f"{round((score / asm.total_marks) * 100, 1)}%" if asm.total_marks and score is not None else '0%'
             status = 'Graded' if sub and sub.grade is not None else ('Submitted' if sub else 'Not Submitted')
             writer.writerow([
+                course.department.name if course.department else 'N/A',
+                course.batch if course.batch else 'N/A',
+                course.title,
+                course.course_code,
                 student.get_full_name() or student.username,
                 student.username,
+                student.student_id or 'N/A',
                 student.email,
                 asm.get_label_display(),
                 asm.title,
@@ -251,8 +267,13 @@ def export_marks_csv(request, course_pk):
             pct = f"{round((score / qz.total_marks) * 100, 1)}%" if qz.total_marks else '0%'
             status = 'Graded' if attempt else 'Not Attempted'
             writer.writerow([
+                course.department.name if course.department else 'N/A',
+                course.batch if course.batch else 'N/A',
+                course.title,
+                course.course_code,
                 student.get_full_name() or student.username,
                 student.username,
+                student.student_id or 'N/A',
                 student.email,
                 'Quiz',
                 qz.title,
@@ -269,8 +290,13 @@ def export_marks_csv(request, course_pk):
             pct = f"{round((score / tst.total_marks) * 100, 1)}%" if tst.total_marks else '0%'
             status = 'Graded' if resp else 'Missed'
             writer.writerow([
+                course.department.name if course.department else 'N/A',
+                course.batch if course.batch else 'N/A',
+                course.title,
+                course.course_code,
                 student.get_full_name() or student.username,
                 student.username,
+                student.student_id or 'N/A',
                 student.email,
                 'Test',
                 tst.title,
@@ -287,8 +313,13 @@ def export_marks_csv(request, course_pk):
             pct = f"{round((score / prj.total_marks) * 100, 1)}%" if prj.total_marks and score is not None else ('0%' if score is not None else 'N/A')
             status = 'Graded' if score is not None else 'Submitted (Pending)'
             writer.writerow([
+                course.department.name if course.department else 'N/A',
+                course.batch if course.batch else 'N/A',
+                course.title,
+                course.course_code,
                 student.get_full_name() or student.username,
                 student.username,
+                student.student_id or 'N/A',
                 student.email,
                 'Project',
                 prj.title,
@@ -306,8 +337,13 @@ def export_marks_csv(request, course_pk):
             ).count()
             att_pct = f"{round((present_count / total_sessions) * 100, 1)}%"
             writer.writerow([
+                course.department.name if course.department else 'N/A',
+                course.batch if course.batch else 'N/A',
+                course.title,
+                course.course_code,
                 student.get_full_name() or student.username,
                 student.username,
+                student.student_id or 'N/A',
                 student.email,
                 'Attendance',
                 'Course Attendance',
@@ -324,7 +360,7 @@ def export_marks_csv(request, course_pk):
 @login_required
 def export_marks_excel(request, course_pk):
     course = get_object_or_404(Course, pk=course_pk, teacher=request.user)
-    enrollments = Enrollment.objects.filter(course=course).select_related('student').order_by('student__username')
+    enrollments = Enrollment.objects.filter(course=course, status='approved').select_related('student').order_by('student__username')
     
     assignments = list(Assignment.objects.filter(course=course).order_by('created_at'))
     quizzes = list(Quiz.objects.filter(course=course).order_by('created_at'))
@@ -339,10 +375,11 @@ def export_marks_excel(request, course_pk):
     header_align = Alignment(horizontal='center', vertical='center')
 
     headers = [
-        'Student Name', 'Username', 'Email', 'Type', 'Title',
-        'Total Marks', 'Obtained Marks', 'Percentage', 'Status'
+        'Department', 'Batch', 'Course Name', 'Course ID',
+        'Student Name', 'Username', 'Student ID', 'Email',
+        'Type', 'Title', 'Total Marks', 'Obtained Marks', 'Percentage', 'Status'
     ]
-    col_widths = [20, 15, 25, 12, 25, 12, 14, 12, 15]
+    col_widths = [18, 12, 25, 15, 20, 15, 15, 25, 12, 25, 12, 14, 12, 15]
 
     for col_num, (header, width) in enumerate(zip(headers, col_widths), 1):
         cell = ws.cell(row=1, column=col_num, value=header)
@@ -445,8 +482,13 @@ def export_marks_excel(request, course_pk):
                     pct = 'N/A'
 
             row_values = [
+                course.department.name if course.department else 'N/A',
+                course.batch if course.batch else 'N/A',
+                course.title,
+                course.course_code,
                 student.get_full_name() or student.username,
                 student.username,
+                student.student_id or 'N/A',
                 student.email,
                 r_data['type'],
                 r_data['title'],

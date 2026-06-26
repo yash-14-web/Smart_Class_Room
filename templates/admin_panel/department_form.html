@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% block title %}{% if is_edit %}Edit Department{% else %}Create Department{% endif %} - SmartClass{% endblock %}
+
+{% block extra_css %}
+<style>
+  .dept-form-page .form-shell {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  .dept-form-page .hero-card {
+    background: linear-gradient(135deg, #0f2f72 0%, #145af2 54%, #1aa3a3 100%);
+    color: #fff;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 20px 42px rgba(15, 47, 114, .20);
+    margin-bottom: 1.5rem;
+  }
+  .dept-form-page .hero-kicker {
+    text-transform: uppercase;
+    letter-spacing: .16em;
+    font-size: .74rem;
+    font-weight: 700;
+    opacity: .82;
+    margin-bottom: .75rem;
+  }
+  .dept-form-page .hero-title {
+    font-size: clamp(1.7rem, 3vw, 2.35rem);
+    font-weight: 800;
+    margin-bottom: .55rem;
+  }
+  .dept-form-page .hero-copy {
+    color: rgba(255,255,255,.84);
+    max-width: 620px;
+    margin-bottom: 0;
+  }
+  .dept-form-page .hero-breadcrumb {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    background: rgba(255,255,255,.14);
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 999px;
+    padding: .35rem .9rem;
+    font-size: .78rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    backdrop-filter: blur(6px);
+  }
+  .dept-form-page .hero-breadcrumb a {
+    color: rgba(255,255,255,.8);
+    text-decoration: none;
+  }
+  .dept-form-page .hero-breadcrumb a:hover {
+    color: #fff;
+  }
+
+  /* ── Form card ── */
+  .dept-form-page .form-card {
+    background: var(--sc-surface-strong);
+    border: 1px solid var(--sc-border);
+    border-radius: 24px;
+    box-shadow: var(--sc-shadow-soft);
+    overflow: hidden;
+  }
+  .dept-form-page .form-head {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--sc-border);
+    background: var(--sc-card-header);
+  }
+  .dept-form-page .form-head-title {
+    font-weight: 800;
+    color: var(--sc-ink);
+    margin-bottom: .2rem;
+  }
+  .dept-form-page .form-head-copy {
+    color: var(--sc-muted);
+    margin-bottom: 0;
+    font-size: .9rem;
+  }
+  .dept-form-page .form-body {
+    padding: 22px;
+  }
+
+  /* ── Check card (for is_active toggle) ── */
+  .dept-form-page .check-card {
+    border: 1px solid var(--sc-border);
+    border-radius: 18px;
+    padding: 14px 16px;
+    background: var(--sc-surface);
+    color: var(--sc-ink);
+  }
+
+  /* ── Helper text ── */
+  .dept-form-page .field-helper {
+    font-size: .82rem;
+    color: var(--sc-muted);
+    margin-top: .35rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dept-form-page">
+  <div class="form-shell">
+    <!-- ── Hero Card ── -->
+    <div class="hero-card">
+      <div class="hero-breadcrumb">
+        <a href="{% url 'admin_department_list' %}"><i class="bi bi-building me-1"></i>Departments</a>
+        <i class="bi bi-chevron-right" style="font-size:.65rem;opacity:.6;"></i>
+        <span>{% if is_edit %}Edit{% else %}Create{% endif %}</span>
+      </div>
+      <div class="hero-title">{% if is_edit %}Edit Department{% else %}Create Department{% endif %}</div>
+      <p class="hero-copy">
+        {% if is_edit %}
+          Update the department details below. Changes will apply across all linked courses.
+        {% else %}
+          Set up a new academic department to organise courses and faculty members.
+        {% endif %}
+      </p>
+    </div>
+
+    <!-- ── Form Card ── -->
+    <div class="form-card">
+      <div class="form-head">
+        <div class="form-head-title"><i class="bi bi-pencil-square me-2"></i>Department Details</div>
+        <p class="form-head-copy">Fill in the information below. Fields marked with <span class="text-danger">*</span> are required.</p>
+      </div>
+      <div class="form-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          <!-- Department Name -->
+          <div class="mb-3">
+            <label for="id_name" class="form-label fw-semibold">
+              Department Name <span class="text-danger">*</span>
+            </label>
+            <input
+              type="text"
+              class="form-control"
+              id="id_name"
+              name="name"
+              placeholder="e.g. Computer Science"
+              required
+              value="{% if form_data %}{{ form_data.name }}{% elif is_edit %}{{ dept.name }}{% endif %}"
+            />
+          </div>
+
+          <!-- Department Code -->
+          <div class="mb-3">
+            <label for="id_code" class="form-label fw-semibold">
+              Department Code <span class="text-danger">*</span>
+            </label>
+            <input
+              type="text"
+              class="form-control"
+              id="id_code"
+              name="code"
+              placeholder="e.g. CS"
+              required
+              value="{% if form_data %}{{ form_data.code }}{% elif is_edit %}{{ dept.code }}{% endif %}"
+            />
+            <div class="field-helper"><i class="bi bi-info-circle me-1"></i>Short unique code like CS, MATH, PHY</div>
+          </div>
+
+          <!-- Department Cover Image -->
+          <div class="mb-3">
+            <label for="id_cover_image" class="form-label fw-semibold">Cover Image</label>
+            <input
+              type="file"
+              class="form-control"
+              id="id_cover_image"
+              name="cover_image"
+              accept="image/jpeg,image/jpg,image/png,image/webp"
+            />
+            <div class="field-helper"><i class="bi bi-info-circle me-1"></i>Supported formats: JPEG, JPG, PNG, WebP.</div>
+            {% if is_edit and dept.cover_image %}
+              <div class="mt-2 text-muted small">Current image: <a href="{{ dept.cover_image.url }}" target="_blank">{{ dept.cover_image.name }}</a></div>
+            {% endif %}
+          </div>
+
+          <!-- Description -->
+          <div class="mb-4">
+            <label for="id_description" class="form-label fw-semibold">Description</label>
+            <textarea
+              class="form-control"
+              id="id_description"
+              name="description"
+              rows="4"
+              placeholder="Brief description of the department's focus and goals…"
+            >{% if form_data %}{{ form_data.description }}{% elif is_edit %}{{ dept.description }}{% endif %}</textarea>
+          </div>
+
+          <!-- Is Active (edit only) -->
+          {% if is_edit %}
+          <div class="mb-4">
+            <div class="check-card">
+              <div class="form-check mb-0">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="id_is_active"
+                  name="is_active"
+                  {% if form_data %}
+                    {% if form_data.is_active %}checked{% endif %}
+                  {% elif dept.is_active %}
+                    checked
+                  {% endif %}
+                />
+                <label class="form-check-label fw-semibold" for="id_is_active">Active Department</label>
+                <div class="text-muted small mt-1">When disabled, this department will be hidden from course creation and listings.</div>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Actions -->
+          <div class="d-flex flex-wrap gap-2 pt-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-save me-1"></i>
+              {% if is_edit %}Update Department{% else %}Create Department{% endif %}
+            </button>
+            <a href="{% url 'admin_department_list' %}" class="btn btn-outline-secondary">
+              <i class="bi bi-x-lg me-1"></i>Cancel
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
