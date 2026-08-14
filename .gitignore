@@ -22,3 +22,7 @@ test_report.html
 .idea/
 .vscode/
 *.log
+
+# Sprint planning files
+Sprint_1.md
+Sprint_*.md
