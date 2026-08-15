@@ -13,9 +13,38 @@ __pycache__/
 *.pyo
 *.pyd
 
-# Django local database & media uploads
+# Django local database
 db.sqlite3
-media/
+
+# Ignore heavy video files & dynamic user uploads in media
+media/*.mp4
+media/*.avi
+media/*.mov
+media/*.mkv
+media/assignment_files/*
+!media/assignment_files/.gitkeep
+media/chat_attachments/*
+!media/chat_attachments/.gitkeep
+media/course_covers/*
+!media/course_covers/.gitkeep
+media/cover_pics/*
+!media/cover_pics/.gitkeep
+media/department_covers/*
+!media/department_covers/.gitkeep
+media/materials/*
+!media/materials/.gitkeep
+media/profile_pics/*
+!media/profile_pics/.gitkeep
+media/project_submissions/*
+!media/project_submissions/.gitkeep
+media/promo/*
+!media/promo/.gitkeep
+media/recorded_classes/*
+!media/recorded_classes/.gitkeep
+media/submissions/*
+!media/submissions/.gitkeep
+media/test_notebooks/*
+!media/test_notebooks/.gitkeep
 
 # Test files and reports
 test_report.html
