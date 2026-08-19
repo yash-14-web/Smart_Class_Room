@@ -1227,3 +1227,9 @@ def clear_notifications(request):
     messages.success(request, 'All notifications cleared.')
     return redirect('notifications_list')
 
+
+def landing_page_view(request):
+    """Public Root Landing Page showing platform highlights, features, and dynamic CTAs."""
+    return render(request, 'landing.html')
+
+

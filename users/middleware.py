@@ -13,6 +13,7 @@ class AccountStatusMiddleware:
                 allowed_paths = [
                     reverse('logout'),
                     reverse('approval_status'),
+                    reverse('landing_page'),
                 ]
                 
                 # Allow static, media, admin pages, and explicit allowed paths
