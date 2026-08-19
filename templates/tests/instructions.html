@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+{% block title %}Instructions - {{ test.title }} - SmartClass{% endblock %}
+
+{% block content %}
+<div class="page-frame py-2">
+  <!-- Breadcrumb Navigation -->
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb mb-0 py-2 px-3 rounded-pill bg-body-tertiary border" style="width: fit-content;">
+      <li class="breadcrumb-item">
+        {% if test.course %}
+          <a href="{% url 'course_detail' test.course.pk %}" class="text-decoration-none">
+            <i class="bi bi-mortarboard-fill me-1"></i>{{ test.course.title }}
+          </a>
+        {% else %}
+          <a href="{% url 'test_list' %}" class="text-decoration-none">
+            <i class="bi bi-card-checklist me-1"></i>Tests
+          </a>
+        {% endif %}
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{% url 'test_detail' test.pk %}" class="text-decoration-none">{{ test.title }}</a>
+      </li>
+      <li class="breadcrumb-item active fw-semibold text-primary" aria-current="page">Pre-Exam Instructions</li>
+    </ol>
+  </nav>
+
+  <!-- Hero Header Card -->
+  <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden" style="background: var(--sc-surface-strong) !important; border: 1px solid var(--sc-border) !important;">
+    <div class="card-body p-4 p-md-5">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-8">
+          <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-1.5 rounded-pill fw-semibold">
+              <i class="bi bi-shield-lock-fill me-1"></i>Stage 1: Pre-Exam Briefing
+            </span>
+            {% if test.course %}
+              <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-3 py-1.5 rounded-pill">
+                {{ test.course.course_code|default:test.course.title }}
+              </span>
+            {% endif %}
+          </div>
+          <h2 class="fw-bold mb-2 text-gradient" style="letter-spacing: -0.02em;">{{ test.title }}</h2>
+          <p class="text-muted mb-0 fs-6" style="white-space: pre-line; overflow-wrap: break-word;">
+            {{ test.description|safe|default:'Please carefully review the following examination guidelines, rules of conduct, and submission requirements before starting the assessment.' }}
+          </p>
+        </div>
+        <div class="col-lg-4">
+          <div class="p-3 rounded-4 bg-primary bg-opacity-10 border border-primary border-opacity-20 text-center">
+            <div class="text-muted small fw-medium mb-1"><i class="bi bi-clock-history me-1 text-primary"></i>Allocated Time Limit</div>
+            <div class="display-6 fw-bold text-primary mb-1">{{ test.time_limit }} <span class="fs-5 fw-normal text-muted">mins</span></div>
+            <div class="small text-muted">Timer begins immediately upon entry</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Assessment Parameters Grid -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100 border-0 shadow-sm rounded-4" style="background: var(--sc-surface-strong) !important; border: 1px solid var(--sc-border) !important;">
+        <div class="card-body p-3.5 d-flex align-items-center gap-3">
+          <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px; background: rgba(20, 90, 242, 0.12); color: var(--sc-primary);">
+            <i class="bi bi-award-fill fs-4"></i>
+          </div>
+          <div>
+            <div class="text-muted small fw-medium">Total Marks</div>
+            <div class="fs-4 fw-bold mb-0">{{ test.total_marks }} <span class="fs-6 fw-normal text-muted">pts</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100 border-0 shadow-sm rounded-4" style="background: var(--sc-surface-strong) !important; border: 1px solid var(--sc-border) !important;">
+        <div class="card-body p-3.5 d-flex align-items-center gap-3">
+          <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px; background: rgba(13, 159, 140, 0.12); color: var(--sc-teal);">
+            <i class="bi bi-ui-checks-grid fs-4"></i>
+          </div>
+          <div>
+            <div class="text-muted small fw-medium">Questions</div>
+            <div class="fs-4 fw-bold mb-0">{{ questions_count }} <span class="fs-6 fw-normal text-muted">total</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100 border-0 shadow-sm rounded-4" style="background: var(--sc-surface-strong) !important; border: 1px solid var(--sc-border) !important;">
+        <div class="card-body p-3.5 d-flex align-items-center gap-3">
+          <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px; background: rgba(245, 158, 11, 0.12); color: #f59e0b;">
+            <i class="bi bi-code-slash fs-4"></i>
+          </div>
+          <div>
+            <div class="text-muted small fw-medium">Structure</div>
+            <div class="fs-5 fw-bold mb-0">
+              <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-2 py-0.5">{{ coding_count }} Coding</span>
+              <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-2 py-0.5">{{ mcq_count }} Quiz</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100 border-0 shadow-sm rounded-4" style="background: var(--sc-surface-strong) !important; border: 1px solid var(--sc-border) !important;">
+        <div class="card-body p-3.5 d-flex align-items-center gap-3">
+          <div class="rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px; background: rgba(99, 102, 241, 0.12); color: #6366f1;">
+            <i class="bi bi-shield-check fs-4"></i>
+          </div>
+          <div>
+            <div class="text-muted small fw-medium">Proctoring</div>
+            <div class="fs-6 fw-bold mb-0 text-success"><i class="bi bi-lock-fill me-1"></i>Fullscreen Mode</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Starter Notebook / Resource Brief if available -->
+  {% if test.notebook_file %}
+    <div class="card border-0 shadow-sm rounded-4 mb-4" style="background: linear-gradient(135deg, rgba(20, 90, 242, 0.06), rgba(13, 159, 140, 0.04)); border: 1px solid rgba(20, 90, 242, 0.18) !important;">
+      <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="rounded-4 p-3 bg-primary text-white shadow-sm d-flex align-items-center justify-content-center">
+            <i class="bi bi-file-earmark-code-fill fs-3"></i>
+          </div>
+          <div>
+            <h6 class="fw-bold mb-1">Starter Notebook &amp; Dataset Attached</h6>
+            <div class="text-muted small">You may download and review the reference materials before initiating the exam.</div>
+          </div>
+        </div>
+        <a href="{{ test.notebook_file.url }}" class="btn btn-outline-primary rounded-pill px-4 fw-semibold" download>
+          <i class="bi bi-download me-1.5"></i> Download Attachment
+        </a>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Examination Guidelines & Protocol Cards -->
+  <div class="row g-4 mb-4">
+    <!-- Left Column: Proctoring & Rules -->
+    <div class="col-lg-6">
+      <div class="card h-100 border-0 shadow-sm rounded-4" style="background: var(--sc-surface-strong) !important; border: 1px solid var(--sc-border) !important;">
+        <div class="card-header bg-transparent p-4 pb-0 border-0">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-shield-exclamation text-danger fs-5"></i>
+            <h5 class="fw-bold mb-0">Proctored Environment &amp; Violations</h5>
+          </div>
+        </div>
+        <div class="card-body p-4">
+          <div class="vstack gap-3">
+            <div class="d-flex align-items-start gap-3 p-3 rounded-4 bg-body-tertiary border">
+              <div class="badge bg-danger bg-opacity-10 text-danger rounded-circle p-2 fs-6 mt-0.5">
+                <i class="bi bi-arrows-fullscreen"></i>
+              </div>
+              <div>
+                <div class="fw-semibold mb-0.5">Mandatory Fullscreen Mode</div>
+                <div class="small text-muted">The exam interface must remain locked in fullscreen throughout the test. Exiting fullscreen with <kbd>Esc</kbd> or <kbd>F11</kbd> is logged as a violation.</div>
+              </div>
+            </div>
+
+            <div class="d-flex align-items-start gap-3 p-3 rounded-4 bg-body-tertiary border">
+              <div class="badge bg-warning bg-opacity-15 text-warning rounded-circle p-2 fs-6 mt-0.5">
+                <i class="bi bi-window-stack"></i>
+              </div>
+              <div>
+                <div class="fw-semibold mb-0.5">Tab &amp; Window Switching Detection</div>
+                <div class="small text-muted">Switching to other browser tabs, applications, or minimising the browser window will immediately trigger a violation warning.</div>
+              </div>
+            </div>
+
+            <div class="d-flex align-items-start gap-3 p-3 rounded-4 bg-body-tertiary border">
+              <div class="badge bg-danger bg-opacity-10 text-danger rounded-circle p-2 fs-6 mt-0.5">
+                <i class="bi bi-exclamation-octagon-fill"></i>
+              </div>
+              <div>
+                <div class="fw-semibold mb-0.5">3 Strikes Auto-Submission Policy</div>
+                <div class="small text-muted">You receive <strong>2 violation warnings</strong>. The 3rd violation triggers an automatic and irreversible submission of your exam.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Navigation & Submission Guidelines -->
+    <div class="col-lg-6">
+      <div class="card h-100 border-0 shadow-sm rounded-4" style="background: var(--sc-surface-strong) !important; border: 1px solid var(--sc-border) !important;">
+        <div class="card-header bg-transparent p-4 pb-0 border-0">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-journal-check text-primary fs-5"></i>
+            <h5 class="fw-bold mb-0">Execution &amp; Navigation Rules</h5>
+          </div>
+        </div>
+        <div class="card-body p-4">
+          <div class="vstack gap-3">
+            <div class="d-flex align-items-start gap-3 p-3 rounded-4 bg-body-tertiary border">
+              <div class="badge bg-primary bg-opacity-10 text-primary rounded-circle p-2 fs-6 mt-0.5">
+                <i class="bi bi-stopwatch"></i>
+              </div>
+              <div>
+                <div class="fw-semibold mb-0.5">Continuous Countdown</div>
+                <div class="small text-muted">The timer cannot be paused or reset. If your timer runs out, all saved responses will be automatically submitted.</div>
+              </div>
+            </div>
+
+            <div class="d-flex align-items-start gap-3 p-3 rounded-4 bg-body-tertiary border">
+              <div class="badge bg-teal bg-opacity-10 text-teal rounded-circle p-2 fs-6 mt-0.5" style="color: var(--sc-teal) !important;">
+                <i class="bi bi-cpu"></i>
+              </div>
+              <div>
+                <div class="fw-semibold mb-0.5">Code Execution &amp; Test Cases</div>
+                <div class="small text-muted">Coding solutions run against sample and hidden test cases under a strict 5.0s execution timeout per case. Ensure infinite loops are avoided.</div>
+              </div>
+            </div>
+
+            <div class="d-flex align-items-start gap-3 p-3 rounded-4 bg-body-tertiary border">
+              <div class="badge bg-info bg-opacity-10 text-info rounded-circle p-2 fs-6 mt-0.5">
+                <i class="bi bi-card-checklist"></i>
+              </div>
+              <div>
+                <div class="fw-semibold mb-0.5">Stage 3 Review Modal</div>
+                <div class="small text-muted">Clicking "Submit Exam" will trigger a summary review modal showing attempted and unattempted questions before final submission.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Agreement & Action Card -->
+  <div class="card border-0 shadow-lg rounded-4 overflow-hidden" style="background: var(--sc-surface-strong) !important; border: 2px solid var(--sc-primary) !important;">
+    <div class="card-body p-4 p-md-5">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-8">
+          <div class="form-check custom-checkbox d-flex align-items-center gap-3 mb-0">
+            <input class="form-check-input flex-shrink-0" type="checkbox" id="agreeRulesCheckbox" style="width: 1.5rem; height: 1.5rem; cursor: pointer;">
+            <label class="form-check-label fw-bold fs-6 mb-0 text-body" for="agreeRulesCheckbox" style="cursor: pointer; user-select: none;">
+              I have read, understood, and agree to the examination rules, proctoring policies, and academic integrity guidelines.
+            </label>
+          </div>
+          <div class="text-muted small mt-2 ps-4 ms-2" id="agreementHintText">
+            <i class="bi bi-info-circle me-1 text-primary"></i> Check the box above to enable the Start Exam button.
+          </div>
+        </div>
+        <div class="col-lg-4 text-lg-end d-flex flex-wrap gap-2 justify-content-lg-end">
+          <a href="{% url 'test_detail' test.pk %}" class="btn btn-outline-secondary rounded-pill px-4 py-2.5">
+            <i class="bi bi-arrow-left me-1"></i> Back to Details
+          </a>
+          <a href="{% url 'test_take' test.pk %}" id="startExamBtn" class="btn btn-primary rounded-pill px-4 py-2.5 fw-bold shadow-sm disabled" aria-disabled="true" tabindex="-1" style="pointer-events: none; opacity: 0.55; transition: all 0.2s ease;">
+            <i class="bi bi-rocket-takeoff-fill me-1.5"></i> Start Exam
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const agreeCheckbox = document.getElementById('agreeRulesCheckbox');
+    const startExamBtn = document.getElementById('startExamBtn');
+    const hintText = document.getElementById('agreementHintText');
+
+    if (agreeCheckbox && startExamBtn) {
+      function updateButtonState() {
+        if (agreeCheckbox.checked) {
+          startExamBtn.classList.remove('disabled');
+          startExamBtn.removeAttribute('aria-disabled');
+          startExamBtn.removeAttribute('tabindex');
+          startExamBtn.style.pointerEvents = 'auto';
+          startExamBtn.style.opacity = '1';
+          startExamBtn.style.boxShadow = '0 10px 25px rgba(20, 90, 242, 0.35)';
+
+          if (hintText) {
+            hintText.innerHTML = '<i class="bi bi-check-circle-fill me-1 text-success"></i> <span class="text-success fw-semibold">Rules accepted. You may now start your exam.</span>';
+          }
+        } else {
+          startExamBtn.classList.add('disabled');
+          startExamBtn.setAttribute('aria-disabled', 'true');
+          startExamBtn.setAttribute('tabindex', '-1');
+          startExamBtn.style.pointerEvents = 'none';
+          startExamBtn.style.opacity = '0.55';
+          startExamBtn.style.boxShadow = 'none';
+
+          if (hintText) {
+            hintText.innerHTML = '<i class="bi bi-info-circle me-1 text-primary"></i> Check the box above to enable the Start Exam button.';
+          }
+        }
+      }
+
+      agreeCheckbox.addEventListener('change', updateButtonState);
+      // Initialize on load in case of browser autofill/cached state
+      updateButtonState();
+    }
+  });
+</script>
+{% endblock %}

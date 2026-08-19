@@ -17,14 +17,14 @@
       {% if response %}
         <a class="btn btn-primary" href="{% url 'test_response_detail' test.pk response.pk %}">View Summary</a>
         {% if response.retake_allowed %}
-          <a class="btn btn-warning fw-bold text-dark shadow-sm" href="{% url 'test_take' test.pk %}"><i class="bi bi-arrow-repeat me-1"></i> Retake Test Now</a>
+          <a class="btn btn-warning fw-bold text-dark shadow-sm" href="{% url 'test_instructions' test.pk %}"><i class="bi bi-arrow-repeat me-1"></i> Retake Test Now</a>
         {% elif response.retake_requested %}
           <button class="btn btn-outline-secondary" disabled><i class="bi bi-clock-history me-1"></i> Retake Requested</button>
         {% else %}
           <a class="btn btn-outline-warning" href="{% url 'test_request_retake' test.pk %}" onclick="return confirm('Request a retake for this exam?')"><i class="bi bi-chat-left-text me-1"></i> Raise Issue / Request Retake</a>
         {% endif %}
       {% elif test.is_open %}
-        <a class="btn btn-primary" href="{% url 'test_take' test.pk %}">Start Test</a>
+        <a class="btn btn-primary" href="{% url 'test_instructions' test.pk %}">Start Test</a>
       {% else %}
         <span class="badge bg-secondary rounded-pill px-3 py-2">{{ test.status_label }}</span>
       {% endif %}

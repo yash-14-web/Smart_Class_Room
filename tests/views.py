@@ -321,6 +321,52 @@ def coding_testcase_add_view(request, question_id):
 
 
 @login_required
+def test_instructions_view(request, test_id):
+    test = get_object_or_404(Test, pk=test_id)
+    if request.user.is_teacher():
+        messages.error(request, 'Teachers cannot take tests.')
+        return redirect('test_detail', test_id=test.pk)
+
+    if not _student_is_enrolled(request.user, test.course):
+        messages.error(request, 'You must be enrolled in this course to take the test.')
+        return redirect('course_list')
+
+    # Access control: only assigned students can take
+    if test.assigned_to.exists() and not test.assigned_to.filter(id=request.user.id).exists():
+        messages.error(request, 'You are not assigned to this test.')
+        return redirect('course_detail', pk=test.course.pk)
+
+    existing = StudentResponse.objects.filter(student=request.user, test=test).first()
+    if existing and not existing.retake_allowed:
+        messages.info(request, 'You have already submitted this test.')
+        return redirect('test_detail', test_id=test.pk)
+
+    questions = list(test.questions.prefetch_related('test_cases').all())
+    if not questions:
+        messages.warning(request, 'This test does not yet have questions.')
+        return redirect('test_detail', test_id=test.pk)
+
+    now = timezone.now()
+    if not test.is_open():
+        if test.available_from and now < test.available_from:
+            messages.error(request, 'This test is not open yet. It will be available starting at {}.'.format(
+                timezone.localtime(test.available_from).strftime('%b %d, %Y %H:%M')
+            ))
+        else:
+            messages.error(request, 'This test is not currently available.')
+        if test.course:
+            return redirect('test_course_list', course_pk=test.course.pk)
+        return redirect('test_list')
+
+    return render(request, 'instructions.html', {
+        'test': test,
+        'questions_count': len(questions),
+        'coding_count': test.coding_questions_count,
+        'mcq_count': test.mcq_questions_count,
+    })
+
+
+@login_required
 def test_take_view(request, test_id):
     test = get_object_or_404(Test, pk=test_id)
     if request.user.is_teacher():

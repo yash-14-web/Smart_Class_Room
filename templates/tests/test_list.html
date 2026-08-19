@@ -69,7 +69,7 @@
             <a href="{% url 'test_responses' test.pk %}" class="btn btn-secondary btn-sm rounded-pill px-3.5 py-1.5">Responses</a>
           {% else %}
             {% if test.status_label == 'Open' %}
-              <a href="{% url 'test_take' test.pk %}" class="btn btn-primary btn-sm rounded-pill px-4 py-1.5 flex-grow-1 fw-bold shadow-sm">Take Test</a>
+              <a href="{% url 'test_instructions' test.pk %}" class="btn btn-primary btn-sm rounded-pill px-4 py-1.5 flex-grow-1 fw-bold shadow-sm">Take Test</a>
             {% else %}
               <button class="btn btn-secondary btn-sm rounded-pill px-4 py-1.5 flex-grow-1" disabled>Unavailable</button>
             {% endif %}
